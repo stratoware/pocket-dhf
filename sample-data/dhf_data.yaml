@@ -1,3 +1,6 @@
+# Configuration file
+# Copyright (c) 2025 Stratoware LLC. All rights reserved.
+
 metadata:
   project_name: GlucoSense Pro
   device_type: Continuous Glucose Monitoring System

@@ -12,8 +12,10 @@ def create_app():
     app = Flask(__name__)
 
     # Configuration
-    app.config['SECRET_KEY'] = 'dev-key-change-in-production'
-    app.config['DEBUG'] = True
+    app.config["SECRET_KEY"] = (
+        "dev-key-change-in-production"  # pragma: allowlist secret
+    )
+    app.config["DEBUG"] = True
 
     # Register blueprints
     app.register_blueprint(main)

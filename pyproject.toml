@@ -23,6 +23,16 @@ black = "^23.0.0"
 isort = "^5.12.0"
 flake8 = "^6.0.0"
 pre-commit = "^3.3.0"
+# Advanced Python linting
+mypy = "^1.8.0"
+bandit = "^1.7.5"
+safety = "^2.3.5"
+pylint = "^3.0.3"
+# Frontend linting (using npm packages via pre-commit)
+# Data/Config linting
+yamllint = "^1.35.1"
+# Security
+detect-secrets = "^1.4.0"
 
 [tool.poetry.scripts]
 pocket-dhf = "main:app"
@@ -71,4 +81,63 @@ ensure_newline_before_comments = true
 
 [tool.flake8]
 max-line-length = 88
-extend-ignore = ["E203", "W503"]
+extend-ignore = ["E203", "W503", "E501"]
+exclude = [
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    "build",
+    "dist",
+    ".venv",
+    "venv",
+    "htmlcov"
+]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+skips = ["B101", "B601"]
+
+[tool.pylint.messages_control]
+disable = [
+    "C0114",  # missing-module-docstring
+    "C0116",  # missing-function-docstring
+    "R0903",  # too-few-public-methods
+    "R0913",  # too-many-arguments
+    "R0911",  # too-many-return-statements
+    "R0912",  # too-many-branches
+    "R0914",  # too-many-locals
+    "R0904",  # too-many-public-methods
+    "W0718",  # broad-exception-caught
+    "W1510",  # subprocess-run-check
+    "W0612",  # unused-variable
+    "W0613",  # unused-argument
+    "R1705",  # no-else-return
+    "R0801",  # duplicate-code
+    "E0401",  # import-error
+]
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.pylint.design]
+max-args = 10
+max-locals = 20
+max-returns = 10
+max-branches = 15
+max-statements = 60
