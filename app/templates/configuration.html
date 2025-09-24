@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">
+                <i class="fas fa-cog me-2"></i>Configuration
+            </h2>
+            <p class="text-muted mb-4">
+                Manage dropdown options for Risk entity types. Each option has a unique ID (S1, S2, etc. for severity;
+                P1, P2, etc. for probability)
+                that remains constant while the display names can be modified.
+            </p>
+
+            <div class="row">
+                <!-- Severity Configuration -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Risk Severity Options
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small mb-3">
+                                Configure severity levels for Risk entities. IDs (S1, S2, S3, etc.) are permanent
+                                identifiers.
+                            </p>
+
+                            <!-- Current Options List -->
+                            <div class="mb-3">
+                                <h6>Current Options:</h6>
+                                <div id="severity-options-list" class="mb-3">
+                                    {% for option_id, option_data in config.severity_mapping.items() %}
+                                    <div class="option-row mb-3 p-3 border rounded" data-option-id="{{ option_id }}"
+                                        data-type="severity">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="option-info flex-grow-1">
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <span class="badge bg-secondary me-2">{{ option_id }}</span>
+                                                    <span class="option-name-display fw-bold">{{ option_data.name
+                                                        }}</span>
+                                                    {% if option_id in config.severity_ids_in_use %}
+                                                    <span class="badge bg-success ms-2">In Use</span>
+                                                    {% endif %}
+                                                </div>
+                                                <input type="text"
+                                                    class="form-control form-control-sm option-name-input d-none mb-2"
+                                                    value="{{ option_data.name }}">
+                                                <div class="text-muted small option-desc-display">{{
+                                                    option_data.description }}</div>
+                                                <textarea class="form-control form-control-sm option-desc-input d-none"
+                                                    rows="2">{{ option_data.description }}</textarea>
+                                            </div>
+                                            <div class="btn-group btn-group-sm ms-2">
+                                                <button type="button" class="btn btn-outline-primary btn-edit-option">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger btn-remove-option"
+                                                    {% if option_id in config.severity_ids_in_use %}disabled
+                                                    title="Cannot remove option in use" {% endif %}>
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Add New Option -->
+                            <div class="mb-3">
+                                <h6>Add New Option:</h6>
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <label class="form-label small">Display Name:</label>
+                                            <input type="text" id="new-severity-name"
+                                                class="form-control form-control-sm" placeholder="e.g., Critical">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small">Description:</label>
+                                            <textarea id="new-severity-description" class="form-control form-control-sm"
+                                                rows="2" placeholder="Describe this severity level..."></textarea>
+                                        </div>
+                                        <button type="button" class="btn btn-success btn-sm w-100"
+                                            id="add-severity-option">
+                                            <i class="fas fa-plus me-1"></i>Add Severity Option
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Probability Configuration -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-percentage me-2"></i>Risk Probability Options
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small mb-3">
+                                Configure probability levels for Risk entities. IDs (P1, P2, P3, etc.) are permanent
+                                identifiers.
+                            </p>
+
+                            <!-- Current Options List -->
+                            <div class="mb-3">
+                                <h6>Current Options:</h6>
+                                <div id="probability-options-list" class="mb-3">
+                                    {% for option_id, option_data in config.probability_mapping.items() %}
+                                    <div class="option-row mb-3 p-3 border rounded" data-option-id="{{ option_id }}"
+                                        data-type="probability">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div class="option-info flex-grow-1">
+                                                <div class="d-flex align-items-center mb-1">
+                                                    <span class="badge bg-secondary me-2">{{ option_id }}</span>
+                                                    <span class="option-name-display fw-bold">{{ option_data.name
+                                                        }}</span>
+                                                    {% if option_id in config.probability_ids_in_use %}
+                                                    <span class="badge bg-success ms-2">In Use</span>
+                                                    {% endif %}
+                                                </div>
+                                                <input type="text"
+                                                    class="form-control form-control-sm option-name-input d-none mb-2"
+                                                    value="{{ option_data.name }}">
+                                                <div class="text-muted small option-desc-display">{{
+                                                    option_data.description }}</div>
+                                                <textarea class="form-control form-control-sm option-desc-input d-none"
+                                                    rows="2">{{ option_data.description }}</textarea>
+                                            </div>
+                                            <div class="btn-group btn-group-sm ms-2">
+                                                <button type="button" class="btn btn-outline-primary btn-edit-option">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger btn-remove-option"
+                                                    {% if option_id in config.probability_ids_in_use %}disabled
+                                                    title="Cannot remove option in use" {% endif %}>
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Add New Option -->
+                            <div class="mb-3">
+                                <h6>Add New Option:</h6>
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <label class="form-label small">Display Name:</label>
+                                            <input type="text" id="new-probability-name"
+                                                class="form-control form-control-sm" placeholder="e.g., Very High">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small">Description:</label>
+                                            <textarea id="new-probability-description"
+                                                class="form-control form-control-sm" rows="2"
+                                                placeholder="Describe this probability level..."></textarea>
+                                        </div>
+                                        <button type="button" class="btn btn-success btn-sm w-100"
+                                            id="add-probability-option">
+                                            <i class="fas fa-plus me-1"></i>Add Probability Option
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card border-info">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>Configuration Notes
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li><strong>Unique IDs:</strong> Each option has a permanent ID (S1, S2, S3 for
+                                    severity; P1, P2, P3 for probability) that never changes.</li>
+                                <li><strong>Display Names:</strong> The names shown to users can be modified without
+                                    affecting existing data compatibility.</li>
+                                <li><strong>Adding Options:</strong> New options get the next available ID automatically
+                                    (e.g., S4, P4, etc.).</li>
+                                <li><strong>Removing Options:</strong> Options currently in use by existing risks cannot
+                                    be removed (shown with "In Use" badge).</li>
+                                <li><strong>Descriptions:</strong> Optional descriptions help users understand when to
+                                    use each option.</li>
+                                <li><strong>Data Persistence:</strong> All changes are saved automatically and tracked
+                                    in version control.</li>
+                                <li><strong>Backwards Compatibility:</strong> The ID system ensures existing data
+                                    remains valid even when display names change.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Message -->
+<div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add option handlers
+        document.getElementById('add-severity-option').addEventListener('click', function () {
+            addOption('severity');
+        });
+
+        document.getElementById('add-probability-option').addEventListener('click', function () {
+            addOption('probability');
+        });
+
+        // Edit and remove handlers
+        document.querySelectorAll('.btn-edit-option').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const optionRow = this.closest('.option-row');
+                startEdit(optionRow);
+            });
+        });
+
+        document.querySelectorAll('.btn-remove-option').forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (this.disabled) return;
+
+                const optionRow = this.closest('.option-row');
+                const optionId = optionRow.dataset.optionId;
+                const type = optionRow.dataset.type;
+                const name = optionRow.querySelector('.option-name-display').textContent;
+
+                if (confirm(`Are you sure you want to remove "${optionId}: ${name}" from ${type} options?`)) {
+                    removeOption(type, optionId);
+                }
+            });
+        });
+
+        // Enter key handlers for new option inputs
+        ['severity', 'probability'].forEach(type => {
+            document.getElementById(`new-${type}-name`).addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    addOption(type);
+                }
+            });
+        });
+    });
+
+    function addOption(type) {
+        const nameInput = document.getElementById(`new-${type}-name`);
+        const descInput = document.getElementById(`new-${type}-description`);
+        const name = nameInput.value.trim();
+        const description = descInput.value.trim();
+
+        if (!name) {
+            showStatus('Please enter a name for the option', 'warning');
+            nameInput.focus();
+            return;
+        }
+
+        fetch('/api/configuration', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                config_type: type,
+                action: 'add',
+                name: name,
+                description: description
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus(`Added "${data.new_id}: ${name}" to ${type} options`, 'success');
+                    nameInput.value = '';
+                    descInput.value = '';
+                    // Reload the page to show the new option
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showStatus(`Error adding option: ${data.error}`, 'danger');
+                }
+            })
+            .catch(error => {
+                showStatus(`Network error: ${error.message}`, 'danger');
+            });
+    }
+
+    function removeOption(type, optionId) {
+        fetch('/api/configuration', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                config_type: type,
+                action: 'remove',
+                option_id: optionId
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus(`Removed "${optionId}" from ${type} options`, 'success');
+                    // Reload the page to reflect changes
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showStatus(`Error removing option: ${data.error || 'Option may be in use by existing risks'}`, 'danger');
+                }
+            })
+            .catch(error => {
+                showStatus(`Network error: ${error.message}`, 'danger');
+            });
+    }
+
+    function startEdit(optionRow) {
+        const nameDisplay = optionRow.querySelector('.option-name-display');
+        const nameInput = optionRow.querySelector('.option-name-input');
+        const descDisplay = optionRow.querySelector('.option-desc-display');
+        const descInput = optionRow.querySelector('.option-desc-input');
+        const buttons = optionRow.querySelector('.btn-group');
+
+        // Hide displays, show inputs
+        nameDisplay.classList.add('d-none');
+        nameInput.classList.remove('d-none');
+        descDisplay.classList.add('d-none');
+        descInput.classList.remove('d-none');
+
+        // Change buttons to save/cancel
+        buttons.innerHTML = `
+        <button type="button" class="btn btn-success btn-sm btn-save-edit">
+            <i class="fas fa-check"></i>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm btn-cancel-edit">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+        nameInput.focus();
+        nameInput.select();
+
+        // Add event handlers for save/cancel
+        buttons.querySelector('.btn-save-edit').addEventListener('click', function () {
+            saveEdit(optionRow);
+        });
+
+        buttons.querySelector('.btn-cancel-edit').addEventListener('click', function () {
+            cancelEdit(optionRow);
+        });
+
+        // Enter/Escape key handlers
+        nameInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                saveEdit(optionRow);
+            } else if (e.key === 'Escape') {
+                cancelEdit(optionRow);
+            }
+        });
+    }
+
+    function saveEdit(optionRow) {
+        const optionId = optionRow.dataset.optionId;
+        const type = optionRow.dataset.type;
+        const nameInput = optionRow.querySelector('.option-name-input');
+        const descInput = optionRow.querySelector('.option-desc-input');
+        const name = nameInput.value.trim();
+        const description = descInput.value.trim();
+
+        if (!name) {
+            showStatus('Name cannot be empty', 'warning');
+            nameInput.focus();
+            return;
+        }
+
+        fetch('/api/configuration', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                config_type: type,
+                action: 'update',
+                option_id: optionId,
+                name: name,
+                description: description
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus(`Updated "${optionId}" successfully`, 'success');
+                    // Reload the page to reflect changes
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showStatus(`Error updating option: ${data.error}`, 'danger');
+                }
+            })
+            .catch(error => {
+                showStatus(`Network error: ${error.message}`, 'danger');
+            });
+    }
+
+    function cancelEdit(optionRow) {
+        const nameDisplay = optionRow.querySelector('.option-name-display');
+        const nameInput = optionRow.querySelector('.option-name-input');
+        const descDisplay = optionRow.querySelector('.option-desc-display');
+        const descInput = optionRow.querySelector('.option-desc-input');
+        const buttons = optionRow.querySelector('.btn-group');
+        const optionId = optionRow.dataset.optionId;
+        const type = optionRow.dataset.type;
+
+        // Reset inputs to original values
+        nameInput.value = nameDisplay.textContent;
+        descInput.value = descDisplay.textContent;
+
+        // Show displays, hide inputs
+        nameDisplay.classList.remove('d-none');
+        nameInput.classList.add('d-none');
+        descDisplay.classList.remove('d-none');
+        descInput.classList.add('d-none');
+
+        // Restore original buttons
+        const inUse = optionRow.querySelector('.badge.bg-success') !== null;
+        buttons.innerHTML = `
+        <button type="button" class="btn btn-outline-primary btn-sm btn-edit-option">
+            <i class="fas fa-edit"></i>
+        </button>
+        <button type="button" class="btn btn-outline-danger btn-sm btn-remove-option"
+                ${inUse ? 'disabled title="Cannot remove option in use"' : ''}>
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+
+        // Re-add event handlers
+        buttons.querySelector('.btn-edit-option').addEventListener('click', function () {
+            startEdit(optionRow);
+        });
+
+        buttons.querySelector('.btn-remove-option').addEventListener('click', function () {
+            if (this.disabled) return;
+            const name = nameDisplay.textContent;
+            if (confirm(`Are you sure you want to remove "${optionId}: ${name}" from ${type} options?`)) {
+                removeOption(type, optionId);
+            }
+        });
+    }
+
+    function showStatus(message, type) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.className = `alert alert-${type}`;
+        statusDiv.textContent = message;
+        statusDiv.classList.remove('d-none');
+
+        // Hide after 5 seconds
+        setTimeout(() => {
+            statusDiv.classList.add('d-none');
+        }, 5000);
+    }
+</script>
+{% endblock %}

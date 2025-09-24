@@ -1,0 +1,1179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid" style="min-height: calc(100vh - 200px);">
+    <div class="row">
+        <!-- Left Sidebar - Tree Navigation -->
+        <div class="col-md-4 col-lg-4 bg-light border-end" style="height: calc(100vh - 160px);">
+            <div class="tree-navigation">
+                <div class="p-3">
+                    <h5 class="mb-3">
+                        <i class="fas fa-sitemap me-2"></i>DHF Navigation
+                    </h5>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" id="expand-all-btn">
+                                <i class="fas fa-expand-alt me-1"></i>Expand All
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="collapse-all-btn">
+                                <i class="fas fa-compress-alt me-1"></i>Collapse All
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- User Needs Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="userNeedsItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            User Needs
+                            <span class="badge bg-secondary ms-2">{{ user_needs_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="userNeedsItems">
+                            {% for id, item in user_needs.items() %}
+                            <div class="tree-item" data-item-id="{{ id }}" data-item-type="user_need">
+                                <i class="fas fa-user me-2"></i>{{ item.title }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Risks Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="risksItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                            Risks
+                            <span class="badge bg-secondary ms-2">{{ risk_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="risksItems">
+                            {% for group_key, group in risks.items() %}
+                            {% if group.risks is defined %}
+                            <div class="tree-group mb-2">
+                                <div class="tree-group-header collapsible-header" data-target="risk-{{ group_key }}">
+                                    <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                    <i class="fas fa-folder me-2"></i>
+                                    <div class="editable-folder-name flex-grow-1" data-group-key="{{ group_key }}"
+                                        data-group-type="risks">
+                                        <span class="folder-name-display">{{ group.group_name }}</span>
+                                        <input type="text" class="folder-name-input d-none form-control form-control-sm"
+                                            value="{{ group.group_name }}">
+                                        <div class="folder-edit-buttons d-none">
+                                            <button class="btn btn-xs btn-success save-folder-btn me-1">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-xs btn-secondary cancel-folder-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="floating-edit-btn" data-group-key="{{ group_key }}"
+                                            data-group-type="risks">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    <span class="badge bg-light text-dark ms-2">{{ group.risks|length }}</span>
+                                </div>
+                                <div class="ms-3 collapsible-content collapsed" id="risk-{{ group_key }}">
+                                    {% for id, item in group.risks.items() %}
+                                    <div class="tree-item" data-item-id="{{ id }}" data-item-type="risk">
+                                        <i class="fas fa-exclamation-circle me-2"></i>{{ item.title }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <!-- Legacy flat structure -->
+                            <div class="tree-item" data-item-id="{{ group_key }}" data-item-type="risk">
+                                <i class="fas fa-exclamation-circle me-2"></i>{{ group.title }}
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Product Requirements Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="productRequirementsItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-clipboard-list me-2 text-success"></i>
+                            Product Requirements
+                            <span class="badge bg-secondary ms-2">{{ product_requirements_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="productRequirementsItems">
+                            {% for group_key, group in product_requirements.items() %}
+                            <div class="tree-group mb-2">
+                                <div class="tree-group-header collapsible-header" data-target="req-{{ group_key }}">
+                                    <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                    <i class="fas fa-folder me-2"></i>
+                                    <div class="editable-folder-name flex-grow-1" data-group-key="{{ group_key }}"
+                                        data-group-type="product_requirements">
+                                        <span class="folder-name-display">{{ group.group_name }}</span>
+                                        <input type="text" class="folder-name-input d-none form-control form-control-sm"
+                                            value="{{ group.group_name }}">
+                                        <div class="folder-edit-buttons d-none">
+                                            <button class="btn btn-xs btn-success save-folder-btn me-1">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-xs btn-secondary cancel-folder-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="floating-edit-btn" data-group-key="{{ group_key }}"
+                                            data-group-type="product_requirements">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    <span class="badge bg-light text-dark ms-2">{{ group.requirements|length }}</span>
+                                </div>
+                                <div class="ms-3 collapsible-content collapsed" id="req-{{ group_key }}">
+                                    {% for id, item in group.requirements.items() %}
+                                    <div class="tree-item" data-item-id="{{ id }}" data-item-type="product_requirement">
+                                        <i class="fas fa-file-alt me-2"></i>{{ item.title }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Software Specifications Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="softwareSpecsItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-code me-2 text-info"></i>
+                            Software Specifications
+                            <span class="badge bg-secondary ms-2">{{ software_specifications_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="softwareSpecsItems">
+                            {% for group_key, group in software_specifications.items() %}
+                            <div class="tree-group mb-2">
+                                <div class="tree-group-header collapsible-header" data-target="sw-{{ group_key }}">
+                                    <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                    <i class="fas fa-folder me-2"></i>
+                                    <div class="editable-folder-name flex-grow-1" data-group-key="{{ group_key }}"
+                                        data-group-type="software_specifications">
+                                        <span class="folder-name-display">{{ group.group_name }}</span>
+                                        <input type="text" class="folder-name-input d-none form-control form-control-sm"
+                                            value="{{ group.group_name }}">
+                                        <div class="folder-edit-buttons d-none">
+                                            <button class="btn btn-xs btn-success save-folder-btn me-1">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-xs btn-secondary cancel-folder-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="floating-edit-btn" data-group-key="{{ group_key }}"
+                                            data-group-type="software_specifications">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    <span class="badge bg-light text-dark ms-2">{{ group.specifications|length }}</span>
+                                </div>
+                                <div class="ms-3 collapsible-content collapsed" id="sw-{{ group_key }}">
+                                    {% for id, item in group.specifications.items() %}
+                                    <div class="tree-item" data-item-id="{{ id }}"
+                                        data-item-type="software_specification">
+                                        <i class="fas fa-cog me-2"></i>{{ item.title }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Hardware Specifications Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="hardwareSpecsItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-microchip me-2 text-danger"></i>
+                            Hardware Specifications
+                            <span class="badge bg-secondary ms-2">{{ hardware_specifications_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="hardwareSpecsItems">
+                            {% for group_key, group in hardware_specifications.items() %}
+                            <div class="tree-group mb-2">
+                                <div class="tree-group-header collapsible-header" data-target="hw-{{ group_key }}">
+                                    <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                    <i class="fas fa-folder me-2"></i>
+                                    <div class="editable-folder-name flex-grow-1" data-group-key="{{ group_key }}"
+                                        data-group-type="hardware_specifications">
+                                        <span class="folder-name-display">{{ group.group_name }}</span>
+                                        <input type="text" class="folder-name-input d-none form-control form-control-sm"
+                                            value="{{ group.group_name }}">
+                                        <div class="folder-edit-buttons d-none">
+                                            <button class="btn btn-xs btn-success save-folder-btn me-1">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-xs btn-secondary cancel-folder-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="floating-edit-btn" data-group-key="{{ group_key }}"
+                                            data-group-type="hardware_specifications">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    <span class="badge bg-light text-dark ms-2">{{ group.specifications|length }}</span>
+                                </div>
+                                <div class="ms-3 collapsible-content collapsed" id="hw-{{ group_key }}">
+                                    {% for id, item in group.specifications.items() %}
+                                    <div class="tree-item" data-item-id="{{ id }}"
+                                        data-item-type="hardware_specification">
+                                        <i class="fas fa-microchip me-2"></i>{{ item.title }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Item Editor -->
+        <div class="col-md-8 col-lg-8">
+            <div class="p-4">
+                <div id="welcome-panel" class="text-center text-muted">
+                    <div class="mt-5 pt-5">
+                        <i class="fas fa-mouse-pointer fa-3x mb-3"></i>
+                        <h4>Select an item to edit</h4>
+                        <p>Click on any item in the navigation tree to view and edit its details.</p>
+                    </div>
+                </div>
+
+                <div id="editor-panel" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 id="item-title-display">
+                            <span id="item-icon"></span>
+                            <span id="item-title-text"></span>
+                        </h4>
+                        <div>
+                            <button id="save-btn" class="btn btn-success me-2">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <button id="cancel-btn" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="item-form">
+                        <input type="hidden" id="item-id" name="id">
+                        <input type="hidden" id="item-type" name="type">
+
+                        <!-- Basic Fields -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="id-display" class="form-label">ID</label>
+                                <input type="text" class="form-control" id="id-display" readonly>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="description-field">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4"
+                                required></textarea>
+                        </div>
+
+                        <!-- Risk-specific fields -->
+                        <div id="risk-fields" class="d-none">
+                            <!-- Hazard (reuses title field) -->
+
+                            <!-- Harm -->
+                            <div class="mb-3">
+                                <label for="edit-harm" class="form-label">Harm</label>
+                                <textarea class="form-control" id="edit-harm" name="harm" rows="3"
+                                    placeholder="Describe the potential harm that could result"></textarea>
+                            </div>
+
+                            <!-- Sequence of Events -->
+                            <div class="mb-3">
+                                <label for="edit-sequence-of-events" class="form-label">Sequence of Events</label>
+                                <textarea class="form-control" id="edit-sequence-of-events" name="sequence_of_events"
+                                    rows="3"
+                                    placeholder="Describe the sequence of events that leads to the hazardous situation"></textarea>
+                            </div>
+
+                            <!-- Hazardous Situation -->
+                            <div class="mb-3">
+                                <label for="edit-hazardous-situation" class="form-label">Hazardous Situation</label>
+                                <textarea class="form-control" id="edit-hazardous-situation" name="hazardous_situation"
+                                    rows="3" placeholder="Describe the hazardous situation that could occur"></textarea>
+                            </div>
+
+                            <!-- Probability and Severity Row -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="edit-probability-occurrence" class="form-label">Probability of
+                                        Occurrence</label>
+                                    <select class="form-select" id="edit-probability-occurrence"
+                                        name="probability_occurrence">
+                                        {% for po_id, po_data in config.probability_occurrence_mapping.items() %}
+                                        <option value="{{ po_id }}">{{ po_data.name }} ({{ po_id.replace('PO', '') }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit-probability-harm" class="form-label">Probability of Harm</label>
+                                    <select class="form-select" id="edit-probability-harm" name="probability_harm">
+                                        {% for ph_id, ph_data in config.probability_harm_mapping.items() %}
+                                        <option value="{{ ph_id }}">{{ ph_data.name }} ({{ ph_id.replace('PH', '') }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit-severity" class="form-label">Severity</label>
+                                    <select class="form-select" id="edit-severity" name="severity">
+                                        {% for severity_id, severity_data in config.severity_mapping.items() %}
+                                        <option value="{{ severity_id }}">{{ severity_data.name }} ({{
+                                            severity_id.replace('S', '') }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- RBM Score Display -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">RBM Score</label>
+                                    <div class="alert alert-info">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-calculator me-2"></i>
+                                            <span class="fs-4 fw-bold" id="rbm-score-display">-</span>
+                                        </div>
+                                        <div class="small">
+                                            <strong>Calculation:</strong> <span id="rbm-calculation-display">- × - × - =
+                                                -</span>
+                                        </div>
+                                        <div class="small text-muted mt-1">
+                                            Probability of Occurrence × Probability of Harm × Severity
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Risk Controls -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Risk Controls</label>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div id="risk-controls-list">
+                                                <p class="text-muted mb-0">No linked specifications found for this risk.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RAM Score Display -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">RAM Score (Residual Risk After Mitigation)</label>
+                                    <div class="alert alert-warning">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-shield-alt me-2"></i>
+                                            <span class="fs-4 fw-bold" id="ram-score-display">-</span>
+                                        </div>
+                                        <div class="small">
+                                            <strong>Calculation:</strong> <span id="ram-calculation-display">-</span>
+                                        </div>
+                                        <div class="small text-muted mt-1">
+                                            RBM Score with risk control effects applied
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Risk Assessment Checkboxes -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="edit-cannot-be-reduced"
+                                            name="cannot_be_reduced_further">
+                                        <label class="form-check-label" for="edit-cannot-be-reduced">
+                                            Cannot be reduced any further
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="edit-benefits-outweigh"
+                                            name="benefits_outweigh_risk">
+                                        <label class="form-check-label" for="edit-benefits-outweigh">
+                                            Benefits outweigh remaining risk
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Justification -->
+                            <div class="mb-3">
+                                <label for="edit-justification" class="form-label">Justification / Comments</label>
+                                <textarea class="form-control" id="edit-justification" name="justification" rows="4"
+                                    placeholder="Provide justification for risk acceptance and/or comments on risk mitigation"></textarea>
+                            </div>
+
+                            <!-- Legacy Probability (for backward compatibility) -->
+                            <div class="mb-3 d-none">
+                                <label for="edit-probability" class="form-label">Legacy Probability</label>
+                                <select class="form-select" id="edit-probability" name="probability">
+                                    {% for probability_id, probability_data in config.probability_mapping.items() %}
+                                    <option value="{{ probability_id }}">{{ probability_data.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Linked items fields -->
+                        <div id="linked-items-fields" class="mb-3 d-none">
+                            <label class="form-label">Linked Items</label>
+
+                            <!-- Linking fields -->
+                            <div id="user-needs-links" class="mb-2">
+                                <label class="form-label">Linked User Needs</label>
+                                <div id="user-needs-checkboxes">
+                                    {% for item in linkable_items.user_needs %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="{{ item.id }}"
+                                            id="un-{{ item.id }}" name="linked_user_needs">
+                                        <label class="form-check-label" for="un-{{ item.id }}">
+                                            {{ item.id }}: {{ item.title }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div id="risks-links" class="mb-2">
+                                <label class="form-label">Linked Risks</label>
+                                <div id="risks-checkboxes">
+                                    {% for item in linkable_items.risks %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="{{ item.id }}"
+                                            id="r-{{ item.id }}" name="linked_risks">
+                                        <label class="form-check-label" for="r-{{ item.id }}">
+                                            {{ item.id }}: {{ item.title }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div id="product-requirements-links" class="mb-2">
+                                <label class="form-label">Linked Product Requirements</label>
+                                <div id="product-requirements-checkboxes">
+                                    {% for item in linkable_items.product_requirements %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="{{ item.id }}"
+                                            id="pr-{{ item.id }}" name="linked_product_requirements">
+                                        <label class="form-check-label" for="pr-{{ item.id }}">
+                                            {{ item.id }}: {{ item.title }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div> <!-- End linked-items-fields -->
+                    </form>
+
+                    <!-- Status Messages -->
+                    <div id="save-status" class="alert d-none" role="alert"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global variables
+    let currentItemId = null;
+    let currentItemData = null;
+    let hasUnsavedChanges = false;
+    const linkableItems = {{ linkable_items | tojson }};
+    const softwareSpecs = {{ software_specifications | tojson }};
+    const hardwareSpecs = {{ hardware_specifications | tojson }};
+    const mitigationLinks = {{ mitigation_links | tojson }};
+
+    // Make specs available globally for risk controls
+    window.softwareSpecs = softwareSpecs;
+    window.hardwareSpecs = hardwareSpecs;
+    window.mitigationLinks = mitigationLinks;
+
+    // DOM Ready
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize collapse functionality
+        initializeCollapse();
+
+        // Tree item click handlers
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.addEventListener('click', function () {
+                const itemId = this.dataset.itemId;
+                const itemType = this.dataset.itemType;
+                loadItem(itemId, itemType);
+
+                // Update visual selection
+                document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Form change detection
+        document.getElementById('item-form').addEventListener('input', function () {
+            hasUnsavedChanges = true;
+            document.getElementById('save-btn').classList.remove('btn-success');
+            document.getElementById('save-btn').classList.add('btn-warning');
+        });
+
+        // Save button
+        document.getElementById('save-btn').addEventListener('click', saveItem);
+
+        // Cancel button
+        document.getElementById('cancel-btn').addEventListener('click', function () {
+            if (hasUnsavedChanges && !confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+                return;
+            }
+            if (currentItemId) {
+                loadItem(currentItemId);
+            }
+        });
+
+        // Expand/Collapse All buttons
+        document.getElementById('expand-all-btn').addEventListener('click', expandAll);
+        document.getElementById('collapse-all-btn').addEventListener('click', collapseAll);
+
+        // Initialize folder editing
+        initializeFolderEditing();
+    });
+
+    function initializeCollapse() {
+        // Add click handlers to all collapsible headers
+        document.querySelectorAll('.collapsible-header').forEach(header => {
+            header.addEventListener('click', function () {
+                const targetId = this.dataset.target;
+                const target = document.getElementById(targetId);
+                const icon = this.querySelector('.collapse-icon');
+
+                if (target.classList.contains('collapsed')) {
+                    // Expand
+                    target.classList.remove('collapsed');
+                    if (icon.classList.contains('fa-chevron-right')) {
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                } else {
+                    // Collapse
+                    target.classList.add('collapsed');
+                    if (icon.classList.contains('fa-chevron-down')) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-right');
+                    }
+                }
+            });
+        });
+
+        // Add click handlers to collapse triggers (limited region)
+        document.querySelectorAll('.collapse-trigger').forEach(trigger => {
+            trigger.addEventListener('click', function () {
+                const targetId = this.dataset.target;
+                const target = document.getElementById(targetId);
+                const icon = this.querySelector('.collapse-icon');
+
+                if (target.classList.contains('collapsed')) {
+                    // Expand
+                    target.classList.remove('collapsed');
+                    if (icon.classList.contains('fa-chevron-right')) {
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                } else {
+                    // Collapse
+                    target.classList.add('collapsed');
+                    if (icon.classList.contains('fa-chevron-down')) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-right');
+                    }
+                }
+            });
+        });
+    }
+
+    function expandAll() {
+        document.querySelectorAll('.collapsible-content').forEach(content => {
+            content.classList.remove('collapsed');
+        });
+
+        document.querySelectorAll('.collapse-icon').forEach(icon => {
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-down');
+        });
+    }
+
+    function collapseAll() {
+        document.querySelectorAll('.collapsible-content').forEach(content => {
+            content.classList.add('collapsed');
+        });
+
+        document.querySelectorAll('.collapse-icon').forEach(icon => {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-right');
+        });
+    }
+
+    function loadItem(itemId, itemType = null) {
+        fetch(`/api/item/${itemId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showStatus('Error loading item: ' + data.error, 'danger');
+                    return;
+                }
+
+                currentItemId = itemId;
+                currentItemData = data;
+                hasUnsavedChanges = false;
+
+                // Show editor panel
+                document.getElementById('welcome-panel').classList.add('d-none');
+                document.getElementById('editor-panel').classList.remove('d-none');
+
+                // Populate form
+                populateForm(data, itemType);
+            })
+            .catch(error => {
+                showStatus('Error loading item: ' + error.message, 'danger');
+            });
+    }
+
+    function populateForm(data, itemType) {
+        // Basic fields
+        document.getElementById('item-id').value = data.id;
+        document.getElementById('item-type').value = data.type || itemType;
+        document.getElementById('title').value = data.title || '';
+        document.getElementById('description').value = data.description || '';
+
+        // Update title display
+        const icons = {
+            'user_need': 'fas fa-user',
+            'risk': 'fas fa-exclamation-triangle',
+            'product_requirement': 'fas fa-file-alt',
+            'software_specification': 'fas fa-cog',
+            'hardware_specification': 'fas fa-microchip'
+        };
+
+        // Update header display
+        document.getElementById('item-title-display').textContent = data.title || 'Untitled';
+        document.getElementById('id-display').value = data.id;
+
+        // Hide all conditional fields
+        document.getElementById('risk-fields').classList.add('d-none');
+        document.getElementById('linked-items-fields').classList.add('d-none');
+
+        // Show relevant fields based on item type
+        if (itemType === 'risk') {
+            document.getElementById('risk-fields').classList.remove('d-none');
+            document.getElementById('description-field').classList.add('d-none'); // Hide description for risks
+
+            // Populate all risk-specific fields
+            document.getElementById('edit-harm').value = data.harm || '';
+            document.getElementById('edit-sequence-of-events').value = data.sequence_of_events || '';
+            document.getElementById('edit-hazardous-situation').value = data.hazardous_situation || '';
+            document.getElementById('edit-probability-occurrence').value = data.probability_occurrence || 'PO1';
+            document.getElementById('edit-probability-harm').value = data.probability_harm || 'PH1';
+            document.getElementById('edit-severity').value = data.severity || 'S1';
+            document.getElementById('edit-cannot-be-reduced').checked = data.cannot_be_reduced_further || false;
+            document.getElementById('edit-benefits-outweigh').checked = data.benefits_outweigh_risk || false;
+            document.getElementById('edit-justification').value = data.justification || '';
+
+            // Legacy field (hidden)
+            document.getElementById('edit-probability').value = data.probability || 'P1';
+
+            // Calculate and display scores
+            updateRBMScore();
+            updateRiskControls(data);
+            updateRAMScore();
+
+            // Add event listeners for score calculations
+            document.getElementById('edit-probability-occurrence').addEventListener('change', updateRBMScore);
+            document.getElementById('edit-probability-harm').addEventListener('change', updateRBMScore);
+            document.getElementById('edit-severity').addEventListener('change', updateRBMScore);
+        } else {
+            // Show description field for non-risk items
+            document.getElementById('description-field').classList.remove('d-none');
+        }
+
+        // Show linking fields for items that can have links
+        if (['product_requirement', 'software_specification', 'hardware_specification'].includes(itemType)) {
+            document.getElementById('linked-items-fields').classList.remove('d-none');
+
+            if (itemType === 'product_requirement') {
+                // Show only user needs for product requirements
+                document.getElementById('user-needs-links').classList.remove('d-none');
+                document.getElementById('risks-links').classList.add('d-none');
+                document.getElementById('product-requirements-links').classList.add('d-none');
+
+                // Set checkbox values
+                setCheckboxValues('linked_user_needs', data.linked_user_needs || []);
+            } else {
+                // For specifications, show product requirements, hide user needs and risks
+                document.getElementById('user-needs-links').classList.add('d-none');
+                document.getElementById('risks-links').classList.add('d-none');
+                document.getElementById('product-requirements-links').classList.remove('d-none');
+
+                // Set checkbox values
+                setCheckboxValues('linked_product_requirements', data.linked_product_requirements || []);
+            }
+        }
+
+        // Reset save button
+        document.getElementById('save-btn').classList.remove('btn-warning');
+        document.getElementById('save-btn').classList.add('btn-success');
+    }
+
+    function setCheckboxValues(name, values) {
+        document.querySelectorAll(`input[name="${name}"]`).forEach(checkbox => {
+            checkbox.checked = values.includes(checkbox.value);
+        });
+    }
+
+    function getCheckboxValues(name) {
+        const checked = [];
+        document.querySelectorAll(`input[name="${name}"]:checked`).forEach(checkbox => {
+            checked.push(checkbox.value);
+        });
+        return checked;
+    }
+
+    function updateRBMScore() {
+        // Get current values from the form
+        const probabilityOccurrence = document.getElementById('edit-probability-occurrence').value;
+        const probabilityHarm = document.getElementById('edit-probability-harm').value;
+        const severity = document.getElementById('edit-severity').value;
+
+        // Calculate RBM score: PO × PH × S
+        const poValue = parseInt(probabilityOccurrence.replace('PO', '')) || 1;
+        const phValue = parseInt(probabilityHarm.replace('PH', '')) || 1;
+        const sValue = parseInt(severity.replace('S', '')) || 1;
+
+        const rbmScore = poValue * phValue * sValue;
+
+        // Update the main score display
+        const rbmDisplay = document.getElementById('rbm-score-display');
+        rbmDisplay.textContent = rbmScore;
+
+        // Update the calculation display
+        const rbmCalcDisplay = document.getElementById('rbm-calculation-display');
+        rbmCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${rbmScore}`;
+
+        // Color code the score based on risk level
+        rbmDisplay.className = 'fs-4 fw-bold';
+        if (rbmScore <= 2) {
+            rbmDisplay.classList.add('text-success');
+        } else if (rbmScore <= 6) {
+            rbmDisplay.classList.add('text-warning');
+        } else {
+            rbmDisplay.classList.add('text-danger');
+        }
+
+        // Update RAM score when RBM changes
+        updateRAMScore();
+    }
+
+    function updateRAMScore() {
+        // Get base RBM score
+        const rbmScore = parseInt(document.getElementById('rbm-score-display').textContent) || 0;
+
+        // Get current risk control effects
+        const effects = [];
+        document.querySelectorAll('.mitigation-effect-select').forEach(select => {
+            const effect = select.value;
+            if (effect && effect !== 'No effect' && effect !== 'No measurable effect') {
+                effects.push(effect);
+            }
+        });
+
+        // Calculate RAM score by applying effects to the base values
+        let poValue = parseInt(document.getElementById('edit-probability-occurrence').value.replace('PO', '')) || 1;
+        let phValue = parseInt(document.getElementById('edit-probability-harm').value.replace('PH', '')) || 1;
+        let sValue = parseInt(document.getElementById('edit-severity').value.replace('S', '')) || 1;
+
+        // Apply effects
+        effects.forEach(effect => {
+            if (effect.includes('Reduces probability of occurrence by')) {
+                const reduction = parseInt(effect.match(/\d+/)[0]);
+                poValue = Math.max(1, poValue - reduction);
+            } else if (effect.includes('Reduces probability of harm by')) {
+                const reduction = parseInt(effect.match(/\d+/)[0]);
+                phValue = Math.max(1, phValue - reduction);
+            } else if (effect.includes('Reduces severity by')) {
+                const reduction = parseInt(effect.match(/\d+/)[0]);
+                sValue = Math.max(1, sValue - reduction);
+            }
+        });
+
+        const ramScore = poValue * phValue * sValue;
+
+        // Update the main score display
+        const ramDisplay = document.getElementById('ram-score-display');
+        ramDisplay.textContent = ramScore;
+
+        // Update the calculation display
+        const ramCalcDisplay = document.getElementById('ram-calculation-display');
+        if (effects.length === 0) {
+            ramCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${ramScore} (no effects applied)`;
+        } else {
+            ramCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${ramScore} (${effects.length} effect${effects.length > 1 ? 's' : ''} applied)`;
+        }
+
+        // Color code the score based on risk level
+        ramDisplay.className = 'fs-4 fw-bold';
+        if (ramScore <= 2) {
+            ramDisplay.classList.add('text-success');
+        } else if (ramScore <= 6) {
+            ramDisplay.classList.add('text-warning');
+        } else {
+            ramDisplay.classList.add('text-danger');
+        }
+    }
+
+    function updateRiskControls(data) {
+        const controlsList = document.getElementById('risk-controls-list');
+
+        // Find mitigation links for this risk
+        const linkedSpecs = [];
+
+        if (window.mitigationLinks) {
+            for (const [linkId, link] of Object.entries(window.mitigationLinks)) {
+                if (link.risk_id === data.id) {
+                    // Find the specification details
+                    let spec = null;
+                    let specType = '';
+                    let groupName = '';
+
+                    if (link.specification_type === 'software' && window.softwareSpecs) {
+                        for (const group of Object.values(window.softwareSpecs)) {
+                            if (group.specifications && group.specifications[link.specification_id]) {
+                                spec = group.specifications[link.specification_id];
+                                specType = 'Software';
+                                groupName = group.group_name;
+                                break;
+                            }
+                        }
+                    } else if (link.specification_type === 'hardware' && window.hardwareSpecs) {
+                        for (const group of Object.values(window.hardwareSpecs)) {
+                            if (group.specifications && group.specifications[link.specification_id]) {
+                                spec = group.specifications[link.specification_id];
+                                specType = 'Hardware';
+                                groupName = group.group_name;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (spec) {
+                        linkedSpecs.push({
+                            linkId: linkId,
+                            specId: link.specification_id,
+                            title: spec.title,
+                            type: specType,
+                            group: groupName,
+                            effect: link.effect
+                        });
+                    }
+                }
+            }
+        }
+
+        if (linkedSpecs.length === 0) {
+            controlsList.innerHTML = '<p class="text-muted mb-0">No linked specifications found for this risk.</p>';
+        } else {
+            let html = '<div class="list-group list-group-flush">';
+            linkedSpecs.forEach(spec => {
+                html += `
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div class="ms-2 me-auto flex-grow-1">
+                                    <div class="fw-bold">
+                                        <a href="#" class="text-decoration-none spec-link" data-spec-id="${spec.specId}" data-spec-type="${spec.type.toLowerCase()}">
+                                            ${spec.specId}: ${spec.title}
+                                        </a>
+                                    </div>
+                                    <small class="text-muted">${spec.type} Specification - ${spec.group}</small>
+                                    <div class="mt-2">
+                                        <label class="form-label small">Effect:</label>
+                                        <select class="form-select form-select-sm mitigation-effect-select" data-link-id="${spec.linkId}">
+                                            <option value="No effect" ${spec.effect === 'No effect' ? 'selected' : ''}>No effect</option>
+                                            <option value="No measurable effect" ${spec.effect === 'No measurable effect' ? 'selected' : ''}>No measurable effect</option>
+                                            <option value="Reduces probability of occurrence by 1" ${spec.effect === 'Reduces probability of occurrence by 1' ? 'selected' : ''}>Reduces probability of occurrence by 1</option>
+                                            <option value="Reduces probability of occurrence by 2" ${spec.effect === 'Reduces probability of occurrence by 2' ? 'selected' : ''}>Reduces probability of occurrence by 2</option>
+                                            <option value="Reduces probability of occurrence by 3" ${spec.effect === 'Reduces probability of occurrence by 3' ? 'selected' : ''}>Reduces probability of occurrence by 3</option>
+                                            <option value="Reduces probability of harm by 1" ${spec.effect === 'Reduces probability of harm by 1' ? 'selected' : ''}>Reduces probability of harm by 1</option>
+                                            <option value="Reduces probability of harm by 2" ${spec.effect === 'Reduces probability of harm by 2' ? 'selected' : ''}>Reduces probability of harm by 2</option>
+                                            <option value="Reduces probability of harm by 3" ${spec.effect === 'Reduces probability of harm by 3' ? 'selected' : ''}>Reduces probability of harm by 3</option>
+                                            <option value="Reduces severity by 1" ${spec.effect === 'Reduces severity by 1' ? 'selected' : ''}>Reduces severity by 1</option>
+                                            <option value="Reduces severity by 2" ${spec.effect === 'Reduces severity by 2' ? 'selected' : ''}>Reduces severity by 2</option>
+                                            <option value="Reduces severity by 3" ${spec.effect === 'Reduces severity by 3' ? 'selected' : ''}>Reduces severity by 3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">${spec.type}</span>
+                            </div>
+                        `;
+            });
+            html += '</div>';
+            controlsList.innerHTML = html;
+
+            // Add event listeners for effect changes
+            controlsList.querySelectorAll('.mitigation-effect-select').forEach(select => {
+                select.addEventListener('change', function () {
+                    updateMitigationEffect(this.dataset.linkId, this.value);
+                    updateRAMScore(); // Update RAM score when effects change
+                });
+            });
+
+            // Add event listeners for specification links
+            controlsList.querySelectorAll('.spec-link').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const specId = this.dataset.specId;
+                    const specType = this.dataset.specType;
+                    loadItem(specId, specType + '_specification');
+                });
+            });
+        }
+    }
+
+    function updateMitigationEffect(linkId, newEffect) {
+        // Update the mitigation link effect
+        fetch('/api/mitigation-link', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                link_id: linkId,
+                effect: newEffect
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the local data
+                    if (window.mitigationLinks && window.mitigationLinks[linkId]) {
+                        window.mitigationLinks[linkId].effect = newEffect;
+                    }
+                    showStatus('Mitigation effect updated successfully!', 'success');
+                } else {
+                    showStatus('Error updating mitigation effect: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                showStatus('Error updating mitigation effect: ' + error.message, 'danger');
+            });
+    }
+
+    function saveItem() {
+        const formData = new FormData(document.getElementById('item-form'));
+        const updateData = {};
+
+        // Basic fields
+        updateData.title = formData.get('title');
+
+        // Risk fields
+        if (!document.getElementById('risk-fields').classList.contains('d-none')) {
+            // New comprehensive risk fields
+            updateData.hazard = formData.get('title'); // Hazard reuses title
+            updateData.sequence_of_events = formData.get('sequence_of_events');
+            updateData.hazardous_situation = formData.get('hazardous_situation');
+            updateData.harm = formData.get('harm');
+            updateData.probability_occurrence = formData.get('probability_occurrence');
+            updateData.probability_harm = formData.get('probability_harm');
+            updateData.severity = formData.get('severity');
+            updateData.cannot_be_reduced_further = document.getElementById('edit-cannot-be-reduced').checked;
+            updateData.benefits_outweigh_risk = document.getElementById('edit-benefits-outweigh').checked;
+            updateData.justification = formData.get('justification');
+
+            // Legacy fields for backward compatibility
+            updateData.probability = formData.get('probability');
+
+            // Don't save description for risks
+        } else {
+            // For non-risk items, include description
+            updateData.description = formData.get('description');
+        }
+
+        // Link fields - collect from checkboxes
+        if (!document.getElementById('linked-items-fields').classList.contains('d-none')) {
+            const itemType = document.getElementById('item-type').value;
+
+            if (itemType === 'product_requirement') {
+                updateData.linked_user_needs = getCheckboxValues('linked_user_needs');
+            } else if (['software_specification', 'hardware_specification'].includes(itemType)) {
+                updateData.linked_product_requirements = getCheckboxValues('linked_product_requirements');
+            }
+        }
+
+        // Save via API
+        fetch(`/api/item/${currentItemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updateData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('Item saved successfully!', 'success');
+                    hasUnsavedChanges = false;
+                    document.getElementById('save-btn').classList.remove('btn-warning');
+                    document.getElementById('save-btn').classList.add('btn-success');
+
+                    // Update tree item title if changed
+                    const treeItem = document.querySelector(`[data-item-id="${currentItemId}"]`);
+                    if (treeItem && updateData.title) {
+                        const titleElement = treeItem.querySelector('i').nextSibling;
+                        titleElement.textContent = updateData.title;
+                        document.getElementById('item-title-display').textContent = updateData.title;
+                    }
+                } else {
+                    showStatus('Error saving item: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                showStatus('Error saving item: ' + error.message, 'danger');
+            });
+    }
+
+    function showStatus(message, type) {
+        const statusDiv = document.getElementById('save-status');
+        statusDiv.className = `alert alert-${type}`;
+        statusDiv.textContent = message;
+        statusDiv.classList.remove('d-none');
+
+        // Hide after 5 seconds
+        setTimeout(() => {
+            statusDiv.classList.add('d-none');
+        }, 5000);
+    }
+
+    function initializeFolderEditing() {
+        // Add click handlers to floating edit buttons
+        document.querySelectorAll('.floating-edit-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation(); // Prevent folder collapse/expand
+                const folderContainer = this.closest('.editable-folder-name');
+                startFolderEdit(folderContainer);
+            });
+        });
+
+        // Add click handlers to save/cancel buttons
+        document.querySelectorAll('.save-folder-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const folderContainer = this.closest('.editable-folder-name');
+                saveFolderEdit(folderContainer);
+            });
+        });
+
+        document.querySelectorAll('.cancel-folder-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const folderContainer = this.closest('.editable-folder-name');
+                cancelFolderEdit(folderContainer);
+            });
+        });
+
+        // Add enter/escape key handlers for folder inputs
+        document.querySelectorAll('.folder-name-input').forEach(input => {
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const folderContainer = this.closest('.editable-folder-name');
+                    saveFolderEdit(folderContainer);
+                } else if (e.key === 'Escape') {
+                    const folderContainer = this.closest('.editable-folder-name');
+                    cancelFolderEdit(folderContainer);
+                }
+            });
+        });
+    }
+
+    function startFolderEdit(folderContainer) {
+        const display = folderContainer.querySelector('.folder-name-display');
+        const input = folderContainer.querySelector('.folder-name-input');
+        const buttons = folderContainer.querySelector('.folder-edit-buttons');
+
+        display.classList.add('d-none');
+        input.classList.remove('d-none');
+        buttons.classList.remove('d-none');
+
+        input.focus();
+        input.select();
+    }
+
+    function saveFolderEdit(folderContainer) {
+        const display = folderContainer.querySelector('.folder-name-display');
+        const input = folderContainer.querySelector('.folder-name-input');
+        const buttons = folderContainer.querySelector('.folder-edit-buttons');
+        const groupKey = folderContainer.dataset.groupKey;
+        const groupType = folderContainer.dataset.groupType;
+        const newName = input.value.trim();
+
+        if (newName === '') {
+            showStatus('Folder name cannot be empty', 'warning');
+            return;
+        }
+
+        // Save via API
+        fetch('/api/folder-name', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                group_type: groupType,
+                group_key: groupKey,
+                new_name: newName
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    display.textContent = newName;
+                    cancelFolderEdit(folderContainer);
+                    showStatus('Folder name updated successfully!', 'success');
+                } else {
+                    showStatus('Error updating folder name: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                showStatus('Error updating folder name: ' + error.message, 'danger');
+            });
+    }
+
+    function cancelFolderEdit(folderContainer) {
+        const display = folderContainer.querySelector('.folder-name-display');
+        const input = folderContainer.querySelector('.folder-name-input');
+        const buttons = folderContainer.querySelector('.folder-edit-buttons');
+
+        // Reset input to original value
+        input.value = display.textContent;
+
+        display.classList.remove('d-none');
+        input.classList.add('d-none');
+        buttons.classList.add('d-none');
+    }
+</script>
+{% endblock %}

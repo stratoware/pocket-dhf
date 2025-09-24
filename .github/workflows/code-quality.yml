@@ -1,0 +1,40 @@
+# GitHub Actions workflow for code quality checks
+# Copyright (c) 2025 Stratoware LLC. All rights reserved.
+
+name: Code Quality Checks
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  code-quality-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Check copyright headers
+      run: |
+        python3 scripts/check_copyright.py
+
+    - name: Check class docstrings
+      run: |
+        python3 scripts/check_docstrings.py
+
+    - name: Report issues
+      if: failure()
+      run: |
+        echo "❌ Code quality checks failed."
+        echo "Please ensure all files have copyright headers and all classes have docstrings."
+        echo "You can run the following commands locally to fix issues:"
+        echo "  make copyright-fix"
+        echo "  make docstring-fix"
+        exit 1

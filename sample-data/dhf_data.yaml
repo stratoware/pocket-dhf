@@ -1,0 +1,808 @@
+metadata:
+  project_name: GlucoSense Pro
+  device_type: Continuous Glucose Monitoring System
+  version: '1.0'
+  created_date: '2025-01-15'
+  last_modified: '2025-09-23'
+  description: Sample DHF data for a continuous glucose monitoring medical device
+configuration:
+  severity_mapping:
+    S1:
+      name: Low
+      description: Minor impact, low risk to patient safety
+    S2:
+      name: Medium
+      description: Moderate impact, potential for patient harm
+    S3:
+      name: High
+      description: Significant impact, serious risk to patient safety
+  probability_occurrence_mapping:
+    PO1:
+      name: Low
+      description: Unlikely to occur under normal conditions
+    PO2:
+      name: Medium
+      description: May occur occasionally during normal use
+    PO3:
+      name: High
+      description: Likely to occur frequently during normal use
+  probability_harm_mapping:
+    PH1:
+      name: Low
+      description: Unlikely to cause harm if it occurs
+    PH2:
+      name: Medium
+      description: May cause harm if it occurs
+    PH3:
+      name: High
+      description: Likely to cause harm if it occurs
+  # Legacy probability mapping (kept for backward compatibility)
+  probability_mapping:
+    P1:
+      name: Low
+      description: Unlikely to occur under normal conditions
+    P2:
+      name: Medium
+      description: May occur occasionally during normal use
+    P3:
+      name: High
+      description: Likely to occur frequently during normal use
+user_needs:
+  UN001:
+    id: UN001
+    title: Continuous Glucose Monitoring
+    description: Patients and healthcare providers need continuous glucose level monitoring
+      with high accuracy and real-time alerts for hypo/hyperglycemic events.
+  UN002:
+    id: UN002
+    title: Trend Analysis and Data Export
+    description: Users need to track glucose trends over time and export data in standard
+      formats for diabetes management and clinical review.
+  UN003:
+    id: UN003
+    title: Discreet Wearable Design
+    description: The device must be small, discreet, and comfortable for continuous
+      wear during daily activities including exercise and sleep.
+  UN004:
+    id: UN004
+    title: Long Sensor Life
+    description: Users need sensors that operate accurately for extended periods (7-14
+      days) without requiring frequent replacement or calibration.
+  UN005:
+    id: UN005
+    title: Smartphone Integration
+    description: Patients need seamless integration with smartphones for real-time
+      glucose readings, alerts, and data sharing with caregivers.
+risks:
+  patient_safety:
+    group_name: Patient Safety
+    risks:
+      R001:
+        id: R001
+        hazard: Inaccurate Glucose Readings
+        sequence_of_events: Sensor calibration drift or environmental interference causes incorrect glucose measurements during normal operation
+        hazardous_situation: Patient receives inaccurate glucose readings during critical glucose management periods
+        harm: Inappropriate insulin dosing leading to severe hypoglycemia or diabetic ketoacidosis
+        probability_occurrence: PO2
+        probability_harm: PH3
+        severity: S3
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is mitigated through multiple calibration points, alarm systems, and user education. Clinical benefits of continuous monitoring outweigh residual risks.
+        # Legacy fields for backward compatibility
+        title: Inaccurate Glucose Readings
+      R002:
+        id: R002
+        hazard: Missed Hypoglycemic Events
+        sequence_of_events: Sensor fails to detect rapid glucose decline or alarm system malfunctions during low glucose episode
+        hazardous_situation: Patient experiences severe hypoglycemia without timely warning or intervention
+        harm: Loss of consciousness, seizures, coma, or potential death from untreated severe hypoglycemia
+        probability_occurrence: PO1
+        probability_harm: PH3
+        severity: S3
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Multiple redundant alarm systems, predictive low glucose alerts, and user training significantly reduce this risk. Benefits of continuous monitoring far outweigh risks.
+        # Legacy fields for backward compatibility
+        title: Missed Hypoglycemic Events
+      R003:
+        id: R003
+        hazard: Sensor Adhesion Failure
+        sequence_of_events: Physical activity, sweating, or adhesive degradation causes sensor to detach from skin
+        hazardous_situation: Patient experiences data gaps during periods requiring glucose monitoring
+        harm: Missed glucose excursions leading to delayed treatment of hypo/hyperglycemic episodes
+        probability_occurrence: PO2
+        probability_harm: PH2
+        severity: S2
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is acceptable given proper adhesive design, user instructions, and backup monitoring methods. Clinical benefits justify risk.
+        # Legacy fields for backward compatibility
+        title: Sensor Adhesion Failure
+      R004:
+        id: R004
+        hazard: Skin Reaction from Adhesive
+        sequence_of_events: Prolonged skin contact with adhesive materials triggers allergic or irritant reaction
+        hazardous_situation: Patient develops skin irritation, rash, or allergic reaction at sensor site
+        harm: Contact dermatitis, skin breakdown, secondary infection, or discontinuation of therapy
+        probability_occurrence: PO3
+        probability_harm: PH1
+        severity: S1
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is minimized through biocompatible materials and proper site rotation. Minor skin reactions are acceptable given monitoring benefits.
+        # Legacy fields for backward compatibility
+        title: Skin Reaction from Adhesive
+      R006:
+        id: R006
+        hazard: Battery Failure During Critical Period
+        sequence_of_events: Device battery depletes unexpectedly during extended monitoring period without adequate warning
+        hazardous_situation: Patient loses glucose monitoring capability during high-risk period
+        harm: Delayed detection of dangerous glucose levels leading to medical emergency
+        probability_occurrence: PO1
+        probability_harm: PH3
+        severity: S3
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk mitigated through low battery warnings, battery life indicators, and backup monitoring options. Critical safety benefits justify residual risk.
+        # Legacy fields for backward compatibility
+        title: Battery Failure During Critical Period
+  system_availability:
+    group_name: System Availability
+    risks:
+      R007:
+        id: R007
+        hazard: Cloud Service Outage
+        sequence_of_events: Cloud infrastructure failure or maintenance causes data synchronization and remote monitoring to become unavailable
+        hazardous_situation: Patients and healthcare providers lose access to glucose data and alerts
+        harm: Delayed medical intervention, loss of treatment continuity, and potential patient harm
+        probability_occurrence: PO2
+        probability_harm: PH2
+        severity: S2
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is mitigated through redundant systems, local data storage, and service level agreements. Benefits of cloud connectivity justify residual risk.
+        # Legacy fields for backward compatibility
+        title: Cloud Service Outage
+      R008:
+        id: R008
+        hazard: Mobile App Crash During Critical Alert
+        sequence_of_events: Software bug or memory issue causes mobile application to crash during hypoglycemic alert
+        hazardous_situation: Patient misses critical glucose alert due to app failure
+        harm: Delayed response to dangerous glucose levels leading to medical emergency
+        probability_occurrence: PO2
+        probability_harm: PH3
+        severity: S3
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk mitigated through robust error handling, redundant alert systems, and comprehensive testing. Critical monitoring benefits justify residual risk.
+        # Legacy fields for backward compatibility
+        title: Mobile App Crash During Critical Alert
+      R009:
+        id: R009
+        hazard: Sensor Hardware Failure
+        sequence_of_events: Manufacturing defect or component degradation causes sensor to stop functioning
+        hazardous_situation: Patient loses continuous glucose monitoring capability
+        harm: Return to traditional fingerstick testing with reduced monitoring frequency and safety
+        probability_occurrence: PO1
+        probability_harm: PH2
+        severity: S2
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is acceptable given quality control measures and device replacement protocols. Monitoring benefits significantly outweigh hardware failure risks.
+        # Legacy fields for backward compatibility
+        title: Sensor Hardware Failure
+  protected_health_information:
+    group_name: Protected Health Information
+    risks:
+      R010:
+        id: R010
+        hazard: Data Privacy Breach
+        sequence_of_events: Cybersecurity vulnerability in wireless communication or mobile app allows unauthorized access to patient data
+        hazardous_situation: Patient's sensitive glucose data is exposed to unauthorized parties
+        harm: Privacy violation, identity theft, insurance discrimination, or psychological distress from data breach
+        probability_occurrence: PO1
+        probability_harm: PH2
+        severity: S2
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is mitigated through encryption, secure authentication, and compliance with healthcare data protection standards. Benefits of connected monitoring justify residual privacy risks.
+        # Legacy fields for backward compatibility
+        title: Data Privacy Breach
+      R011:
+        id: R011
+        hazard: Unauthorized Data Access by Third Parties
+        sequence_of_events: Third-party integrations or APIs expose patient data to unauthorized applications or services
+        hazardous_situation: Patient glucose data is accessed by non-medical third parties without consent
+        harm: Privacy violation, data misuse, potential discrimination, and loss of patient trust
+        probability_occurrence: PO1
+        probability_harm: PH2
+        severity: S2
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk mitigated through strict API controls, data sharing agreements, and patient consent mechanisms. Benefits of data integration justify residual privacy risks.
+        # Legacy fields for backward compatibility
+        title: Unauthorized Data Access by Third Parties
+      R012:
+        id: R012
+        hazard: Data Loss During Transfer
+        sequence_of_events: Network interruption or encryption failure causes patient data to be lost during cloud synchronization
+        hazardous_situation: Critical glucose trend data is permanently lost
+        harm: Loss of medical history, delayed diagnosis, and compromised treatment decisions
+        probability_occurrence: PO1
+        probability_harm: PH2
+        severity: S2
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is mitigated through local data backup, redundant storage, and data recovery protocols. Benefits of data continuity justify residual data loss risks.
+        # Legacy fields for backward compatibility
+        title: Data Loss During Transfer
+  intellectual_property:
+    group_name: Intellectual Property
+    risks:
+      R013:
+        id: R013
+        hazard: Algorithm Theft
+        sequence_of_events: Cybersecurity breach or insider threat exposes proprietary glucose prediction algorithms
+        hazardous_situation: Competitors gain access to core intellectual property
+        harm: Loss of competitive advantage, reduced market share, and financial losses
+        probability_occurrence: PO1
+        probability_harm: PH2
+        severity: S2
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is mitigated through access controls, code obfuscation, and legal protections. Innovation benefits justify residual IP protection risks.
+        # Legacy fields for backward compatibility
+        title: Algorithm Theft
+      R014:
+        id: R014
+        hazard: Patent Infringement Claims
+        sequence_of_events: Competitor claims that device technology infringes on existing patents
+        hazardous_situation: Legal action threatens product availability and market position
+        harm: Product recall, legal costs, market exclusion, and reputational damage
+        probability_occurrence: PO2
+        probability_harm: PH2
+        severity: S2
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is mitigated through comprehensive patent research, legal review, and defensive patent strategies. Innovation benefits justify residual IP litigation risks.
+        # Legacy fields for backward compatibility
+        title: Patent Infringement Claims
+  company_reputation:
+    group_name: Company Reputation
+    risks:
+      R015:
+        id: R015
+        hazard: Product Recall Due to Safety Issues
+        sequence_of_events: Safety defect discovered in field causes regulatory-mandated product recall
+        hazardous_situation: Company must recall all devices and halt sales
+        harm: Loss of customer trust, regulatory sanctions, financial losses, and market share decline
+        probability_occurrence: PO1
+        probability_harm: PH3
+        severity: S3
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is mitigated through rigorous testing, quality control, and post-market surveillance. Patient safety benefits justify residual recall risks.
+        # Legacy fields for backward compatibility
+        title: Product Recall Due to Safety Issues
+      R016:
+        id: R016
+        hazard: Negative Media Coverage
+        sequence_of_events: Adverse events or product issues receive widespread negative media attention
+        hazardous_situation: Public perception of device safety and effectiveness is damaged
+        harm: Reduced sales, investor confidence loss, regulatory scrutiny, and brand damage
+        probability_occurrence: PO2
+        probability_harm: PH2
+        severity: S2
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is mitigated through proactive communication, transparency, and rapid response protocols. Patient benefits justify residual reputation risks.
+        # Legacy fields for backward compatibility
+        title: Negative Media Coverage
+      R017:
+        id: R017
+        hazard: Regulatory Compliance Failure
+        sequence_of_events: FDA audit or inspection reveals non-compliance with medical device regulations
+        hazardous_situation: Regulatory action threatens product approval or market access
+        harm: Product withdrawal, regulatory sanctions, delayed approvals, and reputational damage
+        probability_occurrence: PO1
+        probability_harm: PH3
+        severity: S3
+        cannot_be_reduced_further: false
+        benefits_outweigh_risk: true
+        justification: Risk is mitigated through comprehensive compliance programs, regular audits, and regulatory expertise. Patient access benefits justify residual compliance risks.
+        # Legacy fields for backward compatibility
+        title: Regulatory Compliance Failure
+mitigation_links:
+  ML001:
+    id: ML001
+    specification_id: SS001
+    specification_type: software
+    risk_id: R001
+    effect: "Reduces probability of occurrence by 1"
+  ML002:
+    id: ML002
+    specification_id: SS002
+    specification_type: software
+    risk_id: R001
+    effect: "Reduces probability of occurrence by 1"
+  ML003:
+    id: ML003
+    specification_id: SS003
+    specification_type: software
+    risk_id: R002
+    effect: "Reduces probability of occurrence by 2"
+  ML004:
+    id: ML004
+    specification_id: SS004
+    specification_type: software
+    risk_id: R002
+    effect: "Reduces probability of harm by 1"
+  ML005:
+    id: ML005
+    specification_id: HS001
+    specification_type: hardware
+    risk_id: R003
+    effect: "Reduces probability of occurrence by 1"
+  ML006:
+    id: ML006
+    specification_id: HS002
+    specification_type: hardware
+    risk_id: R004
+    effect: "Reduces severity by 1"
+  ML007:
+    id: ML007
+    specification_id: SS005
+    specification_type: software
+    risk_id: R010
+    effect: "Reduces probability of occurrence by 2"
+  ML008:
+    id: ML008
+    specification_id: SS007
+    specification_type: software
+    risk_id: R010
+    effect: "Reduces probability of occurrence by 1"
+  ML009:
+    id: ML009
+    specification_id: SS008
+    specification_type: software
+    risk_id: R010
+    effect: "Reduces probability of occurrence by 1"
+  ML010:
+    id: ML010
+    specification_id: HS011
+    specification_type: hardware
+    risk_id: R010
+    effect: "Reduces probability of occurrence by 1"
+  ML011:
+    id: ML011
+    specification_id: SS009
+    specification_type: software
+    risk_id: R011
+    effect: "Reduces probability of occurrence by 2"
+  ML012:
+    id: ML012
+    specification_id: SS011
+    specification_type: software
+    risk_id: R012
+    effect: "Reduces probability of occurrence by 1"
+  ML013:
+    id: ML013
+    specification_id: HS014
+    specification_type: hardware
+    risk_id: R012
+    effect: "Reduces probability of occurrence by 1"
+  ML014:
+    id: ML014
+    specification_id: SS010
+    specification_type: software
+    risk_id: R007
+    effect: "Reduces probability of occurrence by 1"
+  ML015:
+    id: ML015
+    specification_id: HS013
+    specification_type: hardware
+    risk_id: R007
+    effect: "Reduces probability of occurrence by 1"
+  ML016:
+    id: ML016
+    specification_id: SS012
+    specification_type: software
+    risk_id: R008
+    effect: "Reduces probability of occurrence by 2"
+  ML017:
+    id: ML017
+    specification_id: HS015
+    specification_type: hardware
+    risk_id: R008
+    effect: "Reduces probability of occurrence by 1"
+  ML018:
+    id: ML018
+    specification_id: SS013
+    specification_type: software
+    risk_id: R013
+    effect: "Reduces probability of occurrence by 2"
+  ML019:
+    id: ML019
+    specification_id: SS014
+    specification_type: software
+    risk_id: R013
+    effect: "Reduces probability of occurrence by 1"
+  ML020:
+    id: ML020
+    specification_id: HS011
+    specification_type: hardware
+    risk_id: R013
+    effect: "Reduces probability of occurrence by 1"
+  ML021:
+    id: ML021
+    specification_id: HS013
+    specification_type: hardware
+    risk_id: R006
+    effect: "Reduces probability of occurrence by 2"
+  ML022:
+    id: ML022
+    specification_id: HS016
+    specification_type: hardware
+    risk_id: R004
+    effect: "Reduces severity by 1"
+  ML023:
+    id: ML023
+    specification_id: HS017
+    specification_type: hardware
+    risk_id: R004
+    effect: "Reduces severity by 1"
+product_requirements:
+  monitoring:
+    group_name: Glucose Monitoring
+    description: Requirements related to glucose sensing and monitoring capabilities
+    requirements:
+      PR001:
+        id: PR001
+        title: Glucose Measurement Accuracy
+        description: "The device shall measure glucose levels with \xB115% accuracy\
+          \ across the range of 40-400 mg/dL under normal operating conditions."
+        linked_user_needs:
+        - UN001
+      PR002:
+        id: PR002
+        title: Hypoglycemia Alert System
+        description: The device shall provide immediate alerts within 1 minute of
+          detecting glucose levels below 70 mg/dL or rapid glucose decline.
+        linked_user_needs:
+        - UN001
+      PR003:
+        id: PR003
+        title: Sensor Longevity Requirement
+        description: The glucose sensor shall operate accurately for minimum 10 days
+          without requiring calibration or replacement.
+        linked_user_needs:
+        - UN004
+  data_management:
+    group_name: Data Management
+    description: Requirements for data storage, export, and connectivity
+    requirements:
+      PR004:
+        id: PR004
+        title: Glucose Trend Analysis
+        description: The device shall store and analyze glucose trends over 90 days,
+          providing time-in-range statistics and glycemic variability metrics.
+        linked_user_needs:
+        - UN002
+      PR005:
+        id: PR005
+        title: Mobile App Integration
+        description: The device shall wirelessly transmit glucose data to a companion
+          mobile application with real-time synchronization and data sharing capabilities.
+        linked_user_needs:
+        - UN005
+        - UN002
+  physical_design:
+    group_name: Physical Design
+    description: Requirements for device physical characteristics and wearability
+    requirements:
+      PR006:
+        id: PR006
+        title: Wearable Form Factor
+        description: The sensor shall be no larger than 35mm diameter x 5mm thickness
+          and weigh less than 5g for discreet, comfortable wear.
+        linked_user_needs:
+        - UN003
+      PR007:
+        id: PR007
+        title: Skin-Safe Adhesive System
+        description: The sensor adhesive shall be hypoallergenic, breathable, and
+          maintain secure attachment for 10+ days while minimizing skin irritation.
+        linked_user_needs:
+        - UN003
+        - UN004
+software_specifications:
+  glucose_processing:
+    group_name: Glucose Processing
+    description: Software components for glucose signal acquisition and processing
+    specifications:
+      SS001:
+        id: SS001
+        title: Glucose Signal Processing Module
+        description: Software module for processing electrochemical glucose sensor
+          signals, implementing noise filtering, temperature compensation, and drift
+          correction algorithms.
+        linked_product_requirements:
+        - PR001
+        - PR003
+      SS002:
+        id: SS002
+        title: Glucose Calibration Algorithm
+        description: "Self-calibrating algorithm using factory calibration parameters\
+          \ and optional user calibration to maintain \xB115% accuracy over sensor\
+          \ lifetime."
+        linked_product_requirements:
+        - PR001
+        - PR003
+      SS003:
+        id: SS003
+        title: Hypoglycemia Detection System
+        description: Real-time glucose monitoring system with predictive algorithms
+          for detecting and alerting to hypoglycemic events and rapid glucose changes.
+        linked_product_requirements:
+        - PR002
+  data_systems:
+    group_name: Data Management Systems
+    description: Software for glucose data storage, analysis, and connectivity
+    specifications:
+      SS004:
+        id: SS004
+        title: Glucose Data Storage System
+        description: Embedded storage system for glucose readings with 90-day history,
+          trend analysis, time-in-range calculations, and glycemic variability metrics.
+        linked_product_requirements:
+        - PR004
+      SS005:
+        id: SS005
+        title: Mobile App Communication Interface
+        description: Bluetooth Low Energy communication stack for real-time glucose
+          data transmission to mobile applications with encryption and authentication.
+        linked_product_requirements:
+        - PR005
+  sensor_management:
+    group_name: Sensor Management
+    description: Software for sensor lifecycle and performance management
+    specifications:
+      SS006:
+        id: SS006
+        title: Sensor Lifecycle Management
+        description: Software system tracking sensor insertion, wear time, performance
+          degradation, and replacement notifications to ensure 10-day sensor life.
+        linked_product_requirements:
+        - PR003
+  cybersecurity:
+    group_name: Cybersecurity
+    description: Software components for data protection and security
+    specifications:
+      SS007:
+        id: SS007
+        title: End-to-End Encryption System
+        description: AES-256 encryption for all glucose data transmission between sensor
+          and mobile app, with secure key exchange and certificate management.
+        linked_product_requirements:
+        - PR005
+      SS008:
+        id: SS008
+        title: Secure Authentication Framework
+        description: Multi-factor authentication system with biometric verification,
+          secure token generation, and session management for mobile app access.
+        linked_product_requirements:
+        - PR005
+      SS009:
+        id: SS009
+        title: Data Privacy Protection Module
+        description: HIPAA-compliant data handling system with automatic data anonymization,
+          consent management, and audit logging for all patient data access.
+        linked_product_requirements:
+        - PR005
+  system_reliability:
+    group_name: System Reliability
+    description: Software for system availability and fault tolerance
+    specifications:
+      SS010:
+        id: SS010
+        title: Redundant Alert System
+        description: Multi-channel alert system with local device alerts, mobile app
+          notifications, and cloud-based backup alerts to ensure critical warnings are never missed.
+        linked_product_requirements:
+        - PR002
+      SS011:
+        id: SS011
+        title: Cloud Service Redundancy
+        description: Automatic failover system with multiple cloud providers and local
+          data backup to maintain service availability during outages.
+        linked_product_requirements:
+        - PR004
+      SS012:
+        id: SS012
+        title: Error Recovery System
+        description: Robust error handling and recovery mechanisms for mobile app crashes,
+          with automatic restart, data recovery, and user notification systems.
+        linked_product_requirements:
+        - PR002
+  intellectual_property:
+    group_name: Intellectual Property Protection
+    description: Software for protecting proprietary algorithms and IP
+    specifications:
+      SS013:
+        id: SS013
+        title: Algorithm Obfuscation System
+        description: Code obfuscation and anti-tampering measures to protect proprietary
+          glucose prediction algorithms from reverse engineering and theft.
+        linked_product_requirements:
+        - PR001
+      SS014:
+        id: SS014
+        title: Access Control System
+        description: Role-based access control with audit logging and intrusion detection
+          to prevent unauthorized access to proprietary algorithms and sensitive data.
+        linked_product_requirements:
+        - PR005
+hardware_specifications:
+  sensing_hardware:
+    group_name: Glucose Sensing Hardware
+    description: Hardware components for glucose measurement
+    specifications:
+      HS001:
+        id: HS001
+        title: Electrochemical Glucose Sensor
+        description: Enzyme-based glucose oxidase sensor with platinum working electrode,
+          silver/silver chloride reference electrode, and integrated temperature sensor
+          for accurate glucose measurement in interstitial fluid.
+        linked_product_requirements:
+        - PR001
+        - PR003
+      HS002:
+        id: HS002
+        title: Analog Front-End
+        description: Low-noise potentiostat with 16-bit ADC, programmable gain amplifier,
+          and integrated temperature compensation for accurate glucose signal processing.
+        linked_product_requirements:
+        - PR001
+  processing_hardware:
+    group_name: Processing Hardware
+    description: Core processing and data management hardware
+    specifications:
+      HS003:
+        id: HS003
+        title: Ultra-Low Power Microcontroller
+        description: ARM Cortex-M0+ microcontroller with 48MHz clock, 256KB flash
+          memory, 32KB RAM, and advanced power management for extended battery life
+          in wearable application.
+        linked_product_requirements:
+        - PR001
+        - PR002
+      HS004:
+        id: HS004
+        title: Glucose Data Storage
+        description: 2MB serial flash memory with wear leveling and error correction,
+          providing secure storage for 90 days of continuous glucose readings and
+          trend data.
+        linked_product_requirements:
+        - PR004
+  power_system:
+    group_name: Power System
+    description: Battery and power management for wearable operation
+    specifications:
+      HS005:
+        id: HS005
+        title: Coin Cell Battery System
+        description: CR2032 lithium coin cell battery with integrated low-battery
+          detection, providing 10+ days of continuous glucose monitoring operation.
+        linked_product_requirements:
+        - PR003
+      HS006:
+        id: HS006
+        title: Ultra-Low Power Management
+        description: Integrated power management unit with multiple low-power modes,
+          voltage regulation for sensor and MCU, and power-on-reset functionality.
+        linked_product_requirements:
+        - PR003
+  wearable_interface:
+    group_name: Wearable Interface Hardware
+    description: Hardware for discreet wearable operation and user feedback
+    specifications:
+      HS007:
+        id: HS007
+        title: Status Indicator LED
+        description: Low-power RGB LED for discrete status indication including sensor
+          warm-up, normal operation, low battery, and alert conditions with minimal
+          power consumption.
+        linked_product_requirements:
+        - PR002
+        - PR006
+      HS008:
+        id: HS008
+        title: Vibration Alert Motor
+        description: Miniature linear resonant actuator for silent vibration alerts
+          during hypoglycemic events and system notifications, optimized for wearable
+          applications.
+        linked_product_requirements:
+        - PR002
+  connectivity:
+    group_name: Wireless Connectivity Hardware
+    description: Communication hardware for mobile app integration
+    specifications:
+      HS009:
+        id: HS009
+        title: Bluetooth Low Energy Module
+        description: BLE 5.0 system-on-chip with integrated antenna, supporting secure
+          glucose data transmission to mobile devices with extended range and low
+          power consumption.
+        linked_product_requirements:
+        - PR005
+      HS010:
+        id: HS010
+        title: Biocompatible Adhesive System
+        description: Medical-grade adhesive patch with breathable backing, hypoallergenic
+          properties, and 10+ day wear capability for secure sensor attachment to
+          skin.
+        linked_product_requirements:
+        - PR006
+        - PR007
+  cybersecurity_hardware:
+    group_name: Cybersecurity Hardware
+    description: Hardware components for data security and encryption
+    specifications:
+      HS011:
+        id: HS011
+        title: Hardware Security Module
+        description: Dedicated secure element with hardware-based encryption acceleration,
+          secure key storage, and tamper-resistant design for protecting sensitive glucose data.
+        linked_product_requirements:
+        - PR005
+      HS012:
+        id: HS012
+        title: Secure Communication Module
+        description: Bluetooth Low Energy transceiver with integrated hardware encryption
+          and secure pairing capabilities for encrypted data transmission.
+        linked_product_requirements:
+        - PR005
+  reliability_hardware:
+    group_name: Reliability Hardware
+    description: Hardware for system reliability and fault tolerance
+    specifications:
+      HS013:
+        id: HS013
+        title: Redundant Power System
+        description: Dual battery configuration with automatic failover and low-battery
+          warning system to prevent unexpected power loss during critical monitoring periods.
+        linked_product_requirements:
+        - PR003
+      HS014:
+        id: HS014
+        title: Backup Data Storage
+        description: Secondary flash memory module with independent power supply for
+          critical data backup during primary system failures.
+        linked_product_requirements:
+        - PR004
+      HS015:
+        id: HS015
+        title: Hardware Watchdog Timer
+        description: Independent hardware watchdog timer with automatic system reset
+          capability to recover from software crashes and system hangs.
+        linked_product_requirements:
+        - PR002
+  biocompatibility:
+    group_name: Biocompatibility Hardware
+    description: Hardware components for skin safety and biocompatibility
+    specifications:
+      HS016:
+        id: HS016
+        title: Hypoallergenic Adhesive System
+        description: Medical-grade silicone adhesive with breathable backing and
+          biocompatible materials to minimize skin reactions and ensure secure attachment.
+        linked_product_requirements:
+        - PR007
+      HS017:
+        id: HS017
+        title: Skin-Safe Sensor Housing
+        description: Titanium alloy sensor housing with smooth, rounded edges and
+          biocompatible surface treatment to minimize skin irritation and allergic reactions.
+        linked_product_requirements:
+        - PR007

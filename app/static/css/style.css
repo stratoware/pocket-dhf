@@ -1,0 +1,331 @@
+/* Custom styles for Pocket DHF */
+
+.jumbotron {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+    border: 1px solid #dee2e6;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-weight: 600;
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+main {
+    min-height: calc(100vh - 200px);
+}
+
+/* Feature cards styling */
+.feature-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    border-color: #007bff;
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.feature-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.feature-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+/* Browse Page Styles */
+.tree-navigation {
+    overflow: auto;
+    height: 100%;
+    width: 100%;
+}
+
+.tree-header {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    user-select: none;
+    white-space: nowrap;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    min-width: max-content;
+}
+
+.collapsible-header {
+    cursor: pointer;
+}
+
+.collapsible-content {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.collapsible-content.collapsed {
+    height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.collapse-icon {
+    transition: transform 0.3s ease;
+}
+
+/* Folder editing styles */
+.tree-group-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.collapse-trigger {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.editable-folder-name {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    position: relative;
+}
+
+.folder-name-display {
+    flex-grow: 1;
+    padding: 2px 4px;
+}
+
+.folder-name-input {
+    flex-grow: 1;
+    margin-right: 8px;
+}
+
+.folder-edit-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-xs {
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+/* Floating edit button */
+.floating-edit-btn {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.floating-edit-btn:hover {
+    background: #0056b3;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.editable-folder-name:hover .floating-edit-btn {
+    opacity: 1;
+    visibility: visible;
+}
+
+.tree-header:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.tree-group-header {
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 3px;
+    font-weight: 500;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+    user-select: none;
+    white-space: nowrap;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    min-width: max-content;
+}
+
+.tree-group-header:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.tree-item {
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    transition: all 0.2s;
+    margin: 2px 0;
+    user-select: none;
+    white-space: nowrap;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    min-width: max-content;
+}
+
+.tree-item:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    transform: translateX(2px);
+}
+
+.tree-item.active {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 500;
+}
+
+.tree-item.active:hover {
+    background-color: #0b5ed7;
+}
+
+.tree-section {
+    border-left: 2px solid #e9ecef;
+    padding-left: 8px;
+    min-width: max-content;
+}
+
+.tree-items {
+    min-width: max-content;
+}
+
+.tree-group {
+    border-left: 1px solid #dee2e6;
+    padding-left: 8px;
+    min-width: max-content;
+}
+
+/* Editor Panel Styles */
+#editor-panel {
+    animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.form-check {
+    padding: 4px 0;
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Status messages */
+.alert {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+
+    .tree-item,
+    .tree-header,
+    .tree-group-header {
+        font-size: 0.8em;
+        padding: 4px 8px;
+    }
+
+    .badge {
+        font-size: 0.7em;
+    }
+
+    /* On mobile, use full width columns */
+    .col-md-4,
+    .col-md-8 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Unified scrollbar styling for navigation container */
+.tree-navigation::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.tree-navigation::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.tree-navigation::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.tree-navigation::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.tree-navigation::-webkit-scrollbar-corner {
+    background: #f1f1f1;
+}

@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Left Sidebar - Report Templates -->
+        <div class="col-md-3 bg-light border-end" style="height: calc(100vh - 160px); overflow-y: auto;">
+            <div class="p-3">
+                <h5 class="mb-3">
+                    <i class="fas fa-file-alt me-2"></i>Available Reports
+                </h5>
+
+                {% if report_templates %}
+                <div class="list-group">
+                    {% for template in report_templates %}
+                    <a href="#" class="list-group-item list-group-item-action report-template-item"
+                        data-report-name="{{ template.name }}">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ template.title }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-file-markdown"></i>
+                            </small>
+                        </div>
+                        <p class="mb-1 small text-muted">{{ template.description }}</p>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No report templates found. Please add markdown templates to the report-templates folder.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Panel - Report Content -->
+        <div class="col-md-9">
+            <div class="p-4">
+                <div id="welcome-panel" class="text-center text-muted">
+                    <div class="mt-5 pt-5">
+                        <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                        <h4>Select a report to generate</h4>
+                        <p>Choose a report template from the left panel to generate a DHF report with current data.</p>
+                    </div>
+                </div>
+
+                <div id="report-panel" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h4 class="mb-0" id="report-title">Report Title</h4>
+                            <small class="text-muted">Generated: <span id="report-date"></span></small>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-outline-primary btn-sm me-2" id="refresh-report-btn">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" id="export-report-btn">
+                                <i class="fas fa-download me-1"></i>Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="report-content" class="markdown-content">
+                                <!-- Report content will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loading-panel" class="text-center d-none">
+                    <div class="mt-5 pt-5">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5>Generating Report...</h5>
+                        <p class="text-muted">Please wait while we compile the DHF data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Message -->
+<div id="status-message" class="alert d-none mt-3" role="alert"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    let currentReportName = null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Report template selection handlers
+        document.querySelectorAll('.report-template-item').forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                // Remove active class from all items
+                document.querySelectorAll('.report-template-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+
+                // Add active class to clicked item
+                this.classList.add('active');
+
+                const reportName = this.dataset.reportName;
+                loadReport(reportName);
+            });
+        });
+
+        // Refresh button handler
+        document.getElementById('refresh-report-btn').addEventListener('click', function () {
+            if (currentReportName) {
+                loadReport(currentReportName);
+            }
+        });
+
+        // Export button handler
+        document.getElementById('export-report-btn').addEventListener('click', function () {
+            exportReport();
+        });
+    });
+
+    function loadReport(reportName) {
+        currentReportName = reportName;
+
+        // Show loading panel
+        document.getElementById('welcome-panel').classList.add('d-none');
+        document.getElementById('report-panel').classList.add('d-none');
+        document.getElementById('loading-panel').classList.remove('d-none');
+
+        fetch(`/api/report/${reportName}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showStatus(`Error loading report: ${data.error}`, 'danger');
+                    document.getElementById('loading-panel').classList.add('d-none');
+                    document.getElementById('welcome-panel').classList.remove('d-none');
+                    return;
+                }
+
+                displayReport(data);
+                document.getElementById('loading-panel').classList.add('d-none');
+                document.getElementById('report-panel').classList.remove('d-none');
+            })
+            .catch(error => {
+                showStatus(`Network error loading report: ${error}`, 'danger');
+                document.getElementById('loading-panel').classList.add('d-none');
+                document.getElementById('welcome-panel').classList.remove('d-none');
+            });
+    }
+
+    function displayReport(reportData) {
+        document.getElementById('report-title').textContent = reportData.title;
+        document.getElementById('report-date').textContent = reportData.generated_date;
+
+        // Convert markdown to HTML
+        const htmlContent = marked.parse(reportData.content);
+        document.getElementById('report-content').innerHTML = htmlContent;
+    }
+
+    function exportReport() {
+        if (!currentReportName) return;
+
+        const reportContent = document.getElementById('report-content').innerHTML;
+        const reportTitle = document.getElementById('report-title').textContent;
+
+        // Create a complete HTML document
+        const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${reportTitle}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        h1, h2, h3 { color: #333; }
+        h1 { border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .header { margin-bottom: 30px; }
+        .footer { margin-top: 30px; font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>${reportTitle}</h1>
+        <p><strong>Generated:</strong> ${document.getElementById('report-date').textContent}</p>
+    </div>
+
+    ${reportContent}
+
+    <div class="footer">
+        <hr>
+        <p><em>This report was generated by Pocket DHF - Device History File Management System</em></p>
+    </div>
+</body>
+</html>`;
+
+        // Create and download the file
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${currentReportName}_${new Date().toISOString().split('T')[0]}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        showStatus('Report exported successfully!', 'success');
+    }
+
+    function showStatus(message, type) {
+        const statusDiv = document.getElementById('status-message');
+        statusDiv.className = `alert alert-${type}`;
+        statusDiv.textContent = message;
+        statusDiv.classList.remove('d-none');
+
+        // Hide after 5 seconds
+        setTimeout(() => {
+            statusDiv.classList.add('d-none');
+        }, 5000);
+    }
+</script>
+
+<style>
+    .markdown-content h1 {
+        color: #007bff;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 0.5rem;
+    }
+
+    .markdown-content h2 {
+        color: #495057;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 0.3rem;
+        margin-top: 2rem;
+    }
+
+    .markdown-content h3 {
+        color: #6c757d;
+        margin-top: 1.5rem;
+    }
+
+    .markdown-content table {
+        margin: 1rem 0;
+    }
+
+    .markdown-content table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+    }
+
+    .markdown-content table td {
+        border: 1px solid #dee2e6;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .markdown-content table tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .markdown-content blockquote {
+        border-left: 4px solid #007bff;
+        padding-left: 1rem;
+        margin: 1rem 0;
+        color: #6c757d;
+    }
+
+    .markdown-content hr {
+        margin: 2rem 0;
+        border-color: #dee2e6;
+    }
+
+    .report-template-item.active {
+        background-color: #007bff !important;
+        color: white !important;
+    }
+
+    .report-template-item.active .text-muted {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+</style>
+{% endblock %}

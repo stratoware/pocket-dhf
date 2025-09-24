@@ -1,0 +1,51 @@
+# Pre-commit configuration for QMS project
+# Copyright (c) 2025 Stratoware LLC. All rights reserved.
+
+repos:
+  # Standard Python formatting and linting
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  # Black code formatting
+  - repo: https://github.com/psf/black
+    rev: 24.2.0
+    hooks:
+      - id: black
+        language_version: python3
+
+  # Import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+
+  # Flake8 linting
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+
+  # Copyright header enforcement
+  - repo: local
+    hooks:
+      - id: copyright-check
+        name: Check copyright headers
+        entry: python3 scripts/check_copyright.py
+        language: system
+        files: \.(py|html|yml|yaml)$
+        exclude: ^(\.git/|__pycache__/|\.pytest_cache/|build/|dist/)
+
+      # Python docstring enforcement
+      - id: docstring-check
+        name: Check class docstrings
+        entry: python3 scripts/check_docstrings.py
+        language: system
+        files: \.py$
+        exclude: ^(\.git/|__pycache__/|\.pytest_cache/|build/|dist/|tests/)

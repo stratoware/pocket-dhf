@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if title %}{{ title }} - Pocket DHF{% else %}Pocket DHF{% endif %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <strong>Pocket DHF</strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.browse') }}">
+                            <i class="fas fa-search me-1"></i>Browse
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.reports') }}">
+                            <i class="fas fa-file-alt me-1"></i>Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.configuration') }}">
+                            <i class="fas fa-cog me-1"></i>Configuration
+                        </a>
+                    </li>
+                </ul>
+                <div class="navbar-nav">
+                    {% if user_info %}
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="me-2">{{ user_info.name }}</span>
+                            <i class="fas fa-user-circle"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <h6 class="dropdown-header">User Management</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">
+                                    <i class="fas fa-info-circle me-2"></i>About User Management
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><span class="dropdown-item-text small text-muted">
+                                    <i class="fas fa-envelope me-2"></i>{{ user_info.email or 'No email configured' }}
+                                </span></li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-light text-center text-muted py-3 mt-5">
+        <div class="container">
+            <p>&copy; 2025 Stratoware LLC. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="profileModalLabel">
+                        <i class="fas fa-git-alt me-2"></i>User Management & Version Control
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6><i class="fas fa-user me-2"></i>User Identity</h6>
+                        <p class="text-muted small">
+                            Your user identity is managed through Git configuration. The name and email shown
+                            are retrieved from your local Git settings.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6><i class="fas fa-code-branch me-2"></i>Version Control</h6>
+                        <p class="text-muted small">
+                            All changes to DHF data are automatically tracked and can be version controlled using Git.
+                            This ensures complete traceability of all modifications to requirements, specifications, and
+                            metadata.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6><i class="fas fa-cog me-2"></i>Configuration</h6>
+                        <p class="text-muted small">
+                            To update your user information, use Git commands:
+                        </p>
+                        <div class="bg-light p-2 rounded">
+                            <code class="small">
+                                git config --global user.name "Your Name"<br>
+                                git config --global user.email "your.email@domain.com"
+                            </code>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Pocket DHF integrates with your existing Git workflow for
+                        seamless collaboration and change tracking.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

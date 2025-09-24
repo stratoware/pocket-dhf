@@ -1,0 +1,79 @@
+{
+    "Python Module with Copyright": {
+        "prefix": "pymodule",
+        "body": [
+            "#!/usr/bin/env python3",
+            "\"\"\"",
+            "${1:Module description}",
+            "",
+            "Copyright (c) ${CURRENT_YEAR} Stratoware LLC. All rights reserved.",
+            "\"\"\"",
+            "",
+            "${2:# Module content here}"
+        ],
+        "description": "Create a Python module with copyright header"
+    },
+    "Python Script with Copyright": {
+        "prefix": "pyscript",
+        "body": [
+            "#!/usr/bin/env python3",
+            "\"\"\"",
+            "${1:Script description}",
+            "",
+            "Copyright (c) ${CURRENT_YEAR} Stratoware LLC. All rights reserved.",
+            "\"\"\"",
+            "",
+            "import sys",
+            "",
+            "",
+            "def main():",
+            "    \"\"\"Main entry point.\"\"\"",
+            "    ${2:pass}",
+            "",
+            "",
+            "if __name__ == '__main__':",
+            "    main()"
+        ],
+        "description": "Create a Python script with copyright header and main function"
+    },
+    "Python Class with Copyright": {
+        "prefix": "pyclass",
+        "body": [
+            "\"\"\"",
+            "${1:Module description}",
+            "",
+            "Copyright (c) ${CURRENT_YEAR} Stratoware LLC. All rights reserved.",
+            "\"\"\"",
+            "",
+            "",
+            "class ${2:ClassName}:",
+            "    \"\"\"${3:Brief description of what this class does}.",
+            "    ",
+            "    ${4:Optional longer description with more details about the class purpose,}",
+            "    ${5:usage patterns, or important implementation notes.}",
+            "    \"\"\"",
+            "    ",
+            "    def __init__(self):",
+            "        \"\"\"Initialize the ${2:ClassName}.\"\"\"",
+            "        ${6:pass}"
+        ],
+        "description": "Create a Python class with copyright header and proper docstring"
+    },
+    "Python Test with Copyright": {
+        "prefix": "pytest",
+        "body": [
+            "\"\"\"Tests for ${1:module_name}.",
+            "",
+            "Copyright (c) ${CURRENT_YEAR} Stratoware LLC. All rights reserved.",
+            "\"\"\"",
+            "",
+            "import pytest",
+            "",
+            "",
+            "def test_${2:function_name}():",
+            "    \"\"\"Test ${2:function_name}.\"\"\"",
+            "    ${3:assert True}"
+        ],
+        "description": "Create a Python test file with copyright header"
+    }
+}
