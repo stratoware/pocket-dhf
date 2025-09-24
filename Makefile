@@ -22,6 +22,27 @@ install:
 test:
 	poetry run pytest
 
+test-coverage:
+	poetry run pytest --cov=app --cov-report=html --cov-report=term-missing --cov-fail-under=80
+
+test-html:
+	poetry run pytest --html=reports/test-report.html --self-contained-html
+
+test-all:
+	python3 tests/run_tests.py
+
+test-unit:
+	poetry run pytest tests/unit/ -v
+
+test-integration:
+	poetry run pytest tests/integration/ -v
+
+test-api:
+	poetry run pytest -m api -v
+
+test-ui:
+	poetry run pytest -m ui -v
+
 # Code quality
 lint:
 	poetry run flake8 .

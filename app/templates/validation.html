@@ -1,0 +1,291 @@
+<!--
+System Validation - Pocket DHF
+
+Copyright (c) 2025 Stratoware LLC. All rights reserved.
+-->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-check-circle me-2 text-success"></i>System Validation</h1>
+                <div>
+                    <button type="button" class="btn btn-primary me-2" id="run-tests-btn">
+                        <i class="fas fa-play me-1"></i>Run Test Suite
+                    </button>
+                    <button type="button" class="btn btn-success d-none" id="export-pdf-btn">
+                        <i class="fas fa-file-pdf me-1"></i>Export PDF Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test Status Alert -->
+            <div id="test-status-alert" class="alert alert-info d-none" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+                    <span id="test-status-message">Running test suite...</span>
+                </div>
+            </div>
+
+            <!-- Test Results -->
+            <div id="test-results" class="d-none">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Test Results Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <h3 id="total-tests" class="text-primary">-</h3>
+                                            <p class="text-muted mb-0">Total Tests</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <h3 id="passed-tests" class="text-success">-</h3>
+                                            <p class="text-muted mb-0">Passed</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <h3 id="failed-tests" class="text-danger">-</h3>
+                                            <p class="text-muted mb-0">Failed</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <h3 id="coverage-percentage" class="text-info">-</h3>
+                                            <p class="text-muted mb-0">Coverage %</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Test Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="test-details">
+                                    <!-- Test details will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Test Categories</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="test-categories">
+                                    <!-- Test categories will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Execution Time</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="execution-time">
+                                    <!-- Execution time will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specifications Content -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-book me-2"></i>System Specifications</h5>
+                </div>
+                <div class="card-body">
+                    <div id="specifications-content">
+                        {{ specifications_content | safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const runTestsBtn = document.getElementById('run-tests-btn');
+        const exportPdfBtn = document.getElementById('export-pdf-btn');
+        const testStatusAlert = document.getElementById('test-status-alert');
+        const testResults = document.getElementById('test-results');
+        const testStatusMessage = document.getElementById('test-status-message');
+
+        runTestsBtn.addEventListener('click', function () {
+            runTestSuite();
+        });
+
+        exportPdfBtn.addEventListener('click', function () {
+            exportValidationPdf();
+        });
+
+        function runTestSuite() {
+            // Show loading state
+            runTestsBtn.disabled = true;
+            testStatusAlert.classList.remove('d-none');
+            testResults.classList.add('d-none');
+            testStatusMessage.textContent = 'Running test suite...';
+
+            // Make API call to run tests
+            fetch('/api/run-tests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        displayTestResults(data);
+                        testStatusAlert.classList.add('d-none');
+                        testResults.classList.remove('d-none');
+                        exportPdfBtn.classList.remove('d-none');
+                    } else {
+                        showTestError(data.error || 'Unknown error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Test execution error:', error);
+                    showTestError('Failed to run tests: ' + error.message);
+                })
+                .finally(() => {
+                    runTestsBtn.disabled = false;
+                });
+        }
+
+        function displayTestResults(results) {
+            // Check if results has the expected structure
+            if (!results || !results.summary) {
+                showTestError('Invalid test results format received');
+                return;
+            }
+
+            // Update summary statistics
+            document.getElementById('total-tests').textContent = results.summary.total || 0;
+            document.getElementById('passed-tests').textContent = results.summary.passed || 0;
+            document.getElementById('failed-tests').textContent = results.summary.failed || 0;
+            document.getElementById('coverage-percentage').textContent = (results.summary.coverage || 0) + '%';
+
+            // Update test details
+            const testDetails = document.getElementById('test-details');
+            testDetails.innerHTML = generateTestDetailsHtml(results.tests || []);
+
+            // Update test categories
+            const testCategories = document.getElementById('test-categories');
+            testCategories.innerHTML = generateTestCategoriesHtml(results.categories || {});
+
+            // Update execution time
+            const executionTime = document.getElementById('execution-time');
+            const execTime = results.execution_time || { total: 0, setup: 0, tests: 0 };
+            executionTime.innerHTML = `
+            <p><strong>Total Time:</strong> ${execTime.total}s</p>
+            <p><strong>Setup Time:</strong> ${execTime.setup}s</p>
+            <p><strong>Test Time:</strong> ${execTime.tests}s</p>
+        `;
+        }
+
+        function generateTestDetailsHtml(tests) {
+            let html = '<div class="table-responsive"><table class="table table-sm">';
+            html += '<thead><tr><th>Test</th><th>Status</th><th>Duration</th><th>Category</th></tr></thead><tbody>';
+
+            tests.forEach(test => {
+                const statusClass = test.status === 'PASSED' ? 'text-success' : 'text-danger';
+                const statusIcon = test.status === 'PASSED' ? 'fa-check' : 'fa-times';
+
+                html += `
+                <tr>
+                    <td>${test.name}</td>
+                    <td><i class="fas ${statusIcon} ${statusClass}"></i> ${test.status}</td>
+                    <td>${test.duration}s</td>
+                    <td><span class="badge bg-secondary">${test.category}</span></td>
+                </tr>
+            `;
+            });
+
+            html += '</tbody></table></div>';
+            return html;
+        }
+
+        function generateTestCategoriesHtml(categories) {
+            let html = '';
+            Object.entries(categories).forEach(([category, stats]) => {
+                const percentage = Math.round((stats.passed / stats.total) * 100);
+                const colorClass = percentage === 100 ? 'text-success' : percentage >= 80 ? 'text-warning' : 'text-danger';
+
+                html += `
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>${category}</span>
+                        <span class="${colorClass}">${percentage}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar ${percentage === 100 ? 'bg-success' : percentage >= 80 ? 'bg-warning' : 'bg-danger'}"
+                             style="width: ${percentage}%"></div>
+                    </div>
+                    <small class="text-muted">${stats.passed}/${stats.total} passed</small>
+                </div>
+            `;
+            });
+            return html;
+        }
+
+        function showTestError(error) {
+            testStatusMessage.textContent = 'Test execution failed: ' + error;
+            testStatusAlert.classList.remove('alert-info');
+            testStatusAlert.classList.add('alert-danger');
+        }
+
+        function exportValidationPdf() {
+            exportPdfBtn.disabled = true;
+            exportPdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Generating PDF...';
+
+            fetch('/api/export-validation-pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'pocket-dhf-validation-report.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                })
+                .catch(error => {
+                    alert('Failed to export PDF: ' + error.message);
+                })
+                .finally(() => {
+                    exportPdfBtn.disabled = false;
+                    exportPdfBtn.innerHTML = '<i class="fas fa-file-pdf me-1"></i>Export PDF Report';
+                });
+        }
+    });
+</script>
+{% endblock %}
