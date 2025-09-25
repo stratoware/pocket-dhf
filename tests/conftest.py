@@ -12,12 +12,17 @@ from app.data_utils import DHFDataManager
 
 
 @pytest.fixture
-def app():
+def app(sample_dhf_data):
     """Create and configure a new app instance for each test."""
     # Create a temporary file for testing
     db_fd, db_path = tempfile.mkstemp()
+    
+    # Write sample data to the temporary file
+    import yaml
+    with open(db_path, "w") as f:
+        yaml.dump(sample_dhf_data, f)
 
-    app = create_app()
+    app = create_app(data_file_path=db_path)
     app.config.update(
         {
             "TESTING": True,
@@ -60,14 +65,19 @@ def sample_dhf_data():
             "last_modified": "2025-01-01 12:00:00",
         },
         "user_needs": {
-            "UN001": {
-                "title": "Accurate Glucose Monitoring",
-                "description": "The device must accurately measure blood glucose levels",
-            },
-            "UN002": {
-                "title": "Real-time Alerts",
-                "description": "The device must provide real-time alerts for dangerous glucose levels",
-            },
+            "Athlete Performance": {
+                "group_name": "Athlete Performance",
+                "needs": {
+                    "UN001": {
+                        "title": "Accurate Glucose Monitoring",
+                        "description": "The device must accurately measure blood glucose levels",
+                    },
+                    "UN002": {
+                        "title": "Real-time Alerts",
+                        "description": "The device must provide real-time alerts for dangerous glucose levels",
+                    },
+                }
+            }
         },
         "risks": {
             "Patient Safety": {
@@ -89,15 +99,22 @@ def sample_dhf_data():
             }
         },
         "product_requirements": {
-            "Core Functionality": {
-                "group_name": "Core Functionality",
+            "functional_requirements": {
+                "group_name": "Functional Requirements",
+                "description": "Core functionality that the system must provide",
                 "requirements": {
-                    "PR001": {
-                        "title": "Glucose Measurement Accuracy",
-                        "description": "The device must measure glucose with ±15% accuracy",
-                        "linked_user_needs": ["UN001"],
+                    "muscle_contraction_measurement": {
+                        "group_name": "Muscle Contraction Measurement",
+                        "description": "Requirements for measuring muscle contraction percentages",
+                        "requirements": {
+                            "PR001": {
+                                "title": "Glucose Measurement Accuracy",
+                                "description": "The device must measure glucose with ±15% accuracy",
+                                "linked_user_needs": ["UN001"],
+                            }
+                        }
                     }
-                },
+                }
             }
         },
         "software_specifications": {

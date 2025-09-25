@@ -7,11 +7,11 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
 
 {% block content %}
 <div class="container-fluid" style="min-height: calc(100vh - 200px);">
-    <div class="row">
+    <div class="d-flex">
         <!-- Left Sidebar - Tree Navigation -->
-        <div class="col-md-4 col-lg-4 bg-light border-end" style="height: calc(100vh - 160px);">
+        <div id="sidebar" class="bg-light border-end" style="height: calc(100vh - 160px); width: 42%;">
             <div class="tree-navigation">
-                <div class="p-3">
+                <div class="p-1">
                     <h5 class="mb-3">
                         <i class="fas fa-sitemap me-2"></i>DHF Navigation
                     </h5>
@@ -40,6 +40,84 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                             {% for id, item in user_needs.items() %}
                             <div class="tree-item" data-item-id="{{ id }}" data-item-type="user_need">
                                 <i class="fas fa-user me-2"></i>{{ item.title }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Product Requirements Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="productRequirementsItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-clipboard-list me-2 text-success"></i>
+                            Product Requirements
+                            <span class="badge bg-secondary ms-2">{{ product_requirements_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="productRequirementsItems">
+                            {% for group_key, group in product_requirements.items() %}
+                            <div class="tree-group mb-2">
+                                <div class="tree-group-header collapsible-header" data-target="req-{{ group_key }}">
+                                    <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                    <i class="fas fa-folder me-2"></i>
+                                    <div class="editable-folder-name flex-grow-1" data-group-key="{{ group_key }}"
+                                        data-group-type="product_requirements">
+                                        <span class="folder-name-display">{{ group.group_name }}</span>
+                                        <input type="text" class="folder-name-input d-none form-control form-control-sm"
+                                            value="{{ group.group_name }}">
+                                        <div class="folder-edit-buttons d-none">
+                                            <button class="btn btn-xs btn-success save-folder-btn me-1">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-xs btn-secondary cancel-folder-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="floating-edit-btn" data-group-key="{{ group_key }}"
+                                            data-group-type="product_requirements">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    {% if group.requirements is defined %}
+                                        {% set req_count = group.requirements|length %}
+                                    {% else %}
+                                        {% set req_count = 0 %}
+                                        {% for sub_key, sub_group in group.requirements.items() %}
+                                            {% if sub_group.requirements is defined %}
+                                                {% set req_count = req_count + sub_group.requirements|length %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    <span class="badge bg-light text-dark ms-2">{{ req_count }}</span>
+                                </div>
+                                <div class="ms-3 collapsible-content collapsed" id="req-{{ group_key }}">
+                                    {% if group.requirements is defined and group.requirements.items()|selectattr('1.id', 'defined')|list|length > 0 %}
+                                        <!-- Direct requirements (2-level structure) -->
+                                        {% for id, item in group.requirements.items() %}
+                                        <div class="tree-item" data-item-id="{{ id }}" data-item-type="product_requirement">
+                                            <i class="fas fa-file-alt me-2"></i>{{ item.title }}
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <!-- Nested requirements (3-level structure) -->
+                                        {% for sub_key, sub_group in group.requirements.items() %}
+                                        <div class="tree-subgroup mb-2">
+                                            <div class="tree-subgroup-header collapsible-header" data-target="req-{{ group_key }}-{{ sub_key }}">
+                                                <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                                <i class="fas fa-folder-open me-2"></i>
+                                                <span class="subgroup-name">{{ sub_group.group_name }}</span>
+                                                <span class="badge bg-light text-dark ms-2">{{ sub_group.requirements|length }}</span>
+                                            </div>
+                                            <div class="ms-3 collapsible-content collapsed" id="req-{{ group_key }}-{{ sub_key }}">
+                                                {% for id, item in sub_group.requirements.items() %}
+                                                <div class="tree-item" data-item-id="{{ id }}" data-item-type="product_requirement">
+                                                    <i class="fas fa-file-alt me-2"></i>{{ item.title }}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
                             </div>
                             {% endfor %}
                         </div>
@@ -94,52 +172,6 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                                 <i class="fas fa-exclamation-circle me-2"></i>{{ group.title }}
                             </div>
                             {% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Product Requirements Section -->
-                    <div class="tree-section mb-3">
-                        <div class="tree-header collapsible-header" data-target="productRequirementsItems">
-                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
-                            <i class="fas fa-clipboard-list me-2 text-success"></i>
-                            Product Requirements
-                            <span class="badge bg-secondary ms-2">{{ product_requirements_count }}</span>
-                        </div>
-                        <div class="tree-items ms-4 collapsible-content" id="productRequirementsItems">
-                            {% for group_key, group in product_requirements.items() %}
-                            <div class="tree-group mb-2">
-                                <div class="tree-group-header collapsible-header" data-target="req-{{ group_key }}">
-                                    <i class="fas fa-chevron-right me-2 collapse-icon"></i>
-                                    <i class="fas fa-folder me-2"></i>
-                                    <div class="editable-folder-name flex-grow-1" data-group-key="{{ group_key }}"
-                                        data-group-type="product_requirements">
-                                        <span class="folder-name-display">{{ group.group_name }}</span>
-                                        <input type="text" class="folder-name-input d-none form-control form-control-sm"
-                                            value="{{ group.group_name }}">
-                                        <div class="folder-edit-buttons d-none">
-                                            <button class="btn btn-xs btn-success save-folder-btn me-1">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            <button class="btn btn-xs btn-secondary cancel-folder-btn">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                        <button class="floating-edit-btn" data-group-key="{{ group_key }}"
-                                            data-group-type="product_requirements">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </div>
-                                    <span class="badge bg-light text-dark ms-2">{{ group.requirements|length }}</span>
-                                </div>
-                                <div class="ms-3 collapsible-content collapsed" id="req-{{ group_key }}">
-                                    {% for id, item in group.requirements.items() %}
-                                    <div class="tree-item" data-item-id="{{ id }}" data-item-type="product_requirement">
-                                        <i class="fas fa-file-alt me-2"></i>{{ item.title }}
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
                             {% endfor %}
                         </div>
                     </div>
@@ -237,18 +269,54 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                             {% endfor %}
                         </div>
                     </div>
+
+                    <!-- Traceability Tables Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="traceabilityItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-project-diagram me-2 text-warning"></i>
+                            Traceability Tables
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="traceabilityItems">
+                            <div class="tree-item" data-traceability-type="user-needs-to-requirements">
+                                <i class="fas fa-link me-2"></i>User Needs to Product Requirements
+                            </div>
+                            <div class="tree-item" data-traceability-type="requirements-to-specifications">
+                                <i class="fas fa-link me-2"></i>Product Requirements to Specifications
+                            </div>
+                            <div class="tree-item" data-traceability-type="risks-to-mitigations">
+                                <i class="fas fa-link me-2"></i>Risks to Mitigations
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Resize Handle -->
+        <div id="resize-handle" class="resize-handle"></div>
+
         <!-- Right Panel - Item Editor -->
-        <div class="col-md-8 col-lg-8">
+        <div id="main-content" style="width: 58%;">
             <div class="p-4">
                 <div id="welcome-panel" class="text-center text-muted">
                     <div class="mt-5 pt-5">
                         <i class="fas fa-mouse-pointer fa-3x mb-3"></i>
                         <h4>Select an item to edit</h4>
                         <p>Click on any item in the navigation tree to view and edit its details.</p>
+                    </div>
+                </div>
+
+                <!-- Traceability Tables Content -->
+                <div id="traceability-content" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 id="traceability-title">Traceability Table</h3>
+                        <button type="button" class="btn btn-outline-secondary" onclick="hideTraceabilityTable()">
+                            <i class="fas fa-times me-2"></i>Close
+                        </button>
+                    </div>
+                    <div id="traceability-table-container">
+                        <!-- Table content will be populated by JavaScript -->
                     </div>
                 </div>
 
@@ -446,51 +514,42 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
 
                         <!-- Linked items fields -->
                         <div id="linked-items-fields" class="mb-3 d-none">
-                            <label class="form-label">Linked Items</label>
-
-                            <!-- Linking fields -->
-                            <div id="user-needs-links" class="mb-2">
-                                <label class="form-label">Linked User Needs</label>
-                                <div id="user-needs-checkboxes">
-                                    {% for item in linkable_items.user_needs %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="{{ item.id }}"
-                                            id="un-{{ item.id }}" name="linked_user_needs">
-                                        <label class="form-check-label" for="un-{{ item.id }}">
-                                            {{ item.id }}: {{ item.title }}
-                                        </label>
-                                    </div>
-                                    {% endfor %}
+                            <!-- User Needs Links -->
+                            <div id="user-needs-links" class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">Linked User Needs</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openLinkedItemsModal('user_needs')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </div>
+                                <div id="user-needs-display" class="border rounded p-2 bg-light">
+                                    <span class="text-muted">No user needs linked</span>
                                 </div>
                             </div>
 
-                            <div id="risks-links" class="mb-2">
-                                <label class="form-label">Linked Risks</label>
-                                <div id="risks-checkboxes">
-                                    {% for item in linkable_items.risks %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="{{ item.id }}"
-                                            id="r-{{ item.id }}" name="linked_risks">
-                                        <label class="form-check-label" for="r-{{ item.id }}">
-                                            {{ item.id }}: {{ item.title }}
-                                        </label>
-                                    </div>
-                                    {% endfor %}
+                            <!-- Risks Links -->
+                            <div id="risks-links" class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">Linked Risks</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openLinkedItemsModal('risks')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </div>
+                                <div id="risks-display" class="border rounded p-2 bg-light">
+                                    <span class="text-muted">No risks linked</span>
                                 </div>
                             </div>
 
-                            <div id="product-requirements-links" class="mb-2">
-                                <label class="form-label">Linked Product Requirements</label>
-                                <div id="product-requirements-checkboxes">
-                                    {% for item in linkable_items.product_requirements %}
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="{{ item.id }}"
-                                            id="pr-{{ item.id }}" name="linked_product_requirements">
-                                        <label class="form-check-label" for="pr-{{ item.id }}">
-                                            {{ item.id }}: {{ item.title }}
-                                        </label>
-                                    </div>
-                                    {% endfor %}
+                            <!-- Product Requirements Links -->
+                            <div id="product-requirements-links" class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">Linked Product Requirements</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openLinkedItemsModal('product_requirements')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </div>
+                                <div id="product-requirements-display" class="border rounded p-2 bg-light">
+                                    <span class="text-muted">No product requirements linked</span>
                                 </div>
                             </div>
                         </div> <!-- End linked-items-fields -->
@@ -499,6 +558,27 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                     <!-- Status Messages -->
                     <div id="save-status" class="alert d-none" role="alert"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Linked Items Edit Modal -->
+<div class="modal fade" id="linkedItemsModal" tabindex="-1" aria-labelledby="linkedItemsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="linkedItemsModalLabel">Edit Linked Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-linked-items-content">
+                    <!-- Content will be populated dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="save-linked-items">Save Changes</button>
             </div>
         </div>
     </div>
@@ -566,6 +646,9 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
     });
 
     function initializeCollapse() {
+        // Add event listener for save linked items button
+        document.getElementById('save-linked-items').addEventListener('click', saveLinkedItems);
+
         // Add click handlers to all collapsible headers
         document.querySelectorAll('.collapsible-header').forEach(header => {
             header.addEventListener('click', function () {
@@ -658,10 +741,194 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
 
                 // Populate form
                 populateForm(data, itemType);
+
+                // Update sidebar focus and expand tree
+                updateSidebarFocus(itemId, itemType);
             })
             .catch(error => {
                 showStatus('Error loading item: ' + error.message, 'danger');
             });
+    }
+
+    function updateSidebarFocus(itemId, itemType) {
+        // Remove any existing active/focus classes
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.classList.remove('active', 'bg-primary', 'text-white');
+        });
+
+        // Find the target item in the sidebar
+        const targetItem = document.querySelector(`[data-item-id="${itemId}"]`);
+        if (!targetItem) {
+            console.warn(`Item ${itemId} not found in sidebar`);
+            return;
+        }
+
+        // Add active styling to the target item
+        targetItem.classList.add('active', 'bg-primary', 'text-white');
+
+        // Expand all parent sections to make the item visible
+        expandParentSections(targetItem);
+
+        // Scroll the item into view
+        targetItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function expandParentSections(element) {
+        let current = element;
+        while (current) {
+            // Check if this element is inside a collapsible section
+            const collapsibleContent = current.closest('[id$="Items"], [id^="req-"], [id^="risk-"], [id^="sw-"], [id^="hw-"]');
+            if (collapsibleContent) {
+                // Find the corresponding header
+                const header = document.querySelector(`[data-target="${collapsibleContent.id}"]`);
+                if (header) {
+                    // Expand the section
+                    collapsibleContent.classList.remove('collapsed');
+                    const icon = header.querySelector('.collapse-icon');
+                    if (icon && icon.classList.contains('fa-chevron-right')) {
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                }
+            }
+            current = current.parentElement;
+        }
+    }
+
+    function updateLinkedItemsDisplay(data) {
+        // Update user needs display
+        updateLinkedItemsSection('user-needs', data.linked_user_needs || []);
+        
+        // Update risks display
+        updateLinkedItemsSection('risks', data.linked_risks || []);
+        
+        // Update product requirements display
+        updateLinkedItemsSection('product-requirements', data.linked_product_requirements || []);
+    }
+
+    function updateLinkedItemsSection(sectionName, linkedIds) {
+        const displayElement = document.getElementById(`${sectionName}-display`);
+        if (!displayElement) return;
+
+        if (linkedIds.length === 0) {
+            displayElement.innerHTML = '<span class="text-muted">No items linked</span>';
+            return;
+        }
+
+        const links = linkedIds.map(id => {
+            const item = findLinkableItem(id, sectionName);
+            if (item) {
+                return `<a href="#" onclick="loadItem('${id}', '${getItemType(sectionName)}')" class="text-decoration-none me-2">${id}: ${item.title}</a>`;
+            }
+            return `<span class="text-muted me-2">${id}: Unknown</span>`;
+        });
+
+        displayElement.innerHTML = links.join('');
+    }
+
+    function findLinkableItem(id, sectionName) {
+        const sectionKey = sectionName.replace('-', '_');
+        return linkableItems[sectionKey]?.find(item => item.id === id);
+    }
+
+    function getItemType(sectionName) {
+        const typeMap = {
+            'user-needs': 'user_need',
+            'risks': 'risk',
+            'product-requirements': 'product_requirement'
+        };
+        return typeMap[sectionName] || sectionName;
+    }
+
+    function openLinkedItemsModal(sectionType) {
+        const modal = new bootstrap.Modal(document.getElementById('linkedItemsModal'));
+        const modalTitle = document.getElementById('linkedItemsModalLabel');
+        const modalContent = document.getElementById('modal-linked-items-content');
+        
+        // Set modal title
+        modalTitle.textContent = `Edit Linked ${sectionType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+        
+        // Generate modal content
+        modalContent.innerHTML = generateModalContent(sectionType);
+        
+        // Store current section type for saving
+        modalContent.dataset.sectionType = sectionType;
+        
+        // Show modal
+        modal.show();
+    }
+
+    function generateModalContent(sectionType) {
+        const items = linkableItems[sectionType] || [];
+        const currentLinked = getCurrentLinkedItems(sectionType);
+        
+        let content = '<div class="modal-linked-items-list">';
+        
+        items.forEach(item => {
+            const isChecked = currentLinked.includes(item.id);
+            
+            content += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" value="${item.id}" 
+                           id="modal-${item.id}" ${isChecked ? 'checked' : ''}>
+                    <label class="form-check-label" for="modal-${item.id}">
+                        <strong>${item.id}:</strong> ${item.title}
+                    </label>
+                </div>
+            `;
+        });
+        
+        content += '</div>';
+        
+        if (items.length === 0) {
+            content = '<p class="text-muted text-center py-3">No items available to link.</p>';
+        }
+        
+        return content;
+    }
+
+    function getCurrentLinkedItems(sectionType) {
+        if (!currentItemData) return [];
+        
+        const fieldMap = {
+            'user_needs': 'linked_user_needs',
+            'risks': 'linked_risks',
+            'product_requirements': 'linked_product_requirements'
+        };
+        
+        return currentItemData[fieldMap[sectionType]] || [];
+    }
+
+    function saveLinkedItems() {
+        const modalContent = document.getElementById('modal-linked-items-content');
+        const sectionType = modalContent.dataset.sectionType;
+        
+        if (!sectionType || !currentItemData) return;
+        
+        // Get checked items
+        const checkboxes = modalContent.querySelectorAll('input[type="checkbox"]:checked');
+        const linkedIds = Array.from(checkboxes).map(cb => cb.value);
+        
+        // Update current item data
+        const fieldMap = {
+            'user_needs': 'linked_user_needs',
+            'risks': 'linked_risks',
+            'product_requirements': 'linked_product_requirements'
+        };
+        
+        currentItemData[fieldMap[sectionType]] = linkedIds;
+        
+        // Update display
+        updateLinkedItemsDisplay(currentItemData);
+        
+        // Mark as having unsaved changes
+        hasUnsavedChanges = true;
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('linkedItemsModal'));
+        modal.hide();
+        
+        showStatus('Linked items updated. Don\'t forget to save the item.', 'info');
     }
 
     function populateForm(data, itemType) {
@@ -670,6 +937,9 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
         document.getElementById('item-type').value = data.type || itemType;
         document.getElementById('title').value = data.title || '';
         document.getElementById('description').value = data.description || '';
+
+        // Update linked items display
+        updateLinkedItemsDisplay(data);
 
         // Update title display
         const icons = {
@@ -730,17 +1000,11 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                 document.getElementById('user-needs-links').classList.remove('d-none');
                 document.getElementById('risks-links').classList.add('d-none');
                 document.getElementById('product-requirements-links').classList.add('d-none');
-
-                // Set checkbox values
-                setCheckboxValues('linked_user_needs', data.linked_user_needs || []);
             } else {
-                // For specifications, show product requirements, hide user needs and risks
+                // For specifications, show product requirements and risks, hide user needs
                 document.getElementById('user-needs-links').classList.add('d-none');
-                document.getElementById('risks-links').classList.add('d-none');
+                document.getElementById('risks-links').classList.remove('d-none');
                 document.getElementById('product-requirements-links').classList.remove('d-none');
-
-                // Set checkbox values
-                setCheckboxValues('linked_product_requirements', data.linked_product_requirements || []);
             }
         }
 
@@ -749,19 +1013,6 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
         document.getElementById('save-btn').classList.add('btn-success');
     }
 
-    function setCheckboxValues(name, values) {
-        document.querySelectorAll(`input[name="${name}"]`).forEach(checkbox => {
-            checkbox.checked = values.includes(checkbox.value);
-        });
-    }
-
-    function getCheckboxValues(name) {
-        const checked = [];
-        document.querySelectorAll(`input[name="${name}"]:checked`).forEach(checkbox => {
-            checked.push(checkbox.value);
-        });
-        return checked;
-    }
 
     function updateRBMScore() {
         // Get current values from the form
@@ -1020,14 +1271,15 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
             updateData.description = formData.get('description');
         }
 
-        // Link fields - collect from checkboxes
+        // Link fields - use current item data instead of form checkboxes
         if (!document.getElementById('linked-items-fields').classList.contains('d-none')) {
             const itemType = document.getElementById('item-type').value;
 
             if (itemType === 'product_requirement') {
-                updateData.linked_user_needs = getCheckboxValues('linked_user_needs');
+                updateData.linked_user_needs = currentItemData.linked_user_needs || [];
             } else if (['software_specification', 'hardware_specification'].includes(itemType)) {
-                updateData.linked_product_requirements = getCheckboxValues('linked_product_requirements');
+                updateData.linked_product_requirements = currentItemData.linked_product_requirements || [];
+                updateData.linked_risks = currentItemData.linked_risks || [];
             }
         }
 
@@ -1179,6 +1431,245 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
         display.classList.remove('d-none');
         input.classList.add('d-none');
         buttons.classList.add('d-none');
+    }
+
+    // Resize handle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const resizeHandle = document.getElementById('resize-handle');
+        
+        let isResizing = false;
+        let startX = 0;
+        let startSidebarWidth = 0;
+        
+        resizeHandle.addEventListener('mousedown', function(e) {
+            isResizing = true;
+            startX = e.clientX;
+            startSidebarWidth = parseFloat(sidebar.style.width);
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            
+            const deltaX = e.clientX - startX;
+            const containerWidth = sidebar.parentElement.offsetWidth;
+            const newSidebarWidth = startSidebarWidth + (deltaX / containerWidth) * 100;
+            
+            // Constrain between 25% and 75%
+            const constrainedWidth = Math.max(25, Math.min(75, newSidebarWidth));
+            const mainWidth = 100 - constrainedWidth;
+            
+            sidebar.style.width = constrainedWidth + '%';
+            mainContent.style.width = mainWidth + '%';
+        });
+        
+        document.addEventListener('mouseup', function() {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        // Traceability table functionality
+        document.querySelectorAll('[data-traceability-type]').forEach(item => {
+            item.addEventListener('click', function() {
+                const traceabilityType = this.getAttribute('data-traceability-type');
+                showTraceabilityTable(traceabilityType);
+            });
+        });
+    });
+
+    function showTraceabilityTable(type) {
+        const welcomePanel = document.getElementById('welcome-panel');
+        const editorPanel = document.getElementById('editor-panel');
+        const traceabilityContent = document.getElementById('traceability-content');
+        const traceabilityTitle = document.getElementById('traceability-title');
+        const tableContainer = document.getElementById('traceability-table-container');
+
+        // Hide other panels
+        welcomePanel.classList.add('d-none');
+        editorPanel.classList.add('d-none');
+        
+        // Show traceability content
+        traceabilityContent.classList.remove('d-none');
+
+        // Set title and generate table
+        switch(type) {
+            case 'user-needs-to-requirements':
+                traceabilityTitle.textContent = 'User Needs to Product Requirements Traceability';
+                generateUserNeedsToRequirementsTable(tableContainer);
+                break;
+            case 'requirements-to-specifications':
+                traceabilityTitle.textContent = 'Product Requirements to Specifications Traceability';
+                generateRequirementsToSpecificationsTable(tableContainer);
+                break;
+            case 'risks-to-mitigations':
+                traceabilityTitle.textContent = 'Risks to Mitigations Traceability';
+                generateRisksToMitigationsTable(tableContainer);
+                break;
+        }
+    }
+
+    function hideTraceabilityTable() {
+        const welcomePanel = document.getElementById('welcome-panel');
+        const traceabilityContent = document.getElementById('traceability-content');
+        
+        traceabilityContent.classList.add('d-none');
+        welcomePanel.classList.remove('d-none');
+    }
+
+    function generateUserNeedsToRequirementsTable(container) {
+        // This will be populated with actual data from the server
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>User Need</th>
+                            <th>Product Requirements</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-needs-requirements-tbody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        // Load data via API
+        loadUserNeedsToRequirementsData();
+    }
+
+    function generateRequirementsToSpecificationsTable(container) {
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Product Requirement</th>
+                            <th>Software Specifications</th>
+                            <th>Hardware Specifications</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requirements-specifications-tbody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        loadRequirementsToSpecificationsData();
+    }
+
+    function generateRisksToMitigationsTable(container) {
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Risk</th>
+                            <th>Mitigations</th>
+                        </tr>
+                    </thead>
+                    <tbody id="risks-mitigations-tbody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        loadRisksToMitigationsData();
+    }
+
+    function loadUserNeedsToRequirementsData() {
+        fetch('/api/traceability/user-needs-to-requirements')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('user-needs-requirements-tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><a href="#" onclick="loadItem('${row.user_need.id}', 'user_need')" class="text-decoration-none">${row.user_need.id}: ${row.user_need.title}</a></td>
+                        <td>
+                            ${row.requirements.map(req => 
+                                `<a href="#" onclick="loadItem('${req.id}', 'product_requirement')" class="text-decoration-none d-block">${req.id}: ${req.title}</a>`
+                            ).join('')}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading user needs to requirements data:', error);
+                document.getElementById('user-needs-requirements-tbody').innerHTML = 
+                    '<tr><td colspan="2" class="text-center text-muted">Error loading data</td></tr>';
+            });
+    }
+
+    function loadRequirementsToSpecificationsData() {
+        fetch('/api/traceability/requirements-to-specifications')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('requirements-specifications-tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><a href="#" onclick="loadItem('${row.requirement.id}', 'product_requirement')" class="text-decoration-none">${row.requirement.id}: ${row.requirement.title}</a></td>
+                        <td>
+                            ${row.software_specs.map(spec => 
+                                `<a href="#" onclick="loadItem('${spec.id}', 'software_specification')" class="text-decoration-none d-block">${spec.id}: ${spec.title}</a>`
+                            ).join('')}
+                        </td>
+                        <td>
+                            ${row.hardware_specs.map(spec => 
+                                `<a href="#" onclick="loadItem('${spec.id}', 'hardware_specification')" class="text-decoration-none d-block">${spec.id}: ${spec.title}</a>`
+                            ).join('')}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading requirements to specifications data:', error);
+                document.getElementById('requirements-specifications-tbody').innerHTML = 
+                    '<tr><td colspan="3" class="text-center text-muted">Error loading data</td></tr>';
+            });
+    }
+
+    function loadRisksToMitigationsData() {
+        fetch('/api/traceability/risks-to-mitigations')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('risks-mitigations-tbody');
+                tbody.innerHTML = '';
+                
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><a href="#" onclick="loadItem('${row.risk.id}', 'risk')" class="text-decoration-none">${row.risk.id}: ${row.risk.title}</a></td>
+                        <td>
+                            ${row.mitigations.map(mit => 
+                                `<a href="#" onclick="loadItem('${mit.id}', '${mit.type === 'software' ? 'software_specification' : 'hardware_specification'}')" class="text-decoration-none d-block">${mit.id}: ${mit.title}</a>`
+                            ).join('')}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading risks to mitigations data:', error);
+                document.getElementById('risks-mitigations-tbody').innerHTML = 
+                    '<tr><td colspan="2" class="text-center text-muted">Error loading data</td></tr>';
+            });
     }
 </script>
 {% endblock %}

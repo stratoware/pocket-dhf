@@ -55,8 +55,11 @@ class TestDHFDataManager:
     def test_get_user_needs(self, data_manager):
         """Test getting user needs."""
         user_needs = data_manager.get_user_needs()
-        assert "UN001" in user_needs
-        assert user_needs["UN001"]["title"] == "Accurate Glucose Monitoring"
+        # Check for nested structure
+        assert "Athlete Performance" in user_needs
+        assert "needs" in user_needs["Athlete Performance"]
+        assert "UN001" in user_needs["Athlete Performance"]["needs"]
+        assert user_needs["Athlete Performance"]["needs"]["UN001"]["title"] == "Accurate Glucose Monitoring"
 
     def test_get_risks(self, data_manager):
         """Test getting risks in grouped format."""
@@ -74,9 +77,10 @@ class TestDHFDataManager:
     def test_get_product_requirements(self, data_manager):
         """Test getting product requirements."""
         pr = data_manager.get_product_requirements()
-        assert "Core Functionality" in pr
-        assert "requirements" in pr["Core Functionality"]
-        assert "PR001" in pr["Core Functionality"]["requirements"]
+        assert "functional_requirements" in pr
+        assert "requirements" in pr["functional_requirements"]
+        assert "muscle_contraction_measurement" in pr["functional_requirements"]["requirements"]
+        assert "PR001" in pr["functional_requirements"]["requirements"]["muscle_contraction_measurement"]["requirements"]
 
     def test_get_software_specifications(self, data_manager):
         """Test getting software specifications."""

@@ -106,9 +106,17 @@ class DHFDataManager:
         """Get any item by its ID across all categories."""
         data = self.load_data()
 
-        # Search in user needs
-        if item_id in data.get("user_needs", {}):
-            return data["user_needs"][item_id]
+        # Search in user needs (handle both flat and nested structures)
+        user_needs_data = data.get("user_needs", {})
+        for group_key, group_data in user_needs_data.items():
+            if isinstance(group_data, dict) and "needs" in group_data:
+                # New nested structure
+                if item_id in group_data["needs"]:
+                    return group_data["needs"][item_id]
+            else:
+                # Legacy flat structure
+                if group_key == item_id:
+                    return group_data
 
         # Search in risks (handle both grouped and flat structures)
         risks_data = data.get("risks", {})
@@ -122,11 +130,19 @@ class DHFDataManager:
                 if group_key == item_id:
                     return group_data
 
-        # Search in product requirements
+        # Search in product requirements (handle both 2-level and 3-level structures)
         for group in data.get("product_requirements", {}).values():
             if "requirements" in group:
-                if item_id in group["requirements"]:
-                    return group["requirements"][item_id]
+                # Check if this is a 3-level structure (nested requirements)
+                if any(isinstance(req, dict) and "requirements" in req for req in group["requirements"].values()):
+                    # 3-level structure: search in nested requirements
+                    for sub_group in group["requirements"].values():
+                        if "requirements" in sub_group and item_id in sub_group["requirements"]:
+                            return sub_group["requirements"][item_id]
+                else:
+                    # 2-level structure: search in direct requirements
+                    if item_id in group["requirements"]:
+                        return group["requirements"][item_id]
 
         # Search in software specifications
         for group in data.get("software_specifications", {}).values():
@@ -146,11 +162,21 @@ class DHFDataManager:
         """Update an item by its ID."""
         data = self.load_data()
 
-        # Update in user needs
-        if item_id in data.get("user_needs", {}):
-            data["user_needs"][item_id].update(updated_item)
-            self.save_data(data)
-            return True
+        # Update in user needs (handle both flat and nested structures)
+        user_needs_data = data.get("user_needs", {})
+        for group_key, group_data in user_needs_data.items():
+            if isinstance(group_data, dict) and "needs" in group_data:
+                # New nested structure
+                if item_id in group_data["needs"]:
+                    data["user_needs"][group_key]["needs"][item_id].update(updated_item)
+                    self.save_data(data)
+                    return True
+            else:
+                # Legacy flat structure
+                if group_key == item_id:
+                    data["user_needs"][group_key].update(updated_item)
+                    self.save_data(data)
+                    return True
 
         # Update in risks (handle both grouped and flat structures)
         risks_data = data.get("risks", {})
@@ -168,14 +194,27 @@ class DHFDataManager:
                     self.save_data(data)
                     return True
 
-        # Update in product requirements
+        # Update in product requirements (handle both 2-level and 3-level structures)
         for group_key, group in data.get("product_requirements", {}).items():
-            if "requirements" in group and item_id in group["requirements"]:
-                data["product_requirements"][group_key]["requirements"][item_id].update(
-                    updated_item
-                )
-                self.save_data(data)
-                return True
+            if "requirements" in group:
+                # Check if this is a 3-level structure (nested requirements)
+                if any(isinstance(req, dict) and "requirements" in req for req in group["requirements"].values()):
+                    # 3-level structure: search in nested requirements
+                    for sub_key, sub_group in group["requirements"].items():
+                        if "requirements" in sub_group and item_id in sub_group["requirements"]:
+                            data["product_requirements"][group_key]["requirements"][sub_key]["requirements"][item_id].update(
+                                updated_item
+                            )
+                            self.save_data(data)
+                            return True
+                else:
+                    # 2-level structure: search in direct requirements
+                    if item_id in group["requirements"]:
+                        data["product_requirements"][group_key]["requirements"][item_id].update(
+                            updated_item
+                        )
+                        self.save_data(data)
+                        return True
 
         # Update in software specifications
         for group_key, group in data.get("software_specifications", {}).items():
@@ -202,11 +241,20 @@ class DHFDataManager:
         data = self.load_data()
         linkable = {"user_needs": [], "risks": [], "product_requirements": []}
 
-        # Add user needs
-        for item_id, item in data.get("user_needs", {}).items():
-            linkable["user_needs"].append(
-                {"id": item_id, "title": item.get("title", "Untitled")}
-            )
+        # Add user needs (handle both flat and nested structures)
+        user_needs_data = data.get("user_needs", {})
+        for group_key, group_data in user_needs_data.items():
+            if isinstance(group_data, dict) and "needs" in group_data:
+                # New nested structure
+                for item_id, item in group_data["needs"].items():
+                    linkable["user_needs"].append(
+                        {"id": item_id, "title": item.get("title", "Untitled")}
+                    )
+            else:
+                # Legacy flat structure
+                linkable["user_needs"].append(
+                    {"id": group_key, "title": group_data.get("title", "Untitled")}
+                )
 
         # Add risks (use flattened structure)
         for item_id, item in self.get_risks_flat().items():
@@ -214,13 +262,24 @@ class DHFDataManager:
                 {"id": item_id, "title": item.get("title", "Untitled")}
             )
 
-        # Add product requirements
+        # Add product requirements (handle both 2-level and 3-level structures)
         for group in data.get("product_requirements", {}).values():
             if "requirements" in group:
-                for item_id, item in group["requirements"].items():
-                    linkable["product_requirements"].append(
-                        {"id": item_id, "title": item.get("title", "Untitled")}
-                    )
+                # Check if this is a 3-level structure (nested requirements)
+                if any(isinstance(req, dict) and "requirements" in req for req in group["requirements"].values()):
+                    # 3-level structure: add nested requirements
+                    for sub_group in group["requirements"].values():
+                        if "requirements" in sub_group:
+                            for item_id, item in sub_group["requirements"].items():
+                                linkable["product_requirements"].append(
+                                    {"id": item_id, "title": item.get("title", "Untitled")}
+                                )
+                else:
+                    # 2-level structure: add direct requirements
+                    for item_id, item in group["requirements"].items():
+                        linkable["product_requirements"].append(
+                            {"id": item_id, "title": item.get("title", "Untitled")}
+                        )
 
         return linkable
 

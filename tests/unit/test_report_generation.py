@@ -169,7 +169,7 @@ class TestReportGeneration:
         """Test generating product requirements tables."""
         tables = generate_product_requirements_tables(sample_dhf_data)
 
-        assert "### Core Functionality" in tables
+        assert "### Functional Requirements" in tables
         assert "| ID | Title | Description | Linked User Needs |" in tables
         assert "PR001" in tables
         assert "Glucose Measurement Accuracy" in tables
