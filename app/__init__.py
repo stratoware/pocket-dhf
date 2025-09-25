@@ -8,7 +8,7 @@ from flask import Flask
 from app.routes import main
 
 
-def create_app(data_file_path: str = None):
+def create_app(data_file_path: str = None, reports_dir: str = None):
     """Create and configure the Flask application."""
     app = Flask(__name__)
 
@@ -23,6 +23,13 @@ def create_app(data_file_path: str = None):
         data_file_path = os.getenv("DHF_DATA_FILE")
     
     app.config["DHF_DATA_FILE"] = data_file_path
+    
+    # Set up reports directory path
+    if reports_dir is None:
+        reports_dir = os.getenv("DHF_REPORTS_DIR")
+    if not reports_dir:
+        reports_dir = "sample-data/report-templates"
+    app.config["DHF_REPORTS_DIR"] = reports_dir
 
     # Register blueprints
     app.register_blueprint(main)

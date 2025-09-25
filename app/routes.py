@@ -7,7 +7,7 @@ import re
 import subprocess
 from datetime import datetime, timedelta
 
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 
 from app.data_utils import DHFDataManager
 
@@ -775,7 +775,7 @@ def health():
 
 def get_report_templates():
     """Get list of available report templates."""
-    templates_dir = "sample-data/report-templates"
+    templates_dir = current_app.config.get("DHF_REPORTS_DIR", "sample-data/report-templates")
     templates = []
 
     if os.path.exists(templates_dir):
@@ -815,7 +815,7 @@ def get_report_templates():
 
 def generate_report_content(report_name):
     """Generate report content by processing template and inserting DHF data."""
-    templates_dir = "sample-data/report-templates"
+    templates_dir = current_app.config.get("DHF_REPORTS_DIR", "sample-data/report-templates")
     template_path = os.path.join(templates_dir, f"{report_name}.md")
 
     if not os.path.exists(template_path):

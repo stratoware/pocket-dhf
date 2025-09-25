@@ -258,3 +258,4 @@ class TestNestedRequirements:
         
         pr002 = data_manager.get_item_by_id("PR002")
         assert pr002["title"] == "Updated Nested"
+

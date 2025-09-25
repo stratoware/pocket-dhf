@@ -17,6 +17,11 @@ def main():
         help="Path to the YAML data file (default: sample-data/dhf_data.yaml)"
     )
     parser.add_argument(
+        "--reports-dir",
+        type=str,
+        help="Path to the reports directory (default: sample-data/report-templates)"
+    )
+    parser.add_argument(
         "--host",
         type=str,
         default="0.0.0.0",
@@ -36,8 +41,8 @@ def main():
     
     args = parser.parse_args()
     
-    # Create app with data file path
-    app = create_app(data_file_path=args.data_file)
+    # Create app with data file path and reports directory
+    app = create_app(data_file_path=args.data_file, reports_dir=args.reports_dir)
     
     # Override debug setting if specified
     if args.debug:
@@ -48,6 +53,11 @@ def main():
         print(f"Using data file: {args.data_file}")
     else:
         print(f"Using default data file: sample-data/dhf_data.yaml")
+    
+    if args.reports_dir:
+        print(f"Using reports directory: {args.reports_dir}")
+    else:
+        print(f"Using default reports directory: sample-data/report-templates")
     
     app.run(debug=app.config["DEBUG"], host=args.host, port=args.port)
 

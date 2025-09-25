@@ -223,3 +223,4 @@ class TestTraceabilityNavigation:
         assert 'fetch(' in html_content
         assert 'then(' in html_content
         assert 'catch(' in html_content
+
