@@ -134,10 +134,16 @@ class DHFDataManager:
         for group in data.get("product_requirements", {}).values():
             if "requirements" in group:
                 # Check if this is a 3-level structure (nested requirements)
-                if any(isinstance(req, dict) and "requirements" in req for req in group["requirements"].values()):
+                if any(
+                    isinstance(req, dict) and "requirements" in req
+                    for req in group["requirements"].values()
+                ):
                     # 3-level structure: search in nested requirements
                     for sub_group in group["requirements"].values():
-                        if "requirements" in sub_group and item_id in sub_group["requirements"]:
+                        if (
+                            "requirements" in sub_group
+                            and item_id in sub_group["requirements"]
+                        ):
                             return sub_group["requirements"][item_id]
                 else:
                     # 2-level structure: search in direct requirements
@@ -198,21 +204,27 @@ class DHFDataManager:
         for group_key, group in data.get("product_requirements", {}).items():
             if "requirements" in group:
                 # Check if this is a 3-level structure (nested requirements)
-                if any(isinstance(req, dict) and "requirements" in req for req in group["requirements"].values()):
+                if any(
+                    isinstance(req, dict) and "requirements" in req
+                    for req in group["requirements"].values()
+                ):
                     # 3-level structure: search in nested requirements
                     for sub_key, sub_group in group["requirements"].items():
-                        if "requirements" in sub_group and item_id in sub_group["requirements"]:
-                            data["product_requirements"][group_key]["requirements"][sub_key]["requirements"][item_id].update(
-                                updated_item
-                            )
+                        if (
+                            "requirements" in sub_group
+                            and item_id in sub_group["requirements"]
+                        ):
+                            data["product_requirements"][group_key]["requirements"][
+                                sub_key
+                            ]["requirements"][item_id].update(updated_item)
                             self.save_data(data)
                             return True
                 else:
                     # 2-level structure: search in direct requirements
                     if item_id in group["requirements"]:
-                        data["product_requirements"][group_key]["requirements"][item_id].update(
-                            updated_item
-                        )
+                        data["product_requirements"][group_key]["requirements"][
+                            item_id
+                        ].update(updated_item)
                         self.save_data(data)
                         return True
 
@@ -266,13 +278,19 @@ class DHFDataManager:
         for group in data.get("product_requirements", {}).values():
             if "requirements" in group:
                 # Check if this is a 3-level structure (nested requirements)
-                if any(isinstance(req, dict) and "requirements" in req for req in group["requirements"].values()):
+                if any(
+                    isinstance(req, dict) and "requirements" in req
+                    for req in group["requirements"].values()
+                ):
                     # 3-level structure: add nested requirements
                     for sub_group in group["requirements"].values():
                         if "requirements" in sub_group:
                             for item_id, item in sub_group["requirements"].items():
                                 linkable["product_requirements"].append(
-                                    {"id": item_id, "title": item.get("title", "Untitled")}
+                                    {
+                                        "id": item_id,
+                                        "title": item.get("title", "Untitled"),
+                                    }
                                 )
                 else:
                     # 2-level structure: add direct requirements

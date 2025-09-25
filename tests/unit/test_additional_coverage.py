@@ -1,8 +1,11 @@
+# Copyright (c) 2025 Stratoware LLC. All rights reserved.
+
 """Additional tests to improve coverage."""
 
-import pytest
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
+
+import pytest
 
 
 @pytest.mark.unit
@@ -14,7 +17,7 @@ class TestAdditionalCoverage:
         with patch("app.routes.get_data_manager") as mock_get_data_manager:
             mock_data_manager = mock_get_data_manager.return_value
             mock_data_manager.get_user_needs.side_effect = Exception("Database error")
-            
+
             response = client.get("/browse")
             assert response.status_code in [200, 302]  # May redirect on error
 
@@ -72,7 +75,9 @@ class TestAdditionalCoverage:
         data = response.get_json()
         assert "success" in data or "error" in data
 
-    def test_api_configuration_route_remove_option_not_found(self, client, data_manager):
+    def test_api_configuration_route_remove_option_not_found(
+        self, client, data_manager
+    ):
         """Test API configuration route remove non-existent option."""
         data = {
             "config_type": "severity",
@@ -153,7 +158,9 @@ class TestAdditionalCoverage:
         assert result is False
 
         # Test add_config_option with invalid config type
-        result = data_manager.add_config_option("invalid_type", "Test", "Test description")
+        result = data_manager.add_config_option(
+            "invalid_type", "Test", "Test description"
+        )
         assert result is not None  # Should still return an ID
 
     def test_data_utils_remove_config_option_edge_cases(self, data_manager):
@@ -169,9 +176,13 @@ class TestAdditionalCoverage:
     def test_data_utils_update_config_option_edge_cases(self, data_manager):
         """Test data_utils update_config_option edge cases."""
         # Test update_config_option with non-existent option
-        result = data_manager.update_config_option("severity", "S999", "Updated", "Updated description")
+        result = data_manager.update_config_option(
+            "severity", "S999", "Updated", "Updated description"
+        )
         assert result is False
 
         # Test update_config_option with invalid config type
-        result = data_manager.update_config_option("invalid_type", "S1", "Updated", "Updated description")
+        result = data_manager.update_config_option(
+            "invalid_type", "S1", "Updated", "Updated description"
+        )
         assert result is False

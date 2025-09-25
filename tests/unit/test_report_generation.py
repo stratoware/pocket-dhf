@@ -2,7 +2,7 @@
 
 """Unit tests for report generation functionality."""
 
-from unittest.mock import mock_open, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
@@ -23,54 +23,59 @@ class TestReportGeneration:
     """Test cases for report generation functionality."""
 
     @pytest.mark.unit
-    def test_get_report_templates_success(self):
+    def test_get_report_templates_success(self, app):
         """Test getting report templates successfully."""
-        with patch("os.path.exists", return_value=True), patch(
-            "os.listdir",
-            return_value=["specifications.md", "requirements_and_needs.md"],
-        ), patch(
-            "builtins.open",
-            mock_open(read_data="# Test Report\n## Purpose\nTest purpose"),
-        ):
-
-            templates = get_report_templates()
-            assert len(templates) == 2
-            assert templates[0]["name"] == "specifications"
-            assert templates[0]["title"] == "Test Report"
-            # The actual implementation uses 'Report template' as default description
-            assert templates[0]["description"] == "Report template"
-
-    @pytest.mark.unit
-    def test_get_report_templates_no_directory(self):
-        """Test getting report templates when directory doesn't exist."""
-        with patch("os.path.exists", return_value=False):
-            templates = get_report_templates()
-            assert templates == []
-
-    @pytest.mark.unit
-    def test_generate_report_content_success(self, sample_dhf_data):
-        """Test generating report content successfully."""
-        with patch("os.path.exists", return_value=True), patch(
-            "builtins.open",
-            mock_open(
-                read_data="# {{project_name}}\n## Purpose\nTest purpose\n<!-- AUTO_CONTENT: user_needs_table -->"
-            ),
-        ):
-
-            with patch(
-                "app.routes.data_manager.load_data", return_value=sample_dhf_data
+        with app.app_context():
+            with patch("os.path.exists", return_value=True), patch(
+                "os.listdir",
+                return_value=["specifications.md", "requirements_and_needs.md"],
+            ), patch(
+                "builtins.open",
+                mock_open(read_data="# Test Report\n## Purpose\nTest purpose"),
             ):
-                content = generate_report_content("test_report")
-                assert content is not None
-                assert "Test Diabetes Monitor" in content["content"]
-                assert "Accurate Glucose Monitoring" in content["content"]
+
+                templates = get_report_templates()
+                assert len(templates) == 2
+                assert templates[0]["name"] == "specifications"
+                assert templates[0]["title"] == "Test Report"
+                # The actual implementation uses 'Report template' as default description
+                assert templates[0]["description"] == "Report template"
 
     @pytest.mark.unit
-    def test_generate_report_content_file_not_found(self):
+    def test_get_report_templates_no_directory(self, app):
+        """Test getting report templates when directory doesn't exist."""
+        with app.app_context():
+            with patch("os.path.exists", return_value=False):
+                templates = get_report_templates()
+                assert templates == []
+
+    @pytest.mark.unit
+    def test_generate_report_content_success(self, app, sample_dhf_data):
+        """Test generating report content successfully."""
+        with app.app_context():
+            with patch("os.path.exists", return_value=True), patch(
+                "builtins.open",
+                mock_open(
+                    read_data="# {{project_name}}\n## Purpose\nTest purpose\n<!-- AUTO_CONTENT: user_needs_table -->"
+                ),
+            ):
+
+                with patch("app.routes.get_data_manager") as mock_get_data_manager:
+                    mock_data_manager = MagicMock()
+                    mock_data_manager.load_data.return_value = sample_dhf_data
+                    mock_get_data_manager.return_value = mock_data_manager
+                    content = generate_report_content("test_report")
+                    assert content is not None
+                    assert "Test Diabetes Monitor" in content["content"]
+                    assert "Accurate Glucose Monitoring" in content["content"]
+
+    @pytest.mark.unit
+    def test_generate_report_content_file_not_found(self, app):
         """Test generating report content when file doesn't exist."""
-        with patch("os.path.exists", return_value=False):
-            content = generate_report_content("nonexistent")
-            assert content is None
+        with app.app_context():
+            with patch("os.path.exists", return_value=False):
+                content = generate_report_content("nonexistent")
+                assert content is None
 
     @pytest.mark.unit
     def test_process_auto_content_user_needs_table(self, sample_dhf_data):
@@ -236,7 +241,9 @@ class TestReportGeneration:
         assert "tabular format" in summary
 
     @pytest.mark.unit
-    def test_generate_report_content_with_template_variables(self, sample_dhf_data):
+    def test_generate_report_content_with_template_variables(
+        self, app, sample_dhf_data
+    ):
         """Test generating report content with template variables."""
         template_content = """
         # {{project_name}}
@@ -246,17 +253,19 @@ class TestReportGeneration:
         Next Review: {{next_review_date}}
         """
 
-        with patch("os.path.exists", return_value=True), patch(
-            "builtins.open", mock_open(read_data=template_content)
-        ):
-
-            with patch(
-                "app.routes.data_manager.load_data", return_value=sample_dhf_data
+        with app.app_context():
+            with patch("os.path.exists", return_value=True), patch(
+                "builtins.open", mock_open(read_data=template_content)
             ):
-                content = generate_report_content("test_report")
-                assert content is not None
-                assert "Test Diabetes Monitor" in content["content"]
-                assert "Continuous Glucose Monitor" in content["content"]
-                assert "1.0.0" in content["content"]
-                assert "Generated:" in content["content"]
-                assert "Next Review:" in content["content"]
+
+                with patch("app.routes.get_data_manager") as mock_get_data_manager:
+                    mock_data_manager = MagicMock()
+                    mock_data_manager.load_data.return_value = sample_dhf_data
+                    mock_get_data_manager.return_value = mock_data_manager
+                    content = generate_report_content("test_report")
+                    assert content is not None
+                    assert "Test Diabetes Monitor" in content["content"]
+                    assert "Continuous Glucose Monitor" in content["content"]
+                    assert "1.0.0" in content["content"]
+                    assert "Generated:" in content["content"]
+                    assert "Next Review:" in content["content"]

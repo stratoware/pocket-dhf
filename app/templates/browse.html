@@ -798,10 +798,10 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
     function updateLinkedItemsDisplay(data) {
         // Update user needs display
         updateLinkedItemsSection('user-needs', data.linked_user_needs || []);
-        
+
         // Update risks display
         updateLinkedItemsSection('risks', data.linked_risks || []);
-        
+
         // Update product requirements display
         updateLinkedItemsSection('product-requirements', data.linked_product_requirements || []);
     }
@@ -844,16 +844,16 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
         const modal = new bootstrap.Modal(document.getElementById('linkedItemsModal'));
         const modalTitle = document.getElementById('linkedItemsModalLabel');
         const modalContent = document.getElementById('modal-linked-items-content');
-        
+
         // Set modal title
         modalTitle.textContent = `Edit Linked ${sectionType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
-        
+
         // Generate modal content
         modalContent.innerHTML = generateModalContent(sectionType);
-        
+
         // Store current section type for saving
         modalContent.dataset.sectionType = sectionType;
-        
+
         // Show modal
         modal.show();
     }
@@ -861,15 +861,15 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
     function generateModalContent(sectionType) {
         const items = linkableItems[sectionType] || [];
         const currentLinked = getCurrentLinkedItems(sectionType);
-        
+
         let content = '<div class="modal-linked-items-list">';
-        
+
         items.forEach(item => {
             const isChecked = currentLinked.includes(item.id);
-            
+
             content += `
                 <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" value="${item.id}" 
+                    <input class="form-check-input" type="checkbox" value="${item.id}"
                            id="modal-${item.id}" ${isChecked ? 'checked' : ''}>
                     <label class="form-check-label" for="modal-${item.id}">
                         <strong>${item.id}:</strong> ${item.title}
@@ -877,57 +877,57 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                 </div>
             `;
         });
-        
+
         content += '</div>';
-        
+
         if (items.length === 0) {
             content = '<p class="text-muted text-center py-3">No items available to link.</p>';
         }
-        
+
         return content;
     }
 
     function getCurrentLinkedItems(sectionType) {
         if (!currentItemData) return [];
-        
+
         const fieldMap = {
             'user_needs': 'linked_user_needs',
             'risks': 'linked_risks',
             'product_requirements': 'linked_product_requirements'
         };
-        
+
         return currentItemData[fieldMap[sectionType]] || [];
     }
 
     function saveLinkedItems() {
         const modalContent = document.getElementById('modal-linked-items-content');
         const sectionType = modalContent.dataset.sectionType;
-        
+
         if (!sectionType || !currentItemData) return;
-        
+
         // Get checked items
         const checkboxes = modalContent.querySelectorAll('input[type="checkbox"]:checked');
         const linkedIds = Array.from(checkboxes).map(cb => cb.value);
-        
+
         // Update current item data
         const fieldMap = {
             'user_needs': 'linked_user_needs',
             'risks': 'linked_risks',
             'product_requirements': 'linked_product_requirements'
         };
-        
+
         currentItemData[fieldMap[sectionType]] = linkedIds;
-        
+
         // Update display
         updateLinkedItemsDisplay(currentItemData);
-        
+
         // Mark as having unsaved changes
         hasUnsavedChanges = true;
-        
+
         // Close modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('linkedItemsModal'));
         modal.hide();
-        
+
         showStatus('Linked items updated. Don\'t forget to save the item.', 'info');
     }
 
@@ -1438,11 +1438,11 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('main-content');
         const resizeHandle = document.getElementById('resize-handle');
-        
+
         let isResizing = false;
         let startX = 0;
         let startSidebarWidth = 0;
-        
+
         resizeHandle.addEventListener('mousedown', function(e) {
             isResizing = true;
             startX = e.clientX;
@@ -1451,22 +1451,22 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
             document.body.style.userSelect = 'none';
             e.preventDefault();
         });
-        
+
         document.addEventListener('mousemove', function(e) {
             if (!isResizing) return;
-            
+
             const deltaX = e.clientX - startX;
             const containerWidth = sidebar.parentElement.offsetWidth;
             const newSidebarWidth = startSidebarWidth + (deltaX / containerWidth) * 100;
-            
+
             // Constrain between 25% and 75%
             const constrainedWidth = Math.max(25, Math.min(75, newSidebarWidth));
             const mainWidth = 100 - constrainedWidth;
-            
+
             sidebar.style.width = constrainedWidth + '%';
             mainContent.style.width = mainWidth + '%';
         });
-        
+
         document.addEventListener('mouseup', function() {
             if (isResizing) {
                 isResizing = false;
@@ -1494,7 +1494,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
         // Hide other panels
         welcomePanel.classList.add('d-none');
         editorPanel.classList.add('d-none');
-        
+
         // Show traceability content
         traceabilityContent.classList.remove('d-none');
 
@@ -1518,7 +1518,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
     function hideTraceabilityTable() {
         const welcomePanel = document.getElementById('welcome-panel');
         const traceabilityContent = document.getElementById('traceability-content');
-        
+
         traceabilityContent.classList.add('d-none');
         welcomePanel.classList.remove('d-none');
     }
@@ -1540,7 +1540,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                 </table>
             </div>
         `;
-        
+
         // Load data via API
         loadUserNeedsToRequirementsData();
     }
@@ -1562,7 +1562,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                 </table>
             </div>
         `;
-        
+
         loadRequirementsToSpecificationsData();
     }
 
@@ -1582,7 +1582,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                 </table>
             </div>
         `;
-        
+
         loadRisksToMitigationsData();
     }
 
@@ -1592,13 +1592,13 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
             .then(data => {
                 const tbody = document.getElementById('user-needs-requirements-tbody');
                 tbody.innerHTML = '';
-                
+
                 data.forEach(row => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><a href="#" onclick="loadItem('${row.user_need.id}', 'user_need')" class="text-decoration-none">${row.user_need.id}: ${row.user_need.title}</a></td>
                         <td>
-                            ${row.requirements.map(req => 
+                            ${row.requirements.map(req =>
                                 `<a href="#" onclick="loadItem('${req.id}', 'product_requirement')" class="text-decoration-none d-block">${req.id}: ${req.title}</a>`
                             ).join('')}
                         </td>
@@ -1608,7 +1608,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
             })
             .catch(error => {
                 console.error('Error loading user needs to requirements data:', error);
-                document.getElementById('user-needs-requirements-tbody').innerHTML = 
+                document.getElementById('user-needs-requirements-tbody').innerHTML =
                     '<tr><td colspan="2" class="text-center text-muted">Error loading data</td></tr>';
             });
     }
@@ -1619,18 +1619,18 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
             .then(data => {
                 const tbody = document.getElementById('requirements-specifications-tbody');
                 tbody.innerHTML = '';
-                
+
                 data.forEach(row => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><a href="#" onclick="loadItem('${row.requirement.id}', 'product_requirement')" class="text-decoration-none">${row.requirement.id}: ${row.requirement.title}</a></td>
                         <td>
-                            ${row.software_specs.map(spec => 
+                            ${row.software_specs.map(spec =>
                                 `<a href="#" onclick="loadItem('${spec.id}', 'software_specification')" class="text-decoration-none d-block">${spec.id}: ${spec.title}</a>`
                             ).join('')}
                         </td>
                         <td>
-                            ${row.hardware_specs.map(spec => 
+                            ${row.hardware_specs.map(spec =>
                                 `<a href="#" onclick="loadItem('${spec.id}', 'hardware_specification')" class="text-decoration-none d-block">${spec.id}: ${spec.title}</a>`
                             ).join('')}
                         </td>
@@ -1640,7 +1640,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
             })
             .catch(error => {
                 console.error('Error loading requirements to specifications data:', error);
-                document.getElementById('requirements-specifications-tbody').innerHTML = 
+                document.getElementById('requirements-specifications-tbody').innerHTML =
                     '<tr><td colspan="3" class="text-center text-muted">Error loading data</td></tr>';
             });
     }
@@ -1651,13 +1651,13 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
             .then(data => {
                 const tbody = document.getElementById('risks-mitigations-tbody');
                 tbody.innerHTML = '';
-                
+
                 data.forEach(row => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><a href="#" onclick="loadItem('${row.risk.id}', 'risk')" class="text-decoration-none">${row.risk.id}: ${row.risk.title}</a></td>
                         <td>
-                            ${row.mitigations.map(mit => 
+                            ${row.mitigations.map(mit =>
                                 `<a href="#" onclick="loadItem('${mit.id}', '${mit.type === 'software' ? 'software_specification' : 'hardware_specification'}')" class="text-decoration-none d-block">${mit.id}: ${mit.title}</a>`
                             ).join('')}
                         </td>
@@ -1667,7 +1667,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
             })
             .catch(error => {
                 console.error('Error loading risks to mitigations data:', error);
-                document.getElementById('risks-mitigations-tbody').innerHTML = 
+                document.getElementById('risks-mitigations-tbody').innerHTML =
                     '<tr><td colspan="2" class="text-center text-muted">Error loading data</td></tr>';
             });
     }

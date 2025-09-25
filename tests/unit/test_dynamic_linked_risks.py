@@ -1,10 +1,10 @@
+# Copyright (c) 2025 Stratoware LLC. All rights reserved.
+
 """
 Tests for dynamic linked_risks functionality in /api/item endpoint.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
-from app import create_app
+from unittest.mock import MagicMock, patch
 
 
 class TestDynamicLinkedRisks:
@@ -21,7 +21,7 @@ class TestDynamicLinkedRisks:
                             "id": "SS001",
                             "title": "Motion Sensor Fusion",
                             "description": "Multi-sensor fusion algorithm",
-                            "linked_product_requirements": ["PR004", "PR005"]
+                            "linked_product_requirements": ["PR004", "PR005"],
                         }
                     }
                 }
@@ -30,7 +30,7 @@ class TestDynamicLinkedRisks:
                 "ML001": {
                     "specification_id": "SS001",
                     "risk_id": "R001",
-                    "specification_type": "software"
+                    "specification_type": "software",
                 }
             },
             "risks": {
@@ -39,21 +39,23 @@ class TestDynamicLinkedRisks:
                         "R001": {
                             "id": "R001",
                             "title": "Sensor Malfunction",
-                            "description": "Risk of sensor failure"
+                            "description": "Risk of sensor failure",
                         }
                     }
                 }
-            }
+            },
         }
-        
-        with patch('app.routes.get_data_manager') as mock_get_dm:
+
+        with patch("app.routes.get_data_manager") as mock_get_dm:
             mock_dm = MagicMock()
-            mock_dm.get_item_by_id.return_value = mock_data["software_specifications"]["sensor_processing"]["specifications"]["SS001"]
+            mock_dm.get_item_by_id.return_value = mock_data["software_specifications"][
+                "sensor_processing"
+            ]["specifications"]["SS001"]
             mock_dm.load_data.return_value = mock_data
             mock_get_dm.return_value = mock_dm
-            
-            response = client.get('/api/item/SS001')
-            
+
+            response = client.get("/api/item/SS001")
+
             assert response.status_code == 200
             data = response.get_json()
             assert "linked_risks" in data
@@ -71,7 +73,7 @@ class TestDynamicLinkedRisks:
                             "id": "HS001",
                             "title": "9-Axis IMU Sensor",
                             "description": "Integrated 9-axis inertial measurement unit",
-                            "linked_product_requirements": ["PR004", "PR005"]
+                            "linked_product_requirements": ["PR004", "PR005"],
                         }
                     }
                 }
@@ -80,7 +82,7 @@ class TestDynamicLinkedRisks:
                 "ML001": {
                     "specification_id": "HS001",
                     "risk_id": "R001",
-                    "specification_type": "hardware"
+                    "specification_type": "hardware",
                 }
             },
             "risks": {
@@ -89,21 +91,23 @@ class TestDynamicLinkedRisks:
                         "R001": {
                             "id": "R001",
                             "title": "Sensor Malfunction",
-                            "description": "Risk of sensor failure"
+                            "description": "Risk of sensor failure",
                         }
                     }
                 }
-            }
+            },
         }
-        
-        with patch('app.routes.get_data_manager') as mock_get_dm:
+
+        with patch("app.routes.get_data_manager") as mock_get_dm:
             mock_dm = MagicMock()
-            mock_dm.get_item_by_id.return_value = mock_data["hardware_specifications"]["sensors"]["specifications"]["HS001"]
+            mock_dm.get_item_by_id.return_value = mock_data["hardware_specifications"][
+                "sensors"
+            ]["specifications"]["HS001"]
             mock_dm.load_data.return_value = mock_data
             mock_get_dm.return_value = mock_dm
-            
-            response = client.get('/api/item/HS001')
-            
+
+            response = client.get("/api/item/HS001")
+
             assert response.status_code == 200
             data = response.get_json()
             assert "linked_risks" in data
@@ -121,7 +125,7 @@ class TestDynamicLinkedRisks:
                             "id": "SS001",
                             "title": "Motion Sensor Fusion",
                             "description": "Multi-sensor fusion algorithm",
-                            "linked_product_requirements": ["PR004", "PR005"]
+                            "linked_product_requirements": ["PR004", "PR005"],
                         }
                     }
                 }
@@ -130,13 +134,13 @@ class TestDynamicLinkedRisks:
                 "ML001": {
                     "specification_id": "SS001",
                     "risk_id": "R001",
-                    "specification_type": "software"
+                    "specification_type": "software",
                 },
                 "ML002": {
                     "specification_id": "SS001",
                     "risk_id": "R002",
-                    "specification_type": "software"
-                }
+                    "specification_type": "software",
+                },
             },
             "risks": {
                 "safety": {
@@ -144,26 +148,28 @@ class TestDynamicLinkedRisks:
                         "R001": {
                             "id": "R001",
                             "title": "Sensor Malfunction",
-                            "description": "Risk of sensor failure"
+                            "description": "Risk of sensor failure",
                         },
                         "R002": {
                             "id": "R002",
                             "title": "Data Loss",
-                            "description": "Risk of data loss"
-                        }
+                            "description": "Risk of data loss",
+                        },
                     }
                 }
-            }
+            },
         }
-        
-        with patch('app.routes.get_data_manager') as mock_get_dm:
+
+        with patch("app.routes.get_data_manager") as mock_get_dm:
             mock_dm = MagicMock()
-            mock_dm.get_item_by_id.return_value = mock_data["software_specifications"]["sensor_processing"]["specifications"]["SS001"]
+            mock_dm.get_item_by_id.return_value = mock_data["software_specifications"][
+                "sensor_processing"
+            ]["specifications"]["SS001"]
             mock_dm.load_data.return_value = mock_data
             mock_get_dm.return_value = mock_dm
-            
-            response = client.get('/api/item/SS001')
-            
+
+            response = client.get("/api/item/SS001")
+
             assert response.status_code == 200
             data = response.get_json()
             assert "linked_risks" in data
@@ -180,23 +186,25 @@ class TestDynamicLinkedRisks:
                             "id": "SS001",
                             "title": "Motion Sensor Fusion",
                             "description": "Multi-sensor fusion algorithm",
-                            "linked_product_requirements": ["PR004", "PR005"]
+                            "linked_product_requirements": ["PR004", "PR005"],
                         }
                     }
                 }
             },
             "mitigation_links": {},
-            "risks": {}
+            "risks": {},
         }
-        
-        with patch('app.routes.get_data_manager') as mock_get_dm:
+
+        with patch("app.routes.get_data_manager") as mock_get_dm:
             mock_dm = MagicMock()
-            mock_dm.get_item_by_id.return_value = mock_data["software_specifications"]["sensor_processing"]["specifications"]["SS001"]
+            mock_dm.get_item_by_id.return_value = mock_data["software_specifications"][
+                "sensor_processing"
+            ]["specifications"]["SS001"]
             mock_dm.load_data.return_value = mock_data
             mock_get_dm.return_value = mock_dm
-            
-            response = client.get('/api/item/SS001')
-            
+
+            response = client.get("/api/item/SS001")
+
             assert response.status_code == 200
             data = response.get_json()
             assert "linked_risks" not in data
@@ -211,21 +219,23 @@ class TestDynamicLinkedRisks:
                         "UN001": {
                             "id": "UN001",
                             "title": "Quantitative and trustworthy metrics",
-                            "description": "Athletes need quantitative and trustworthy metrics"
+                            "description": "Athletes need quantitative and trustworthy metrics",
                         }
                     }
                 }
             }
         }
-        
-        with patch('app.routes.get_data_manager') as mock_get_dm:
+
+        with patch("app.routes.get_data_manager") as mock_get_dm:
             mock_dm = MagicMock()
-            mock_dm.get_item_by_id.return_value = mock_data["user_needs"]["performance"]["needs"]["UN001"]
+            mock_dm.get_item_by_id.return_value = mock_data["user_needs"][
+                "performance"
+            ]["needs"]["UN001"]
             mock_dm.load_data.return_value = mock_data
             mock_get_dm.return_value = mock_dm
-            
-            response = client.get('/api/item/UN001')
-            
+
+            response = client.get("/api/item/UN001")
+
             assert response.status_code == 200
             data = response.get_json()
             assert "linked_risks" not in data
@@ -240,7 +250,7 @@ class TestDynamicLinkedRisks:
                         "SS001": {
                             "id": "SS001",
                             "title": "Motion Sensor Fusion",
-                            "description": "Multi-sensor fusion algorithm"
+                            "description": "Multi-sensor fusion algorithm",
                         }
                     }
                 }
@@ -249,7 +259,7 @@ class TestDynamicLinkedRisks:
                 "ML001": {
                     "specification_id": "SS001",
                     "risk_id": "INVALID_RISK",
-                    "specification_type": "software"
+                    "specification_type": "software",
                 }
             },
             "risks": {
@@ -258,21 +268,23 @@ class TestDynamicLinkedRisks:
                         "R001": {
                             "id": "R001",
                             "title": "Valid Risk",
-                            "description": "A valid risk"
+                            "description": "A valid risk",
                         }
                     }
                 }
-            }
+            },
         }
-        
-        with patch('app.routes.get_data_manager') as mock_get_dm:
+
+        with patch("app.routes.get_data_manager") as mock_get_dm:
             mock_dm = MagicMock()
-            mock_dm.get_item_by_id.return_value = mock_data["software_specifications"]["sensor_processing"]["specifications"]["SS001"]
+            mock_dm.get_item_by_id.return_value = mock_data["software_specifications"][
+                "sensor_processing"
+            ]["specifications"]["SS001"]
             mock_dm.load_data.return_value = mock_data
             mock_get_dm.return_value = mock_dm
-            
-            response = client.get('/api/item/SS001')
-            
+
+            response = client.get("/api/item/SS001")
+
             assert response.status_code == 200
             data = response.get_json()
             # Should not have linked_risks since the risk ID is invalid
@@ -287,7 +299,7 @@ class TestDynamicLinkedRisks:
                         "SS001": {
                             "id": "SS001",
                             "title": "Motion Sensor Fusion",
-                            "description": "Multi-sensor fusion algorithm"
+                            "description": "Multi-sensor fusion algorithm",
                         }
                     }
                 }
@@ -296,20 +308,22 @@ class TestDynamicLinkedRisks:
                 "ML001": {
                     "specification_id": "SS001",
                     "risk_id": "R001",
-                    "specification_type": "software"
+                    "specification_type": "software",
                 }
             },
-            "risks": {}  # Empty risks section
+            "risks": {},  # Empty risks section
         }
-        
-        with patch('app.routes.get_data_manager') as mock_get_dm:
+
+        with patch("app.routes.get_data_manager") as mock_get_dm:
             mock_dm = MagicMock()
-            mock_dm.get_item_by_id.return_value = mock_data["software_specifications"]["sensor_processing"]["specifications"]["SS001"]
+            mock_dm.get_item_by_id.return_value = mock_data["software_specifications"][
+                "sensor_processing"
+            ]["specifications"]["SS001"]
             mock_dm.load_data.return_value = mock_data
             mock_get_dm.return_value = mock_dm
-            
-            response = client.get('/api/item/SS001')
-            
+
+            response = client.get("/api/item/SS001")
+
             assert response.status_code == 200
             data = response.get_json()
             # Should not have linked_risks since the risk data is missing
@@ -317,18 +331,14 @@ class TestDynamicLinkedRisks:
 
     def test_api_item_error_handling(self, app, client):
         """Test error handling in the linked_risks functionality."""
-        with patch('app.routes.get_data_manager') as mock_get_dm:
+        with patch("app.routes.get_data_manager") as mock_get_dm:
             mock_dm = MagicMock()
-            mock_dm.get_item_by_id.return_value = {
-                "id": "SS001",
-                "title": "Test Spec"
-            }
+            mock_dm.get_item_by_id.return_value = {"id": "SS001", "title": "Test Spec"}
             mock_dm.load_data.side_effect = Exception("Database error")
             mock_get_dm.return_value = mock_dm
-            
-            response = client.get('/api/item/SS001')
-            
+
+            response = client.get("/api/item/SS001")
+
             assert response.status_code == 500
             data = response.get_json()
             assert "error" in data
-

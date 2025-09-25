@@ -7,7 +7,16 @@ import re
 import subprocess
 from datetime import datetime, timedelta
 
-from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 
 from app.data_utils import DHFDataManager
 
@@ -20,6 +29,7 @@ def get_data_manager():
     global data_manager
     if data_manager is None:
         from flask import current_app
+
         data_file_path = current_app.config.get("DHF_DATA_FILE")
         data_manager = DHFDataManager(data_file_path)
     return data_manager
@@ -107,7 +117,10 @@ def browse():
         for group in product_requirements.values():
             if "requirements" in group:
                 # Check if this is a 3-level structure (nested requirements)
-                if any(isinstance(req, dict) and "requirements" in req for req in group["requirements"].values()):
+                if any(
+                    isinstance(req, dict) and "requirements" in req
+                    for req in group["requirements"].values()
+                ):
                     # 3-level structure: count all nested requirements
                     for sub_group in group["requirements"].values():
                         if "requirements" in sub_group:
@@ -330,24 +343,28 @@ def get_item(item_id):
         item = data_manager.get_item_by_id(item_id)
         if item:
             # Add linked risks for specifications based on mitigation links
-            if item_id.startswith('SS') or item_id.startswith('HS'):
+            if item_id.startswith("SS") or item_id.startswith("HS"):
                 data = data_manager.load_data()
                 linked_risks = []
-                
-                for mitigation_id, mitigation in data.get("mitigation_links", {}).items():
-                    if (mitigation.get("specification_id") == item_id):
+
+                for mitigation_id, mitigation in data.get(
+                    "mitigation_links", {}
+                ).items():
+                    if mitigation.get("specification_id") == item_id:
                         risk_id = mitigation.get("risk_id")
                         if risk_id:
                             # Find the risk details
                             for risk_group in data.get("risks", {}).values():
-                                if "risks" in risk_group and risk_id in risk_group["risks"]:
-                                    risk_data = risk_group["risks"][risk_id]
+                                if (
+                                    "risks" in risk_group
+                                    and risk_id in risk_group["risks"]
+                                ):
                                     linked_risks.append(risk_id)
                                     break
-                
+
                 if linked_risks:
                     item["linked_risks"] = linked_risks
-            
+
             return jsonify(item)
         else:
             return jsonify({"error": "Item not found"}), 404
@@ -775,7 +792,9 @@ def health():
 
 def get_report_templates():
     """Get list of available report templates."""
-    templates_dir = current_app.config.get("DHF_REPORTS_DIR", "sample-data/report-templates")
+    templates_dir = current_app.config.get(
+        "DHF_REPORTS_DIR", "sample-data/report-templates"
+    )
     templates = []
 
     if os.path.exists(templates_dir):
@@ -815,7 +834,9 @@ def get_report_templates():
 
 def generate_report_content(report_name):
     """Generate report content by processing template and inserting DHF data."""
-    templates_dir = current_app.config.get("DHF_REPORTS_DIR", "sample-data/report-templates")
+    templates_dir = current_app.config.get(
+        "DHF_REPORTS_DIR", "sample-data/report-templates"
+    )
     template_path = os.path.join(templates_dir, f"{report_name}.md")
 
     if not os.path.exists(template_path):
@@ -903,7 +924,9 @@ def generate_user_needs_table(data):
             # New nested structure
             for need_id, need in group_data["needs"].items():
                 title = need.get("title", "Untitled").replace("|", "\\|")
-                description = need.get("description", "No description").replace("|", "\\|")
+                description = need.get("description", "No description").replace(
+                    "|", "\\|"
+                )
                 # Truncate description if too long
                 if len(description) > 100:
                     description = description[:97] + "..."
@@ -911,7 +934,9 @@ def generate_user_needs_table(data):
         else:
             # Legacy flat structure
             title = group_data.get("title", "Untitled").replace("|", "\\|")
-            description = group_data.get("description", "No description").replace("|", "\\|")
+            description = group_data.get("description", "No description").replace(
+                "|", "\\|"
+            )
             # Truncate description if too long
             if len(description) > 100:
                 description = description[:97] + "..."
@@ -935,31 +960,42 @@ def generate_product_requirements_tables(data):
 
         if requirements:
             output += f"### {group_name}\n\n"
-            
+
             # Check if this is a 3-level structure (nested requirements)
-            if any(isinstance(req, dict) and "requirements" in req for req in requirements.values()):
+            if any(
+                isinstance(req, dict) and "requirements" in req
+                for req in requirements.values()
+            ):
                 # 3-level structure: iterate through sub-groups
                 for sub_key, sub_group in requirements.items():
                     if isinstance(sub_group, dict) and "requirements" in sub_group:
                         sub_group_name = sub_group.get("group_name", sub_key)
                         sub_requirements = sub_group.get("requirements", {})
-                        
+
                         if sub_requirements:
                             output += f"#### {sub_group_name}\n\n"
-                            output += "| ID | Title | Description | Linked User Needs |\n"
-                            output += "|----|-------|-------------|-------------------|\n"
-                            
+                            output += (
+                                "| ID | Title | Description | Linked User Needs |\n"
+                            )
+                            output += (
+                                "|----|-------|-------------|-------------------|\n"
+                            )
+
                             for req_id, req in sub_requirements.items():
                                 title = req.get("title", "Untitled").replace("|", "\\|")
-                                description = req.get("description", "No description").replace("|", "\\|")
+                                description = req.get(
+                                    "description", "No description"
+                                ).replace("|", "\\|")
                                 if len(description) > 80:
                                     description = description[:77] + "..."
-                                
+
                                 linked_needs = req.get("linked_user_needs", [])
-                                linked_str = ", ".join(linked_needs) if linked_needs else "None"
-                                
+                                linked_str = (
+                                    ", ".join(linked_needs) if linked_needs else "None"
+                                )
+
                                 output += f"| {req_id} | {title} | {description} | {linked_str} |\n"
-                            
+
                             output += "\n"
             else:
                 # 2-level structure: direct requirements
@@ -968,7 +1004,9 @@ def generate_product_requirements_tables(data):
 
                 for req_id, req in requirements.items():
                     title = req.get("title", "Untitled").replace("|", "\\|")
-                    description = req.get("description", "No description").replace("|", "\\|")
+                    description = req.get("description", "No description").replace(
+                        "|", "\\|"
+                    )
                     if len(description) > 80:
                         description = description[:77] + "..."
 
@@ -1068,7 +1106,7 @@ def generate_traceability_matrix(data):
             # New nested structure
             for need_id, need in group_data["needs"].items():
                 need_title = need.get("title", need_id)
-                
+
                 # Find linked requirements
                 linked_reqs = []
                 linked_sw_specs = []
@@ -1077,11 +1115,16 @@ def generate_traceability_matrix(data):
                 for pr_group in product_requirements.values():
                     if "requirements" in pr_group:
                         # Check if this is a 3-level structure (nested requirements)
-                        if any(isinstance(req, dict) and "requirements" in req for req in pr_group["requirements"].values()):
+                        if any(
+                            isinstance(req, dict) and "requirements" in req
+                            for req in pr_group["requirements"].values()
+                        ):
                             # 3-level structure: search in nested requirements
                             for sub_group in pr_group["requirements"].values():
                                 if "requirements" in sub_group:
-                                    for req_id, req in sub_group["requirements"].items():
+                                    for req_id, req in sub_group[
+                                        "requirements"
+                                    ].items():
                                         if need_id in req.get("linked_user_needs", []):
                                             linked_reqs.append(req_id)
                         else:
@@ -1098,7 +1141,7 @@ def generate_traceability_matrix(data):
         else:
             # Legacy flat structure
             need_title = group_data.get("title", group_key)
-            
+
             # Find linked requirements
             linked_reqs = []
             linked_sw_specs = []
@@ -1107,7 +1150,10 @@ def generate_traceability_matrix(data):
             for pr_group in product_requirements.values():
                 if "requirements" in pr_group:
                     # Check if this is a 3-level structure (nested requirements)
-                    if any(isinstance(req, dict) and "requirements" in req for req in pr_group["requirements"].values()):
+                    if any(
+                        isinstance(req, dict) and "requirements" in req
+                        for req in pr_group["requirements"].values()
+                    ):
                         # 3-level structure: search in nested requirements
                         for sub_group in pr_group["requirements"].values():
                             if "requirements" in sub_group:
@@ -1139,9 +1185,9 @@ def api_user_needs_to_requirements():
     """API endpoint to get user needs to product requirements traceability data."""
     data_manager = get_data_manager()
     data = data_manager.load_data()
-    
+
     traceability_data = []
-    
+
     # Get all user needs (handle both flat and nested structures)
     user_needs_data = data.get("user_needs", {})
     for group_key, group_data in user_needs_data.items():
@@ -1150,76 +1196,98 @@ def api_user_needs_to_requirements():
             for need_id, need in group_data["needs"].items():
                 # Find linked product requirements
                 linked_requirements = []
-                
+
                 # Search through all product requirements for links to this user need
                 for pr_group in data.get("product_requirements", {}).values():
                     if "requirements" in pr_group:
                         # Handle both 2-level and 3-level structures
-                        if any(isinstance(req, dict) and "requirements" in req for req in pr_group["requirements"].values()):
+                        if any(
+                            isinstance(req, dict) and "requirements" in req
+                            for req in pr_group["requirements"].values()
+                        ):
                             # 3-level structure
                             for sub_group in pr_group["requirements"].values():
                                 if "requirements" in sub_group:
-                                    for req_id, req in sub_group["requirements"].items():
+                                    for req_id, req in sub_group[
+                                        "requirements"
+                                    ].items():
                                         if need_id in req.get("linked_user_needs", []):
-                                            linked_requirements.append({
-                                                "id": req_id,
-                                                "title": req.get("title", "Untitled")
-                                            })
+                                            linked_requirements.append(
+                                                {
+                                                    "id": req_id,
+                                                    "title": req.get(
+                                                        "title", "Untitled"
+                                                    ),
+                                                }
+                                            )
                         else:
                             # 2-level structure
                             for req_id, req in pr_group["requirements"].items():
                                 if need_id in req.get("linked_user_needs", []):
-                                    linked_requirements.append({
-                                        "id": req_id,
-                                        "title": req.get("title", "Untitled")
-                                    })
-                
-                traceability_data.append({
-                    "user_need": {
-                        "id": need_id,
-                        "title": need.get("title", "Untitled")
-                    },
-                    "requirements": linked_requirements
-                })
+                                    linked_requirements.append(
+                                        {
+                                            "id": req_id,
+                                            "title": req.get("title", "Untitled"),
+                                        }
+                                    )
+
+                traceability_data.append(
+                    {
+                        "user_need": {
+                            "id": need_id,
+                            "title": need.get("title", "Untitled"),
+                        },
+                        "requirements": linked_requirements,
+                    }
+                )
         else:
             # Legacy flat structure
             need_id = group_key
             need = group_data
-            
+
             # Find linked product requirements
             linked_requirements = []
-            
+
             # Search through all product requirements for links to this user need
             for pr_group in data.get("product_requirements", {}).values():
                 if "requirements" in pr_group:
                     # Handle both 2-level and 3-level structures
-                    if any(isinstance(req, dict) and "requirements" in req for req in pr_group["requirements"].values()):
+                    if any(
+                        isinstance(req, dict) and "requirements" in req
+                        for req in pr_group["requirements"].values()
+                    ):
                         # 3-level structure
                         for sub_group in pr_group["requirements"].values():
                             if "requirements" in sub_group:
                                 for req_id, req in sub_group["requirements"].items():
                                     if need_id in req.get("linked_user_needs", []):
-                                        linked_requirements.append({
-                                            "id": req_id,
-                                            "title": req.get("title", "Untitled")
-                                        })
+                                        linked_requirements.append(
+                                            {
+                                                "id": req_id,
+                                                "title": req.get("title", "Untitled"),
+                                            }
+                                        )
                     else:
                         # 2-level structure
                         for req_id, req in pr_group["requirements"].items():
                             if need_id in req.get("linked_user_needs", []):
-                                linked_requirements.append({
-                                    "id": req_id,
-                                    "title": req.get("title", "Untitled")
-                                })
-            
-            traceability_data.append({
-                "user_need": {
-                    "id": need_id,
-                    "title": need.get("title", "Untitled")
-                },
-                "requirements": linked_requirements
-            })
-    
+                                linked_requirements.append(
+                                    {
+                                        "id": req_id,
+                                        "title": req.get("title", "Untitled"),
+                                    }
+                                )
+
+            traceability_data.append(
+                {
+                    "user_need": {
+                        "id": need_id,
+                        "title": need.get("title", "Untitled"),
+                    },
+                    "requirements": linked_requirements,
+                }
+            )
+
     return jsonify(traceability_data)
 
 
@@ -1228,71 +1296,93 @@ def api_specifications_to_risks():
     """API endpoint to get specifications to risks traceability data."""
     data_manager = get_data_manager()
     data = data_manager.load_data()
-    
+
     traceability_data = []
-    
+
     # Get all software specifications
     for group in data.get("software_specifications", {}).values():
         if "specifications" in group:
             for spec_id, spec in group["specifications"].items():
                 # Find linked risks through mitigation links
                 linked_risks = []
-                
-                for mitigation_id, mitigation in data.get("mitigation_links", {}).items():
-                    if (mitigation.get("specification_id") == spec_id and 
-                        mitigation.get("specification_type") == "software"):
+
+                for mitigation_id, mitigation in data.get(
+                    "mitigation_links", {}
+                ).items():
+                    if (
+                        mitigation.get("specification_id") == spec_id
+                        and mitigation.get("specification_type") == "software"
+                    ):
                         # Find the risk details
                         risk_id = mitigation.get("risk_id")
                         if risk_id:
                             for risk_group in data.get("risks", {}).values():
-                                if "risks" in risk_group and risk_id in risk_group["risks"]:
+                                if (
+                                    "risks" in risk_group
+                                    and risk_id in risk_group["risks"]
+                                ):
                                     risk_data = risk_group["risks"][risk_id]
-                                    linked_risks.append({
-                                        "id": risk_id,
-                                        "title": risk_data.get("title", "Untitled")
-                                    })
+                                    linked_risks.append(
+                                        {
+                                            "id": risk_id,
+                                            "title": risk_data.get("title", "Untitled"),
+                                        }
+                                    )
                                     break
-                
-                traceability_data.append({
-                    "specification": {
-                        "id": spec_id,
-                        "title": spec.get("title", "Untitled"),
-                        "type": "software"
-                    },
-                    "risks": linked_risks
-                })
-    
+
+                traceability_data.append(
+                    {
+                        "specification": {
+                            "id": spec_id,
+                            "title": spec.get("title", "Untitled"),
+                            "type": "software",
+                        },
+                        "risks": linked_risks,
+                    }
+                )
+
     # Get all hardware specifications
     for group in data.get("hardware_specifications", {}).values():
         if "specifications" in group:
             for spec_id, spec in group["specifications"].items():
                 # Find linked risks through mitigation links
                 linked_risks = []
-                
-                for mitigation_id, mitigation in data.get("mitigation_links", {}).items():
-                    if (mitigation.get("specification_id") == spec_id and 
-                        mitigation.get("specification_type") == "hardware"):
+
+                for mitigation_id, mitigation in data.get(
+                    "mitigation_links", {}
+                ).items():
+                    if (
+                        mitigation.get("specification_id") == spec_id
+                        and mitigation.get("specification_type") == "hardware"
+                    ):
                         # Find the risk details
                         risk_id = mitigation.get("risk_id")
                         if risk_id:
                             for risk_group in data.get("risks", {}).values():
-                                if "risks" in risk_group and risk_id in risk_group["risks"]:
+                                if (
+                                    "risks" in risk_group
+                                    and risk_id in risk_group["risks"]
+                                ):
                                     risk_data = risk_group["risks"][risk_id]
-                                    linked_risks.append({
-                                        "id": risk_id,
-                                        "title": risk_data.get("title", "Untitled")
-                                    })
+                                    linked_risks.append(
+                                        {
+                                            "id": risk_id,
+                                            "title": risk_data.get("title", "Untitled"),
+                                        }
+                                    )
                                     break
-                
-                traceability_data.append({
-                    "specification": {
-                        "id": spec_id,
-                        "title": spec.get("title", "Untitled"),
-                        "type": "hardware"
-                    },
-                    "risks": linked_risks
-                })
-    
+
+                traceability_data.append(
+                    {
+                        "specification": {
+                            "id": spec_id,
+                            "title": spec.get("title", "Untitled"),
+                            "type": "hardware",
+                        },
+                        "risks": linked_risks,
+                    }
+                )
+
     return jsonify(traceability_data)
 
 
@@ -1301,14 +1391,17 @@ def api_requirements_to_specifications():
     """API endpoint to get product requirements to specifications traceability data."""
     data_manager = get_data_manager()
     data = data_manager.load_data()
-    
+
     traceability_data = []
-    
+
     # Get all product requirements
     for pr_group in data.get("product_requirements", {}).values():
         if "requirements" in pr_group:
             # Handle both 2-level and 3-level structures
-            if any(isinstance(req, dict) and "requirements" in req for req in pr_group["requirements"].values()):
+            if any(
+                isinstance(req, dict) and "requirements" in req
+                for req in pr_group["requirements"].values()
+            ):
                 # 3-level structure
                 for sub_group in pr_group["requirements"].values():
                     if "requirements" in sub_group:
@@ -1316,71 +1409,103 @@ def api_requirements_to_specifications():
                             # Find linked specifications
                             linked_software_specs = []
                             linked_hardware_specs = []
-                            
+
                             # Search software specifications
-                            for sw_group in data.get("software_specifications", {}).values():
+                            for sw_group in data.get(
+                                "software_specifications", {}
+                            ).values():
                                 if "specifications" in sw_group:
-                                    for spec_id, spec in sw_group["specifications"].items():
-                                        if req_id in spec.get("linked_product_requirements", []):
-                                            linked_software_specs.append({
-                                                "id": spec_id,
-                                                "title": spec.get("title", "Untitled")
-                                            })
-                            
+                                    for spec_id, spec in sw_group[
+                                        "specifications"
+                                    ].items():
+                                        if req_id in spec.get(
+                                            "linked_product_requirements", []
+                                        ):
+                                            linked_software_specs.append(
+                                                {
+                                                    "id": spec_id,
+                                                    "title": spec.get(
+                                                        "title", "Untitled"
+                                                    ),
+                                                }
+                                            )
+
                             # Search hardware specifications
-                            for hw_group in data.get("hardware_specifications", {}).values():
+                            for hw_group in data.get(
+                                "hardware_specifications", {}
+                            ).values():
                                 if "specifications" in hw_group:
-                                    for spec_id, spec in hw_group["specifications"].items():
-                                        if req_id in spec.get("linked_product_requirements", []):
-                                            linked_hardware_specs.append({
-                                                "id": spec_id,
-                                                "title": spec.get("title", "Untitled")
-                                            })
-                            
-                            traceability_data.append({
-                                "requirement": {
-                                    "id": req_id,
-                                    "title": req.get("title", "Untitled")
-                                },
-                                "software_specs": linked_software_specs,
-                                "hardware_specs": linked_hardware_specs
-                            })
+                                    for spec_id, spec in hw_group[
+                                        "specifications"
+                                    ].items():
+                                        if req_id in spec.get(
+                                            "linked_product_requirements", []
+                                        ):
+                                            linked_hardware_specs.append(
+                                                {
+                                                    "id": spec_id,
+                                                    "title": spec.get(
+                                                        "title", "Untitled"
+                                                    ),
+                                                }
+                                            )
+
+                            traceability_data.append(
+                                {
+                                    "requirement": {
+                                        "id": req_id,
+                                        "title": req.get("title", "Untitled"),
+                                    },
+                                    "software_specs": linked_software_specs,
+                                    "hardware_specs": linked_hardware_specs,
+                                }
+                            )
             else:
                 # 2-level structure
                 for req_id, req in pr_group["requirements"].items():
                     # Find linked specifications
                     linked_software_specs = []
                     linked_hardware_specs = []
-                    
+
                     # Search software specifications
                     for sw_group in data.get("software_specifications", {}).values():
                         if "specifications" in sw_group:
                             for spec_id, spec in sw_group["specifications"].items():
-                                if req_id in spec.get("linked_product_requirements", []):
-                                    linked_software_specs.append({
-                                        "id": spec_id,
-                                        "title": spec.get("title", "Untitled")
-                                    })
-                    
+                                if req_id in spec.get(
+                                    "linked_product_requirements", []
+                                ):
+                                    linked_software_specs.append(
+                                        {
+                                            "id": spec_id,
+                                            "title": spec.get("title", "Untitled"),
+                                        }
+                                    )
+
                     # Search hardware specifications
                     for hw_group in data.get("hardware_specifications", {}).values():
                         if "specifications" in hw_group:
                             for spec_id, spec in hw_group["specifications"].items():
-                                if req_id in spec.get("linked_product_requirements", []):
-                                    linked_hardware_specs.append({
-                                        "id": spec_id,
-                                        "title": spec.get("title", "Untitled")
-                                    })
-                    
-                    traceability_data.append({
-                        "requirement": {
-                            "id": req_id,
-                            "title": req.get("title", "Untitled")
-                        },
-                        "software_specs": linked_software_specs,
-                        "hardware_specs": linked_hardware_specs
-                    })
-    
+                                if req_id in spec.get(
+                                    "linked_product_requirements", []
+                                ):
+                                    linked_hardware_specs.append(
+                                        {
+                                            "id": spec_id,
+                                            "title": spec.get("title", "Untitled"),
+                                        }
+                                    )
+
+                    traceability_data.append(
+                        {
+                            "requirement": {
+                                "id": req_id,
+                                "title": req.get("title", "Untitled"),
+                            },
+                            "software_specs": linked_software_specs,
+                            "hardware_specs": linked_hardware_specs,
+                        }
+                    )
+
     return jsonify(traceability_data)
 
 
@@ -1389,52 +1514,63 @@ def api_risks_to_mitigations():
     """API endpoint to get risks to mitigations traceability data."""
     data_manager = get_data_manager()
     data = data_manager.load_data()
-    
+
     traceability_data = []
-    
+
     # Get all risks
     for group in data.get("risks", {}).values():
         if "risks" in group:
             for risk_id, risk in group["risks"].items():
                 # Find linked mitigations
                 linked_mitigations = []
-                
+
                 # Search through mitigation links
-                for mitigation_id, mitigation in data.get("mitigation_links", {}).items():
+                for mitigation_id, mitigation in data.get(
+                    "mitigation_links", {}
+                ).items():
                     if risk_id == mitigation.get("risk_id"):
                         # Get the actual specification details
                         spec_id = mitigation.get("specification_id")
                         spec_type = mitigation.get("specification_type")
-                        
+
                         if spec_id and spec_type:
                             # Find the specification in the appropriate section
                             spec_data = None
                             if spec_type == "software":
-                                for sw_group in data.get("software_specifications", {}).values():
+                                for sw_group in data.get(
+                                    "software_specifications", {}
+                                ).values():
                                     if "specifications" in sw_group:
                                         if spec_id in sw_group["specifications"]:
-                                            spec_data = sw_group["specifications"][spec_id]
+                                            spec_data = sw_group["specifications"][
+                                                spec_id
+                                            ]
                                             break
                             elif spec_type == "hardware":
-                                for hw_group in data.get("hardware_specifications", {}).values():
+                                for hw_group in data.get(
+                                    "hardware_specifications", {}
+                                ).values():
                                     if "specifications" in hw_group:
                                         if spec_id in hw_group["specifications"]:
-                                            spec_data = hw_group["specifications"][spec_id]
+                                            spec_data = hw_group["specifications"][
+                                                spec_id
+                                            ]
                                             break
-                            
+
                             if spec_data:
-                                linked_mitigations.append({
-                                    "id": spec_id,
-                                    "title": spec_data.get("title", "Untitled"),
-                                    "type": spec_type
-                                })
-                
-                traceability_data.append({
-                    "risk": {
-                        "id": risk_id,
-                        "title": risk.get("title", "Untitled")
-                    },
-                    "mitigations": linked_mitigations
-                })
-    
+                                linked_mitigations.append(
+                                    {
+                                        "id": spec_id,
+                                        "title": spec_data.get("title", "Untitled"),
+                                        "type": spec_type,
+                                    }
+                                )
+
+                traceability_data.append(
+                    {
+                        "risk": {"id": risk_id, "title": risk.get("title", "Untitled")},
+                        "mitigations": linked_mitigations,
+                    }
+                )
+
     return jsonify(traceability_data)

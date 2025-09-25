@@ -3,6 +3,7 @@
 """Pocket DHF - A lightweight Device History File management system."""
 
 import os
+
 from flask import Flask
 
 from app.routes import main
@@ -21,9 +22,9 @@ def create_app(data_file_path: str = None, reports_dir: str = None):
     # Store data file path in app config for access by routes
     if data_file_path is None:
         data_file_path = os.getenv("DHF_DATA_FILE")
-    
+
     app.config["DHF_DATA_FILE"] = data_file_path
-    
+
     # Set up reports directory path
     if reports_dir is None:
         reports_dir = os.getenv("DHF_REPORTS_DIR")

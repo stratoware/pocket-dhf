@@ -16,9 +16,10 @@ def app(sample_dhf_data):
     """Create and configure a new app instance for each test."""
     # Create a temporary file for testing
     db_fd, db_path = tempfile.mkstemp()
-    
+
     # Write sample data to the temporary file
     import yaml
+
     with open(db_path, "w") as f:
         yaml.dump(sample_dhf_data, f)
 
@@ -76,7 +77,7 @@ def sample_dhf_data():
                         "title": "Real-time Alerts",
                         "description": "The device must provide real-time alerts for dangerous glucose levels",
                     },
-                }
+                },
             }
         },
         "risks": {
@@ -112,9 +113,9 @@ def sample_dhf_data():
                                 "description": "The device must measure glucose with ±15% accuracy",
                                 "linked_user_needs": ["UN001"],
                             }
-                        }
+                        },
                     }
-                }
+                },
             }
         },
         "software_specifications": {

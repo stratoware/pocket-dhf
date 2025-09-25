@@ -2,9 +2,10 @@
 
 """Additional tests to improve coverage of routes.py."""
 
-import pytest
-from unittest.mock import patch, mock_open
 import json
+from unittest.mock import patch
+
+import pytest
 
 
 @pytest.mark.unit
@@ -13,14 +14,15 @@ class TestRoutesCoverage:
 
     def test_get_data_manager_function(self, client):
         """Test the get_data_manager helper function."""
-        from app.routes import get_data_manager
         from flask import current_app
-        
+
+        from app.routes import get_data_manager
+
         # Test that it returns a data manager instance
         with current_app.app_context():
             data_manager = get_data_manager()
             assert data_manager is not None
-            assert hasattr(data_manager, 'load_data')
+            assert hasattr(data_manager, "load_data")
 
     def test_browse_route_with_item_id(self, client, data_manager):
         """Test browse route with item_id parameter."""
@@ -155,7 +157,7 @@ class TestRoutesCoverage:
             data=json.dumps(add_data),
             content_type="application/json",
         )
-        
+
         if add_response.status_code == 200:
             new_id = add_response.get_json().get("new_id")
             if new_id:
@@ -242,8 +244,9 @@ class TestRoutesCoverage:
 
     def test_api_generate_report_route_file_error(self, client, data_manager):
         """Test API generate report route with file error."""
-        with patch("os.path.exists", return_value=True), \
-             patch("builtins.open", side_effect=IOError("File error")):
+        with patch("os.path.exists", return_value=True), patch(
+            "builtins.open", side_effect=IOError("File error")
+        ):
             response = client.get("/api/report/requirements_and_needs")
             # The route returns 404 when report not found, even with file errors
             assert response.status_code in [404, 500]
@@ -258,7 +261,7 @@ class TestRoutesCoverage:
             mock_run.return_value.returncode = 0
             mock_run.return_value.stdout = "Tests passed"
             mock_run.return_value.stderr = ""
-            
+
             response = client.post("/api/run-tests")
             assert response.status_code == 200
             data = response.get_json()
@@ -270,7 +273,7 @@ class TestRoutesCoverage:
             mock_run.return_value.returncode = 1
             mock_run.return_value.stdout = "Test output"
             mock_run.return_value.stderr = "Test errors"
-            
+
             response = client.post("/api/run-tests")
             assert response.status_code == 200
             data = response.get_json()
@@ -280,17 +283,17 @@ class TestRoutesCoverage:
     def test_process_auto_content_unknown_type(self, client, data_manager):
         """Test process_auto_content with unknown content type."""
         from app.routes import process_auto_content
-        
+
         content = "Test content <!-- AUTO_CONTENT: unknown_type --> more content"
         data = {"test": "data"}
-        
+
         result = process_auto_content(content, data)
         assert "unknown_type content would be generated here" in result
 
     def test_generate_performance_summary(self, client, data_manager):
         """Test generate_performance_summary function."""
         from app.routes import generate_performance_summary
-        
+
         data = {"test": "data"}
         result = generate_performance_summary(data)
         assert "Performance requirements would be extracted" in result
@@ -298,7 +301,7 @@ class TestRoutesCoverage:
     def test_generate_software_specifications_tables_empty(self, client, data_manager):
         """Test generate_software_specifications_tables with empty data."""
         from app.routes import generate_software_specifications_tables
-        
+
         data = {"software_specifications": {}}
         result = generate_software_specifications_tables(data)
         assert "No software specifications defined" in result
@@ -306,7 +309,7 @@ class TestRoutesCoverage:
     def test_generate_hardware_specifications_tables_empty(self, client, data_manager):
         """Test generate_hardware_specifications_tables with empty data."""
         from app.routes import generate_hardware_specifications_tables
-        
+
         data = {"hardware_specifications": {}}
         result = generate_hardware_specifications_tables(data)
         assert "No hardware specifications defined" in result
@@ -314,7 +317,7 @@ class TestRoutesCoverage:
     def test_generate_user_needs_table_empty(self, client, data_manager):
         """Test generate_user_needs_table with empty data."""
         from app.routes import generate_user_needs_table
-        
+
         data = {"user_needs": {}}
         result = generate_user_needs_table(data)
         assert "No user needs defined" in result
@@ -322,7 +325,7 @@ class TestRoutesCoverage:
     def test_generate_product_requirements_tables_empty(self, client, data_manager):
         """Test generate_product_requirements_tables with empty data."""
         from app.routes import generate_product_requirements_tables
-        
+
         data = {"product_requirements": {}}
         result = generate_product_requirements_tables(data)
         assert "No product requirements defined" in result
@@ -330,7 +333,7 @@ class TestRoutesCoverage:
     def test_generate_traceability_matrix_empty_data(self, client, data_manager):
         """Test generate_traceability_matrix with empty data."""
         from app.routes import generate_traceability_matrix
-        
+
         data = {"user_needs": {}, "product_requirements": {}}
         result = generate_traceability_matrix(data)
         assert "| User Need | Product Requirements |" in result
@@ -351,7 +354,7 @@ class TestRoutesCoverage:
         with patch("app.routes.get_data_manager") as mock_get_data_manager:
             mock_data_manager = mock_get_data_manager.return_value
             mock_data_manager.get_item_by_id.side_effect = Exception("Database error")
-            
+
             response = client.get("/api/item/UN001")
             assert response.status_code == 500
             data = response.get_json()
@@ -362,7 +365,7 @@ class TestRoutesCoverage:
         with patch("app.routes.get_data_manager") as mock_get_data_manager:
             mock_data_manager = mock_get_data_manager.return_value
             mock_data_manager.update_item.side_effect = Exception("Database error")
-            
+
             updated_data = {"title": "Updated Title"}
             response = client.put(
                 "/api/item/UN001",
