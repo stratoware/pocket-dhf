@@ -78,82 +78,162 @@ Unlike heavy enterprise document management systems, Pocket DHF uses simple YAML
 **Prerequisites:**
 - Python 3.8 or higher
 - Poetry (recommended) or pip
+- Git
 
-**Get started in 30 seconds:**
+**Evaluate in 30 seconds:**
 
 ```bash
+# Clone and try with sample data
 git clone https://github.com/stratoware/pocket-dhf.git
 cd pocket-dhf
 poetry install
 poetry run python main.py
 ```
 
-Then open http://localhost:8080 in your browser!
+Then open http://localhost:8080 in your browser to explore the sample data!
 
 ## Installation
 
-### Option 1: Using Poetry (Recommended)
+### Recommended: Git Submodule in Your Device Repository
 
-1. Clone the repository:
+The recommended approach is to add Pocket DHF as a submodule to your medical device code repository, keeping your DHF data alongside your device code.
+
+**Repository Structure:**
+```
+my-medical-device/              # Your main device repository
+├── .git/
+├── src/                        # Your device source code
+├── tests/                      # Your device tests
+├── docs/                       # Your device documentation
+├── dhf/                        # DHF documentation
+│   ├── device-dhf.yaml        # Your DHF data file
+│   └── reports/               # Generated reports
+└── pocket-dhf/                 # Git submodule
+    ├── app/
+    ├── main.py
+    └── ...
+```
+
+**Setup Steps:**
+
+1. **Add Pocket DHF as a submodule to your device repository:**
    ```bash
-   git clone https://github.com/stratoware/pocket-dhf.git
-   cd pocket-dhf
+   cd my-medical-device
+   git submodule add https://github.com/stratoware/pocket-dhf.git pocket-dhf
+   git submodule update --init --recursive
    ```
 
-2. Install dependencies using Poetry:
+2. **Install Pocket DHF dependencies:**
    ```bash
-   make install
-   # or
+   cd pocket-dhf
    poetry install
+   cd ..
    ```
 
-### Option 2: Using pip
-
-1. Clone the repository:
+3. **Create your DHF data file:**
    ```bash
-   git clone https://github.com/stratoware/pocket-dhf.git
+   mkdir -p dhf
+   cp pocket-dhf/sample-data/dhf_data.yaml dhf/device-dhf.yaml
+   # Edit dhf/device-dhf.yaml with your project details
+   ```
+
+4. **Run Pocket DHF pointing to your data file:**
+   ```bash
    cd pocket-dhf
+   poetry run python main.py --data-file ../dhf/device-dhf.yaml
    ```
 
-2. Create a virtual environment and install:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt  # Note: Generate from poetry if needed
-   ```
+5. **Access the application:**
+   Open http://localhost:8080 in your browser
+
+**Benefits of This Approach:**
+- ✅ DHF data is version-controlled with your device code
+- ✅ Pocket DHF updates independently via git submodule
+- ✅ Single repository for code + compliance documentation
+- ✅ Easy to track changes to both code and DHF together
+- ✅ Traceability between source code commits and DHF updates
+
+**Cloning a Repository with Pocket DHF Submodule:**
+
+If someone else clones your device repository:
+```bash
+git clone https://github.com/your-org/my-medical-device.git
+cd my-medical-device
+git submodule update --init --recursive
+cd pocket-dhf && poetry install && cd ..
+```
+
+**Updating Pocket DHF:**
+```bash
+cd my-medical-device/pocket-dhf
+git fetch origin
+git checkout main
+git pull
+cd ..
+git add pocket-dhf
+git commit -m "Update Pocket DHF to latest version"
+```
+
+### Alternative: Standalone Installation
+
+For evaluation or development of Pocket DHF itself:
+
+**Using Poetry:**
+```bash
+git clone https://github.com/stratoware/pocket-dhf.git
+cd pocket-dhf
+poetry install
+poetry run python main.py  # Uses sample data
+```
+
+**Using pip:**
+```bash
+git clone https://github.com/stratoware/pocket-dhf.git
+cd pocket-dhf
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python main.py  # Uses sample data
+```
 
 ## Running the Application
 
-Start the development server:
+### With Your Device Repository Data (Recommended)
+
+From your main device repository root:
+```bash
+cd pocket-dhf
+poetry run python main.py --data-file ../dhf/device-dhf.yaml
+```
+
+Or from within the pocket-dhf directory:
+```bash
+poetry run python main.py --data-file /path/to/your/device-dhf.yaml
+```
+
+### With Sample Data (Standalone)
 
 ```bash
 poetry run python main.py
-```
-
-The application will be available at: http://localhost:8080
-
-### Using Your Own Data File
-
-To start with your own project data:
-
-```bash
-poetry run python main.py --data-file my-project.yaml
+# Uses built-in sample-data/dhf_data.yaml
 ```
 
 ### Custom Port
 
 ```bash
-poetry run python main.py --port 5000
+poetry run python main.py --data-file ../dhf/device-dhf.yaml --port 5000
 ```
 
 ## Usage
 
 ### First Time Setup
 
-1. The app comes with sample data in `sample-data/dhf_data.yaml`
-2. Explore the sample data to understand the structure
-3. Create your own YAML file based on the sample
-4. Start the app with your data file: `poetry run python main.py --data-file your-project.yaml`
+1. **Add Pocket DHF as a submodule** (see Installation above)
+2. **Copy sample data** as a starting point: `cp pocket-dhf/sample-data/dhf_data.yaml dhf/device-dhf.yaml`
+3. **Customize your data file** with your device information
+4. **Run Pocket DHF** pointing to your data file
+5. **Edit via web UI** or directly in YAML (both work!)
+6. **Commit changes** to your device repository to track DHF history
 
 ### Basic Workflow
 
