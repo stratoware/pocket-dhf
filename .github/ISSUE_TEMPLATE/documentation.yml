@@ -1,0 +1,81 @@
+name: 📚 Documentation Improvement
+description: Suggest improvements to documentation
+title: "[Docs]: "
+labels: ["documentation", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation! Please describe what could be better.
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation needs improvement?
+      options:
+        - README.md
+        - User Guide (docs/user-guide.md)
+        - Data Format Guide (docs/data-format.md)
+        - API Documentation
+        - Contributing Guide (CONTRIBUTING.md)
+        - Code Comments / Docstrings
+        - Examples / Tutorials
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: What is unclear or missing?
+      description: Describe what is confusing, incorrect, or missing from the documentation
+      placeholder: |
+        The documentation about... is unclear because...
+        I expected to find information about... but couldn't...
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Improvement
+      description: How should the documentation be improved?
+      placeholder: |
+        The documentation should explain...
+        It would be helpful to add...
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: Where in the documentation is this issue? (file path, section, line number)
+      placeholder: |
+        File: docs/user-guide.md
+        Section: "Getting Started"
+        Line: 42
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: What were you trying to accomplish when you noticed this issue?
+      placeholder: I was trying to... and needed to understand...
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I would like to submit a pull request to fix this documentation issue
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues to make sure this is not a duplicate
+          required: true
+

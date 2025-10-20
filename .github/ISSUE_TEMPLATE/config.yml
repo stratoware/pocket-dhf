@@ -1,0 +1,15 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & Discussions
+    url: https://github.com/stratoware/pocket-dhf/discussions/categories/q-a
+    about: Ask questions and discuss with the community
+  - name: 💡 Feature Ideas
+    url: https://github.com/stratoware/pocket-dhf/discussions/categories/ideas
+    about: Share and discuss feature ideas before creating an issue
+  - name: 🔒 Security Vulnerability
+    url: https://github.com/stratoware/pocket-dhf/security/advisories/new
+    about: Report security vulnerabilities privately (see SECURITY.md)
+  - name: 📖 User Guide
+    url: https://github.com/stratoware/pocket-dhf/blob/main/docs/user-guide.md
+    about: Read the user guide for help getting started
+

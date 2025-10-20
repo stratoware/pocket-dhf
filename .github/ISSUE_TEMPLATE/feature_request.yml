@@ -1,0 +1,99 @@
+name: 💡 Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please describe your idea in detail below.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Description
+      description: What problem does this feature solve? Is your feature request related to a problem?
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see
+      placeholder: I would like to be able to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you considered any alternative solutions or workarounds?
+      placeholder: I have tried... but it doesn't work because...
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case
+      description: Describe your use case and how this feature would help you
+      placeholder: |
+        In my medical device project, I need to...
+        This would help me by...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would improve my workflow
+        - High - Blocking my use of Pocket DHF
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: regulatory-impact
+    attributes:
+      label: Regulatory Impact
+      description: Does this feature relate to regulatory compliance?
+      options:
+        - label: This feature would help with FDA 21 CFR Part 820 compliance
+        - label: This feature would help with ISO 13485 compliance
+        - label: This feature would help with ISO 14971 (risk management) compliance
+        - label: This feature would help with other regulatory requirements
+
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Willingness to Contribute
+      description: Are you willing to help implement this feature?
+      options:
+        - I can submit a pull request for this feature
+        - I can help test this feature
+        - I can provide feedback and use cases
+        - I need someone else to implement this
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context, mockups, or examples about the feature request
+      placeholder: Screenshots, diagrams, or links to similar features in other tools
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues and discussions to make sure this is not a duplicate
+          required: true
+        - label: I have provided a clear use case for this feature
+          required: true
+
