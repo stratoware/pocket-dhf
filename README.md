@@ -168,6 +168,7 @@ For detailed instructions, see the [User Guide](docs/user-guide.md).
 
 ## Documentation
 
+- **[Software Specifications](docs/specifications.md)** - Complete functional specifications and requirements
 - **[User Guide](docs/user-guide.md)** - How to use Pocket DHF
 - **[Data Format Guide](docs/data-format.md)** - YAML schema and structure documentation
 - **[Report Templates](sample-data/report-templates/)** - Customizing report generation
