@@ -862,6 +862,19 @@ def generate_report_content(report_name):
                 "%Y-%m-%d"
             ),
         }
+        
+        # Add risk-specific variables for risk management report
+        if report_name == "risk_management":
+            risks = data.get("risks", {})
+            total_risks = 0
+            for group in risks.values():
+                if "risks" in group:
+                    total_risks += len(group["risks"])
+            
+            template_vars.update({
+                "total_risks": total_risks,
+                "risk_categories": len(risks)
+            })
 
         # Replace template variables
         for var, value in template_vars.items():
@@ -902,6 +915,22 @@ def process_auto_content(content, data):
             return generate_traceability_matrix(data)
         elif content_type == "performance_summary":
             return generate_performance_summary(data)
+        elif content_type == "risk_summary_table":
+            return generate_risk_summary_table(data)
+        elif content_type == "risk_category_summary":
+            return generate_risk_category_summary(data)
+        elif content_type == "high_priority_risks":
+            return generate_high_priority_risks(data)
+        elif content_type == "detailed_risk_table":
+            return generate_detailed_risk_table(data)
+        elif content_type == "risk_controls_summary":
+            return generate_risk_controls_summary(data)
+        elif content_type == "control_effectiveness":
+            return generate_control_effectiveness(data)
+        elif content_type == "residual_risk_summary":
+            return generate_residual_risk_summary(data)
+        elif content_type == "risk_benefit_analysis":
+            return generate_risk_benefit_analysis(data)
         else:
             return f"*[{content_type} content would be generated here]*"
 
@@ -1574,3 +1603,284 @@ def api_risks_to_mitigations():
                 )
 
     return jsonify(traceability_data)
+
+
+# Risk Management Report Generation Functions
+
+def generate_risk_summary_table(data):
+    """Generate risk summary table with key metrics."""
+    risks = data.get("risks", {})
+    total_risks = 0
+    risk_categories = len(risks)
+    
+    # Count total risks
+    for group in risks.values():
+        if "risks" in group:
+            total_risks += len(group["risks"])
+    
+    table = "| Metric | Count |\n"
+    table += "|--------|-------|\n"
+    table += f"| Total Risks | {total_risks} |\n"
+    table += f"| Risk Categories | {risk_categories} |\n"
+    
+    # Count by severity
+    severity_counts = {"S1": 0, "S2": 0, "S3": 0, "S4": 0, "S5": 0, "S6": 0, "S7": 0, "S8": 0, "S9": 0}
+    for group in risks.values():
+        if "risks" in group:
+            for risk in group["risks"].values():
+                severity = risk.get("severity", "S1")
+                if severity in severity_counts:
+                    severity_counts[severity] += 1
+    
+    table += f"| Low Severity (S1-S2) | {severity_counts['S1'] + severity_counts['S2']} |\n"
+    table += f"| Medium Severity (S3-S4) | {severity_counts['S3'] + severity_counts['S4']} |\n"
+    table += f"| High Severity (S5-S9) | {sum(severity_counts[s] for s in ['S5', 'S6', 'S7', 'S8', 'S9'])} |\n"
+    
+    return table
+
+
+def generate_risk_category_summary(data):
+    """Generate risk category summary."""
+    risks = data.get("risks", {})
+    
+    table = "| Category | Risk Count | Description |\n"
+    table += "|----------|------------|-------------|\n"
+    
+    for group_key, group in risks.items():
+        group_name = group.get("group_name", group_key)
+        risk_count = len(group.get("risks", {}))
+        description = group.get("description", "Risk category")
+        table += f"| {group_name} | {risk_count} | {description} |\n"
+    
+    return table
+
+
+def generate_high_priority_risks(data):
+    """Generate high-priority risks table."""
+    risks = data.get("risks", {})
+    high_priority = []
+    
+    # Collect all risks and calculate RBM scores
+    for group in risks.values():
+        if "risks" in group:
+            for risk_id, risk in group["risks"].items():
+                po = risk.get("probability_occurrence", "PO1")
+                ph = risk.get("probability_harm", "PH1")
+                severity = risk.get("severity", "S1")
+                
+                # Calculate RBM score
+                po_value = int(po.replace("PO", "")) if po.startswith("PO") else 1
+                ph_value = int(ph.replace("PH", "")) if ph.startswith("PH") else 1
+                s_value = int(severity.replace("S", "")) if severity.startswith("S") else 1
+                
+                rbm_score = po_value * ph_value * s_value
+                
+                if rbm_score >= 6:  # High priority threshold
+                    high_priority.append({
+                        "id": risk_id,
+                        "title": risk.get("title", "Untitled"),
+                        "rbm_score": rbm_score,
+                        "severity": severity,
+                        "po": po,
+                        "ph": ph
+                    })
+    
+    # Sort by RBM score (highest first)
+    high_priority.sort(key=lambda x: x["rbm_score"], reverse=True)
+    
+    if not high_priority:
+        return "*No high-priority risks identified.*"
+    
+    table = "| Risk ID | Title | RBM Score | Severity | PO | PH |\n"
+    table += "|---------|-------|-----------|----------|----|----|\n"
+    
+    for risk in high_priority:
+        table += f"| {risk['id']} | {risk['title']} | {risk['rbm_score']} | {risk['severity']} | {risk['po']} | {risk['ph']} |\n"
+    
+    return table
+
+
+def generate_detailed_risk_table(data):
+    """Generate detailed risk register table."""
+    risks = data.get("risks", {})
+    
+    table = "| Risk ID | Hazard | Severity | PO | PH | RBM | Harm | Justification |\n"
+    table += "|---------|--------|----------|----|----|-----|------|---------------|\n"
+    
+    for group in risks.values():
+        if "risks" in group:
+            for risk_id, risk in group["risks"].items():
+                title = risk.get("title", "Untitled").replace("|", "\\|")
+                harm = risk.get("harm", "Not specified").replace("|", "\\|")
+                if len(harm) > 50:
+                    harm = harm[:47] + "..."
+                
+                justification = risk.get("justification", "Not specified").replace("|", "\\|")
+                if len(justification) > 50:
+                    justification = justification[:47] + "..."
+                
+                po = risk.get("probability_occurrence", "PO1")
+                ph = risk.get("probability_harm", "PH1")
+                severity = risk.get("severity", "S1")
+                
+                # Calculate RBM score
+                po_value = int(po.replace("PO", "")) if po.startswith("PO") else 1
+                ph_value = int(ph.replace("PH", "")) if ph.startswith("PH") else 1
+                s_value = int(severity.replace("S", "")) if severity.startswith("S") else 1
+                rbm_score = po_value * ph_value * s_value
+                
+                table += f"| {risk_id} | {title} | {severity} | {po} | {ph} | {rbm_score} | {harm} | {justification} |\n"
+    
+    return table
+
+
+def generate_risk_controls_summary(data):
+    """Generate risk controls summary."""
+    mitigation_links = data.get("mitigation_links", {})
+    
+    if not mitigation_links:
+        return "*No risk controls implemented.*"
+    
+    table = "| Risk ID | Control ID | Control Type | Effect |\n"
+    table += "|---------|------------|--------------|--------|\n"
+    
+    for link_id, link in mitigation_links.items():
+        risk_id = link.get("risk_id", "Unknown")
+        spec_id = link.get("specification_id", "Unknown")
+        spec_type = link.get("specification_type", "Unknown")
+        effect = link.get("effect", "No effect")
+        
+        table += f"| {risk_id} | {spec_id} | {spec_type.title()} | {effect} |\n"
+    
+    return table
+
+
+def generate_control_effectiveness(data):
+    """Generate control effectiveness analysis."""
+    mitigation_links = data.get("mitigation_links", {})
+    
+    if not mitigation_links:
+        return "*No controls implemented.*"
+    
+    # Count control types
+    control_types = {}
+    effect_counts = {}
+    
+    for link in mitigation_links.values():
+        spec_type = link.get("specification_type", "Unknown")
+        effect = link.get("effect", "No effect")
+        
+        control_types[spec_type] = control_types.get(spec_type, 0) + 1
+        effect_counts[effect] = effect_counts.get(effect, 0) + 1
+    
+    table = "### Control Type Distribution\n\n"
+    table += "| Control Type | Count |\n"
+    table += "|--------------|-------|\n"
+    for ctype, count in control_types.items():
+        table += f"| {ctype.title()} | {count} |\n"
+    
+    table += "\n### Control Effectiveness\n\n"
+    table += "| Effect | Count |\n"
+    table += "|--------|-------|\n"
+    for effect, count in effect_counts.items():
+        table += f"| {effect} | {count} |\n"
+    
+    return table
+
+
+def generate_residual_risk_summary(data):
+    """Generate residual risk summary."""
+    risks = data.get("risks", {})
+    mitigation_links = data.get("mitigation_links", {})
+    
+    # Calculate residual risks
+    residual_risks = []
+    
+    for group in risks.values():
+        if "risks" in group:
+            for risk_id, risk in group["risks"].items():
+                # Find linked mitigations
+                linked_mitigations = [link for link in mitigation_links.values() if link.get("risk_id") == risk_id]
+                
+                # Calculate residual RBM score
+                po = risk.get("probability_occurrence", "PO1")
+                ph = risk.get("probability_harm", "PH1")
+                severity = risk.get("severity", "S1")
+                
+                po_value = int(po.replace("PO", "")) if po.startswith("PO") else 1
+                ph_value = int(ph.replace("PH", "")) if ph.startswith("PH") else 1
+                s_value = int(severity.replace("S", "")) if severity.startswith("S") else 1
+                
+                # Apply control effects
+                for mitigation in linked_mitigations:
+                    effect = mitigation.get("effect", "No effect")
+                    if "Reduces probability of occurrence by" in effect:
+                        reduction = int(effect.split()[-1])
+                        po_value = max(1, po_value - reduction)
+                    elif "Reduces probability of harm by" in effect:
+                        reduction = int(effect.split()[-1])
+                        ph_value = max(1, ph_value - reduction)
+                    elif "Reduces severity by" in effect:
+                        reduction = int(effect.split()[-1])
+                        s_value = max(1, s_value - reduction)
+                
+                residual_rbm = po_value * ph_value * s_value
+                
+                residual_risks.append({
+                    "id": risk_id,
+                    "title": risk.get("title", "Untitled"),
+                    "original_rbm": int(po.replace("PO", "")) * int(ph.replace("PH", "")) * int(severity.replace("S", "")),
+                    "residual_rbm": residual_rbm,
+                    "controls": len(linked_mitigations)
+                })
+    
+    # Sort by residual RBM score
+    residual_risks.sort(key=lambda x: x["residual_rbm"], reverse=True)
+    
+    table = "| Risk ID | Title | Original RBM | Residual RBM | Controls | Status |\n"
+    table += "|---------|-------|--------------|--------------|----------|--------|\n"
+    
+    for risk in residual_risks:
+        status = "Acceptable" if risk["residual_rbm"] <= 6 else "Review Required"
+        table += f"| {risk['id']} | {risk['title']} | {risk['original_rbm']} | {risk['residual_rbm']} | {risk['controls']} | {status} |\n"
+    
+    return table
+
+
+def generate_risk_benefit_analysis(data):
+    """Generate risk-benefit analysis summary."""
+    risks = data.get("risks", {})
+    
+    # Count risks by acceptability
+    acceptable_risks = 0
+    review_required = 0
+    total_risks = 0
+    
+    for group in risks.values():
+        if "risks" in group:
+            for risk in group["risks"].values():
+                total_risks += 1
+                benefits_outweigh = risk.get("benefits_outweigh_risk", False)
+                cannot_reduce = risk.get("cannot_be_reduced_further", False)
+                
+                if benefits_outweigh or cannot_reduce:
+                    acceptable_risks += 1
+                else:
+                    review_required += 1
+    
+    table = "### Risk-Benefit Analysis Summary\n\n"
+    table += "| Category | Count | Percentage |\n"
+    table += "|----------|-------|------------|\n"
+    table += f"| Acceptable Risks | {acceptable_risks} | {(acceptable_risks/total_risks*100):.1f}% |\n"
+    table += f"| Review Required | {review_required} | {(review_required/total_risks*100):.1f}% |\n"
+    table += f"| Total Risks | {total_risks} | 100.0% |\n"
+    
+    table += "\n### Clinical Benefits\n\n"
+    table += "The {{device_type}} provides significant clinical benefits including:\n"
+    table += "- Continuous monitoring of sleep apnea events\n"
+    table += "- Early detection and alerting for severe events\n"
+    table += "- Improved patient safety and quality of life\n"
+    table += "- Reduced healthcare costs through prevention\n"
+    table += "- Enhanced treatment compliance and outcomes\n"
+    
+    return table

@@ -39,7 +39,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                         <div class="tree-items ms-4 collapsible-content" id="userNeedsItems">
                             {% for id, item in user_needs.items() %}
                             <div class="tree-item" data-item-id="{{ id }}" data-item-type="user_need">
-                                <i class="fas fa-user me-2"></i>{{ item.title }}
+                                <i class="fas fa-user me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
                             </div>
                             {% endfor %}
                         </div>
@@ -94,7 +94,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                                         <!-- Direct requirements (2-level structure) -->
                                         {% for id, item in group.requirements.items() %}
                                         <div class="tree-item" data-item-id="{{ id }}" data-item-type="product_requirement">
-                                            <i class="fas fa-file-alt me-2"></i>{{ item.title }}
+                                            <i class="fas fa-file-alt me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
                                         </div>
                                         {% endfor %}
                                     {% else %}
@@ -110,7 +110,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                                             <div class="ms-3 collapsible-content collapsed" id="req-{{ group_key }}-{{ sub_key }}">
                                                 {% for id, item in sub_group.requirements.items() %}
                                                 <div class="tree-item" data-item-id="{{ id }}" data-item-type="product_requirement">
-                                                    <i class="fas fa-file-alt me-2"></i>{{ item.title }}
+                                                    <i class="fas fa-file-alt me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
                                                 </div>
                                                 {% endfor %}
                                             </div>
@@ -161,7 +161,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                                 <div class="ms-3 collapsible-content collapsed" id="risk-{{ group_key }}">
                                     {% for id, item in group.risks.items() %}
                                     <div class="tree-item" data-item-id="{{ id }}" data-item-type="risk">
-                                        <i class="fas fa-exclamation-circle me-2"></i>{{ item.title }}
+                                        <i class="fas fa-exclamation-circle me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -169,7 +169,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                             {% else %}
                             <!-- Legacy flat structure -->
                             <div class="tree-item" data-item-id="{{ group_key }}" data-item-type="risk">
-                                <i class="fas fa-exclamation-circle me-2"></i>{{ group.title }}
+                                <i class="fas fa-exclamation-circle me-2"></i><span class="fw-bold text-muted me-2">{{ group_key }}:</span>{{ group.title }}
                             </div>
                             {% endif %}
                             {% endfor %}
@@ -214,7 +214,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                                     {% for id, item in group.specifications.items() %}
                                     <div class="tree-item" data-item-id="{{ id }}"
                                         data-item-type="software_specification">
-                                        <i class="fas fa-cog me-2"></i>{{ item.title }}
+                                        <i class="fas fa-cog me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -261,7 +261,7 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                                     {% for id, item in group.specifications.items() %}
                                     <div class="tree-item" data-item-id="{{ id }}"
                                         data-item-type="hardware_specification">
-                                        <i class="fas fa-microchip me-2"></i>{{ item.title }}
+                                        <i class="fas fa-microchip me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -1303,7 +1303,15 @@ Copyright (c) 2025 Stratoware LLC. All rights reserved.
                     const treeItem = document.querySelector(`[data-item-id="${currentItemId}"]`);
                     if (treeItem && updateData.title) {
                         const titleElement = treeItem.querySelector('i').nextSibling;
-                        titleElement.textContent = updateData.title;
+                        // Update the title part (after the ID span)
+                        const idSpan = titleElement.querySelector('span');
+                        if (idSpan) {
+                            // If there's already an ID span, update the text after it
+                            titleElement.childNodes[2].textContent = updateData.title;
+                        } else {
+                            // If no ID span, just update the text content
+                            titleElement.textContent = updateData.title;
+                        }
                         document.getElementById('item-title-display').textContent = updateData.title;
                     }
                 } else {
