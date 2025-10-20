@@ -34,7 +34,6 @@ class TestReportGeneration:
                 "builtins.open",
                 mock_open(read_data="# Test Report\n## Purpose\nTest purpose"),
             ):
-
                 templates = get_report_templates()
                 assert len(templates) == 2
                 assert templates[0]["name"] == "specifications"
@@ -60,7 +59,6 @@ class TestReportGeneration:
                     read_data="# {{project_name}}\n## Purpose\nTest purpose\n<!-- AUTO_CONTENT: user_needs_table -->"
                 ),
             ):
-
                 with patch("app.routes.get_data_manager") as mock_get_data_manager:
                     mock_data_manager = MagicMock()
                     mock_data_manager.load_data.return_value = sample_dhf_data
@@ -258,7 +256,6 @@ class TestReportGeneration:
             with patch("os.path.exists", return_value=True), patch(
                 "builtins.open", mock_open(read_data=template_content)
             ):
-
                 with patch("app.routes.get_data_manager") as mock_get_data_manager:
                     mock_data_manager = MagicMock()
                     mock_data_manager.load_data.return_value = sample_dhf_data

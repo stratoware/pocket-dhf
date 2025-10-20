@@ -3,7 +3,6 @@
 
 """Integration tests for validation page and PDF export."""
 
-import os
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
@@ -169,4 +168,3 @@ class TestTestResults:
         response = client.get("/api/test-results")
         # Should respond with some status
         assert response.status_code in [200, 404, 500]
-

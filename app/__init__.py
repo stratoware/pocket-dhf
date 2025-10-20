@@ -15,9 +15,9 @@ def create_app(data_file_path: str = None, reports_dir: str = None):
     app = Flask(__name__)
 
     # Configuration
-    app.config["SECRET_KEY"] = (
-        "dev-key-change-in-production"  # pragma: allowlist secret
-    )
+    app.config[
+        "SECRET_KEY"
+    ] = "dev-key-change-in-production"  # pragma: allowlist secret
     app.config["DEBUG"] = True
 
     # Store data file path in app config for access by routes
