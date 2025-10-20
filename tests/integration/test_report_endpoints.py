@@ -17,7 +17,10 @@ class TestReportGeneration:
         response = client.get("/api/report/requirements_and_needs")
         assert response.status_code == 200
         # Reports return JSON with markdown content
-        assert "application/json" in response.content_type or "text/markdown" in response.content_type
+        assert (
+            "application/json" in response.content_type
+            or "text/markdown" in response.content_type
+        )
 
     @pytest.mark.integration
     def test_generate_specifications_report(self, client, data_manager):
@@ -25,7 +28,10 @@ class TestReportGeneration:
         response = client.get("/api/report/specifications")
         assert response.status_code == 200
         # Reports return JSON with markdown content
-        assert "application/json" in response.content_type or "text/markdown" in response.content_type
+        assert (
+            "application/json" in response.content_type
+            or "text/markdown" in response.content_type
+        )
 
     @pytest.mark.integration
     def test_generate_risk_management_report(self, client, data_manager):
@@ -33,7 +39,10 @@ class TestReportGeneration:
         response = client.get("/api/report/risk_management")
         assert response.status_code == 200
         # Reports return JSON with markdown content
-        assert "application/json" in response.content_type or "text/markdown" in response.content_type
+        assert (
+            "application/json" in response.content_type
+            or "text/markdown" in response.content_type
+        )
 
     @pytest.mark.integration
     def test_generate_invalid_report(self, client, data_manager):
@@ -154,7 +163,10 @@ class TestReportDownload:
         response = client.get("/api/report/requirements_and_needs")
         assert response.status_code == 200
         # Accept either JSON or markdown content type
-        assert "application/json" in response.content_type or "text/markdown" in response.content_type
+        assert (
+            "application/json" in response.content_type
+            or "text/markdown" in response.content_type
+        )
         # Should have content
         assert response.data
 
@@ -193,7 +205,9 @@ class TestReportDataStructures:
             mock_dm = MagicMock()
             mock_dm.load_data.return_value = {
                 "metadata": {"project_name": "Test", "device_type": "Device"},
-                "user_needs": {"group1": {"user_needs": {"UN001": {"title": "Need 1"}}}},
+                "user_needs": {
+                    "group1": {"user_needs": {"UN001": {"title": "Need 1"}}}
+                },
                 "product_requirements": {
                     "group1": {"requirements": {"PR001": {"title": "Req 1"}}}
                 },
@@ -219,4 +233,3 @@ class TestReportDataStructures:
             assert response.status_code == 200
             # Should handle empty data gracefully
             assert response.data
-
