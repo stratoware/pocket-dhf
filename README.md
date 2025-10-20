@@ -81,4 +81,6 @@ pocket-dhf/
 
 ## License
 
-Copyright (c) 2025 Stratoware LLC. All rights reserved.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2025 Stratoware LLC

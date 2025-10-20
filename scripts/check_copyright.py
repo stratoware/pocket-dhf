@@ -5,7 +5,8 @@ Copyright Header Checker and Enforcer
 This script checks that all source files have proper copyright headers
 and can optionally add them automatically.
 
-Copyright (c) 2025 Stratoware LLC. All rights reserved.
+Copyright (c) 2025 Stratoware LLC
+Licensed under the MIT License. See LICENSE file in the project root.
 """
 
 import argparse
@@ -24,33 +25,37 @@ class CopyrightChecker:
             "extensions": [".py"],
             "copyright_format": (
                 '"""\n{description}\n\n'
-                "Copyright (c) {year} Stratoware LLC. All rights reserved.\n"
+                "Copyright (c) {year} Stratoware LLC\n"
+                "Licensed under the MIT License. See LICENSE file in the project root.\n"
                 '"""'
             ),
             "shebang_format": (
                 "#!/usr/bin/env python3\n"
                 '"""\n{description}\n\n'
-                "Copyright (c) {year} Stratoware LLC. All rights reserved.\n"
+                "Copyright (c) {year} Stratoware LLC\n"
+                "Licensed under the MIT License. See LICENSE file in the project root.\n"
                 '"""'
             ),
-            "regex": r"Copyright \(c\) \d{4} Stratoware LLC\. All rights reserved\.",
+            "regex": r"Copyright \(c\) \d{4} Stratoware LLC",
         },
         "html": {
             "extensions": [".html", ".htm"],
             "copyright_format": (
                 "<!--\n{description}\n\n"
-                "Copyright (c) {year} Stratoware LLC. All rights reserved.\n"
+                "Copyright (c) {year} Stratoware LLC\n"
+                "Licensed under the MIT License. See LICENSE file in the project root.\n"
                 "-->"
             ),
-            "regex": r"Copyright \(c\) \d{4} Stratoware LLC\. All rights reserved\.",
+            "regex": r"Copyright \(c\) \d{4} Stratoware LLC",
         },
         "yaml": {
             "extensions": [".yml", ".yaml"],
             "copyright_format": (
                 "# {description}\n"
-                "# Copyright (c) {year} Stratoware LLC. All rights reserved."
+                "# Copyright (c) {year} Stratoware LLC\n"
+                "# Licensed under the MIT License. See LICENSE file in the project root."
             ),
-            "regex": r"# Copyright \(c\) \d{4} Stratoware LLC\. All rights reserved\.",
+            "regex": r"# Copyright \(c\) \d{4} Stratoware LLC",
         },
     }
 

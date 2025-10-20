@@ -1,10 +1,12 @@
-# Copyright (c) 2025 Stratoware LLC. All rights reserved.
+# Copyright (c) 2025 Stratoware LLC
+# Licensed under the MIT License. See LICENSE file in the project root.
 
 [tool.poetry]
 name = "pocket-dhf"
 version = "1.0.0"
 description = "Pocket DHF - A lightweight Device History File management system"
 authors = ["Stratoware LLC <info@stratoware.com>"]
+license = "MIT"
 readme = "README.md"
 packages = [
     {include = "app"}
