@@ -96,4 +96,3 @@ body:
           required: true
         - label: I have provided a clear use case for this feature
           required: true
-
