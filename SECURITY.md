@@ -89,4 +89,3 @@ If you have suggestions on how this process could be improved, please submit a p
 ---
 
 Thank you for helping keep pocket-dhf and its users safe!
-

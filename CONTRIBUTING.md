@@ -194,15 +194,15 @@ make format && make lint
 ```python
 def calculate_rbm_score(severity: int, po: int, ph: int) -> int:
     """Calculate Risk-Benefit Matrix score.
-    
+
     Args:
         severity: Severity level (1-9)
         po: Probability of occurrence (1-3)
         ph: Probability of harm (1-3)
-        
+
     Returns:
         RBM score (severity × po × ph)
-        
+
     Raises:
         ValueError: If any parameter is out of range
     """
@@ -469,8 +469,6 @@ Don't hesitate to ask! Create a discussion in [GitHub Discussions](https://githu
 
 ---
 
-**Thank you for contributing to Pocket DHF!** 
+**Thank you for contributing to Pocket DHF!**
 
 Your work helps improve medical device development and compliance for teams around the world.
-
-

@@ -316,11 +316,11 @@ risks:
   patient_safety:
     group_name: "Patient Safety"
     risks: { ... }
-  
+
   device_functionality:
     group_name: "Device Functionality"
     risks: { ... }
-  
+
   data_security:
     group_name: "Data Security & Privacy"
     risks: { ... }
@@ -474,7 +474,7 @@ mitigation_links: {}
 # Wrong:
 user_needs:
 UN001:  # Missing indentation
-  
+
 # Right:
 user_needs:
   UN001:  # Proper indentation
@@ -544,5 +544,3 @@ Export to CSV, then convert to YAML format.
 ---
 
 *For usage instructions, see the [User Guide](user-guide.md)*
-
-

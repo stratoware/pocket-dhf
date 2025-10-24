@@ -112,4 +112,3 @@ body:
           required: true
         - label: I have removed any sensitive or proprietary information
           required: true
-
