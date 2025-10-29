@@ -581,3 +581,419 @@ class DHFDataManager:
         )
 
         return po_value * ph_value * s_value
+
+    # Analyses Management Methods
+
+    def get_analyses_directory(self) -> str:
+        """Get the analyses directory path, checking parent repo first."""
+        # Check for parent repo analyses directory (sibling to pocket-dhf)
+        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        parent_analyses_dir = os.path.join(
+            os.path.dirname(current_dir), "analyses"
+        )
+
+        if os.path.exists(parent_analyses_dir) and os.path.isdir(parent_analyses_dir):
+            return parent_analyses_dir
+
+        # Fall back to sample-data/analyses
+        return os.path.join(current_dir, "sample-data", "analyses")
+
+    def get_analyses(self) -> List[Dict[str, Any]]:
+        """Get list of all analyses (FMEA and FTA)."""
+        analyses_dir = self.get_analyses_directory()
+        analyses = []
+
+        if not os.path.exists(analyses_dir):
+            return analyses
+
+        for filename in os.listdir(analyses_dir):
+            if filename.endswith(".yaml") or filename.endswith(".yml"):
+                try:
+                    filepath = os.path.join(analyses_dir, filename)
+                    with open(filepath, "r", encoding="utf-8") as file:
+                        analysis_data = yaml.safe_load(file)
+                        if analysis_data and isinstance(analysis_data, dict):
+                            analyses.append(
+                                {
+                                    "id": analysis_data.get("id", filename),
+                                    "title": analysis_data.get("title", filename),
+                                    "type": analysis_data.get("type", "unknown"),
+                                    "description": analysis_data.get(
+                                        "description", ""
+                                    ),
+                                    "status": analysis_data.get("status", "active"),
+                                    "last_modified": analysis_data.get(
+                                        "last_modified", ""
+                                    ),
+                                    "filename": filename,
+                                }
+                            )
+                except Exception as e:
+                    print(f"Error loading analysis {filename}: {e}")
+                    continue
+
+        # Sort by ID
+        analyses.sort(key=lambda x: x["id"])
+        return analyses
+
+    def load_analysis(self, analysis_id: str) -> Optional[Dict[str, Any]]:
+        """Load a specific analysis by ID."""
+        analyses_dir = self.get_analyses_directory()
+
+        if not os.path.exists(analyses_dir):
+            return None
+
+        # Find the file with this ID
+        for filename in os.listdir(analyses_dir):
+            if filename.endswith(".yaml") or filename.endswith(".yml"):
+                try:
+                    filepath = os.path.join(analyses_dir, filename)
+                    with open(filepath, "r", encoding="utf-8") as file:
+                        analysis_data = yaml.safe_load(file)
+                        if (
+                            analysis_data
+                            and analysis_data.get("id") == analysis_id
+                        ):
+                            analysis_data["filename"] = filename
+                            return analysis_data
+                except Exception as e:
+                    print(f"Error loading analysis {filename}: {e}")
+                    continue
+
+        return None
+
+    def save_analysis(
+        self, analysis_id: str, analysis_data: Dict[str, Any]
+    ) -> bool:
+        """Save an analysis to its file."""
+        analyses_dir = self.get_analyses_directory()
+
+        if not os.path.exists(analyses_dir):
+            os.makedirs(analyses_dir, exist_ok=True)
+
+        # Determine filename
+        filename = analysis_data.get("filename")
+        if not filename:
+            # Generate filename from ID
+            filename = f"{analysis_id.lower()}.yaml"
+
+        filepath = os.path.join(analyses_dir, filename)
+
+        try:
+            # Remove filename from data before saving
+            save_data = {k: v for k, v in analysis_data.items() if k != "filename"}
+
+            with open(filepath, "w", encoding="utf-8") as file:
+                yaml.safe_dump(save_data, file, default_flow_style=False, sort_keys=False)
+            return True
+        except Exception as e:
+            print(f"Error saving analysis {analysis_id}: {e}")
+            return False
+
+    def delete_analysis(self, analysis_id: str) -> bool:
+        """Delete an analysis file."""
+        analyses_dir = self.get_analyses_directory()
+
+        if not os.path.exists(analyses_dir):
+            return False
+
+        # Find and delete the file
+        for filename in os.listdir(analyses_dir):
+            if filename.endswith(".yaml") or filename.endswith(".yml"):
+                try:
+                    filepath = os.path.join(analyses_dir, filename)
+                    with open(filepath, "r", encoding="utf-8") as file:
+                        analysis_data = yaml.safe_load(file)
+                        if (
+                            analysis_data
+                            and analysis_data.get("id") == analysis_id
+                        ):
+                            os.remove(filepath)
+                            return True
+                except Exception as e:
+                    print(f"Error deleting analysis {filename}: {e}")
+                    continue
+
+        return False
+
+    def create_analysis(
+        self, analysis_type: str, title: str, description: str = ""
+    ) -> Optional[Dict[str, Any]]:
+        """Create a new analysis with auto-generated ID."""
+        # Get existing analyses to determine next ID
+        existing_analyses = self.get_analyses()
+        prefix = "FM" if analysis_type == "fmea" else "FT"
+
+        # Find highest ID number
+        max_num = 0
+        for analysis in existing_analyses:
+            if analysis["id"].startswith(prefix):
+                try:
+                    num = int(analysis["id"][2:])
+                    max_num = max(max_num, num)
+                except ValueError:
+                    continue
+
+        # Generate new ID
+        new_id = f"{prefix}{max_num + 1:04d}"
+
+        # Create analysis structure
+        from datetime import datetime
+
+        now = datetime.now().strftime("%Y-%m-%d")
+
+        if analysis_type == "fmea":
+            analysis_data = {
+                "id": new_id,
+                "title": title,
+                "type": "fmea",
+                "description": description,
+                "created_date": now,
+                "last_modified": now,
+                "author": "User",
+                "status": "active",
+                "rows": [],
+            }
+        else:  # FTA
+            analysis_data = {
+                "id": new_id,
+                "title": title,
+                "type": "fta",
+                "description": description,
+                "created_date": now,
+                "last_modified": now,
+                "author": "User",
+                "status": "active",
+                "top_event": {
+                    "id": f"{new_id}-TE",
+                    "description": "Top event description",
+                    "gate_type": "OR",
+                    "severity": 5,
+                    "linked_risks": [],
+                },
+                "intermediate_events": [],
+                "basic_events": [],
+            }
+
+        # Save the new analysis
+        if self.save_analysis(new_id, analysis_data):
+            return analysis_data
+
+        return None
+
+    def sync_analysis_to_dhf(
+        self, analysis_id: str
+    ) -> Dict[str, Any]:
+        """
+        Sync an analysis to DHF, creating or updating risk and specification entities.
+        Returns a dict with preview of changes to be made.
+        """
+        analysis = self.load_analysis(analysis_id)
+        if not analysis:
+            return {"error": "Analysis not found"}
+
+        dhf_data = self.load_data()
+        changes = {
+            "risks_to_create": [],
+            "risks_to_update": [],
+            "specs_to_create": [],
+            "specs_to_link": [],
+        }
+
+        if analysis["type"] == "fmea":
+            changes = self._sync_fmea_to_dhf(analysis, dhf_data, changes)
+        elif analysis["type"] == "fta":
+            changes = self._sync_fta_to_dhf(analysis, dhf_data, changes)
+
+        return changes
+
+    def _sync_fmea_to_dhf(
+        self, analysis: Dict[str, Any], dhf_data: Dict[str, Any], changes: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Sync FMEA to DHF data."""
+        # For each FMEA row, check if controls/actions need to be created or linked
+        for row in analysis.get("rows", []):
+            # Check current controls
+            for control_ref in row.get("current_controls", []):
+                if isinstance(control_ref, str):
+                    # Check if it's an existing spec or needs to be created
+                    existing_spec = self.get_item_by_id(control_ref)
+                    if existing_spec:
+                        changes["specs_to_link"].append(
+                            {
+                                "spec_id": control_ref,
+                                "fmea_row": row["id"],
+                                "action": "Link existing control",
+                            }
+                        )
+                    else:
+                        # Need to create new spec
+                        changes["specs_to_create"].append(
+                            {
+                                "spec_id": control_ref,
+                                "title": f"Control for {row['failure_mode']}",
+                                "description": f"Mitigation control from FMEA {analysis['id']}",
+                                "fmea_row": row["id"],
+                            }
+                        )
+
+            # Check recommended actions
+            for action in row.get("recommended_actions", []):
+                if isinstance(action, str) and action.startswith("SS") or action.startswith("HS"):
+                    existing_spec = self.get_item_by_id(action)
+                    if not existing_spec:
+                        changes["specs_to_create"].append(
+                            {
+                                "spec_id": action,
+                                "title": action,
+                                "description": f"Action from FMEA {analysis['id']}: {action}",
+                                "fmea_row": row["id"],
+                            }
+                        )
+
+        return changes
+
+    def _sync_fta_to_dhf(
+        self, analysis: Dict[str, Any], dhf_data: Dict[str, Any], changes: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Sync FTA to DHF data."""
+        # Check top event - may need to create or link risk
+        top_event = analysis.get("top_event", {})
+        linked_risks = top_event.get("linked_risks", [])
+
+        if not linked_risks:
+            # Create new risk for top event
+            changes["risks_to_create"].append(
+                {
+                    "title": top_event.get("description", "Unknown hazard"),
+                    "severity": top_event.get("severity", 5),
+                    "source": f"FTA {analysis['id']} top event",
+                }
+            )
+
+        # Check basic events for mitigations
+        for event in analysis.get("basic_events", []):
+            for mitigation in event.get("mitigations", []):
+                if isinstance(mitigation, str):
+                    # Check if it's an existing spec
+                    existing_spec = self.get_item_by_id(mitigation)
+                    if existing_spec:
+                        changes["specs_to_link"].append(
+                            {
+                                "spec_id": mitigation,
+                                "fta_event": event["id"],
+                                "action": "Link existing mitigation",
+                            }
+                        )
+                    else:
+                        # May need to create if it looks like an ID
+                        if mitigation.startswith("SS") or mitigation.startswith("HS"):
+                            changes["specs_to_create"].append(
+                                {
+                                    "spec_id": mitigation,
+                                    "title": mitigation,
+                                    "description": event.get(
+                                        "mitigation_description", ""
+                                    ),
+                                    "fta_event": event["id"],
+                                }
+                            )
+
+        return changes
+
+    def apply_dhf_sync(
+        self, analysis_id: str, changes: Dict[str, Any]
+    ) -> bool:
+        """Apply the DHF sync changes."""
+        dhf_data = self.load_data()
+
+        # Ensure risks section exists
+        if "risks" not in dhf_data:
+            dhf_data["risks"] = {}
+
+        # Create a group for analysis-derived risks if needed
+        analysis_risk_group_key = "analysis_derived"
+        if analysis_risk_group_key not in dhf_data["risks"]:
+            dhf_data["risks"][analysis_risk_group_key] = {
+                "group_name": "Analysis-Derived Risks",
+                "description": "Risks identified through FMEA/FTA analyses",
+                "risks": {},
+            }
+
+        # Create new risks
+        for risk_data in changes.get("risks_to_create", []):
+            # Generate new risk ID
+            existing_risk_ids = []
+            for group in dhf_data["risks"].values():
+                if isinstance(group, dict) and "risks" in group:
+                    existing_risk_ids.extend(group["risks"].keys())
+
+            max_num = 0
+            for risk_id in existing_risk_ids:
+                if risk_id.startswith("RK"):
+                    try:
+                        num = int(risk_id[2:])
+                        max_num = max(max_num, num)
+                    except ValueError:
+                        continue
+
+            new_risk_id = f"RK{max_num + 1:04d}"
+
+            dhf_data["risks"][analysis_risk_group_key]["risks"][new_risk_id] = {
+                "title": risk_data["title"],
+                "severity": f"S{risk_data['severity']}",
+                "probability_occurrence": "PO2",
+                "probability_harm": "PH2",
+                "harm": risk_data.get("source", "From analysis"),
+                "justification": f"Identified through {analysis_id}",
+                "benefits_outweigh_risk": False,
+                "cannot_be_reduced_further": False,
+            }
+
+        # Create new specifications
+        # Ensure software_specifications section exists
+        if "software_specifications" not in dhf_data:
+            dhf_data["software_specifications"] = {}
+
+        analysis_spec_group_key = "analysis_derived"
+        if analysis_spec_group_key not in dhf_data["software_specifications"]:
+            dhf_data["software_specifications"][analysis_spec_group_key] = {
+                "group_name": "Analysis-Derived Specifications",
+                "description": "Specifications from FMEA/FTA analyses",
+                "specifications": {},
+            }
+
+        for spec_data in changes.get("specs_to_create", []):
+            spec_id = spec_data.get("spec_id")
+
+            # If spec_id doesn't start with SS, generate one
+            if not spec_id or not spec_id.startswith("SS"):
+                # Generate new spec ID
+                existing_spec_ids = []
+                for group in dhf_data["software_specifications"].values():
+                    if isinstance(group, dict) and "specifications" in group:
+                        existing_spec_ids.extend(group["specifications"].keys())
+
+                max_num = 0
+                for s_id in existing_spec_ids:
+                    if s_id.startswith("SS"):
+                        try:
+                            num = int(s_id[2:])
+                            max_num = max(max_num, num)
+                        except ValueError:
+                            continue
+
+                spec_id = f"SS{max_num + 1:04d}"
+
+            dhf_data["software_specifications"][analysis_spec_group_key][
+                "specifications"
+            ][spec_id] = {
+                "title": spec_data["title"],
+                "description": spec_data["description"],
+                "linked_product_requirements": [],
+                "verification_method": "Analysis",
+            }
+
+        # Save updated DHF data
+        self.save_data(dhf_data)
+        return True

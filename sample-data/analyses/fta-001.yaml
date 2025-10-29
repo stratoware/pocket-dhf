@@ -1,0 +1,139 @@
+# Copyright (c) 2025 Stratoware LLC
+# Licensed under the MIT License. See LICENSE file in the project root.
+
+id: FT0001
+title: "Sleep Apnea Monitor - Missed Critical Event FTA"
+type: fta
+description: "Fault Tree Analysis for the top event: Patient experiences critical apnea event that is not detected or alarmed"
+created_date: "2025-01-15"
+last_modified: "2025-01-20"
+author: "System Engineer"
+status: "active"
+
+# Fault Tree Structure
+# Top Event -> Intermediate Events -> Basic Events
+# Each node has: id, description, gate_type (AND/OR/BASIC), children, mitigations
+
+top_event:
+  id: "FT0001-TE"
+  description: "Critical apnea event not detected or alarmed"
+  gate_type: "OR"
+  severity: 10
+  linked_risks: ["RK0001"]  # Link to existing DHF risk if applicable
+  
+intermediate_events:
+  - id: "FT0001-IE01"
+    parent_id: "FT0001-TE"
+    description: "Apnea event not detected by system"
+    gate_type: "OR"
+    
+  - id: "FT0001-IE02"
+    parent_id: "FT0001-TE"
+    description: "Alarm fails to notify user"
+    gate_type: "OR"
+    
+  - id: "FT0001-IE03"
+    parent_id: "FT0001-IE01"
+    description: "Sensor system failure"
+    gate_type: "OR"
+    
+  - id: "FT0001-IE04"
+    parent_id: "FT0001-IE01"
+    description: "Signal processing failure"
+    gate_type: "OR"
+    
+  - id: "FT0001-IE05"
+    parent_id: "FT0001-IE02"
+    description: "Alarm hardware failure"
+    gate_type: "AND"
+    
+  - id: "FT0001-IE06"
+    parent_id: "FT0001-IE02"
+    description: "Alarm notification blocked"
+    gate_type: "OR"
+
+basic_events:
+  - id: "FT0001-BE01"
+    parent_id: "FT0001-IE03"
+    description: "Respiratory sensor disconnected"
+    probability: 0.001
+    mitigations: ["SS0001", "SS0002"]  # Links to specifications
+    mitigation_description: "Sensor contact quality monitoring with alert"
+    
+  - id: "FT0001-BE02"
+    parent_id: "FT0001-IE03"
+    description: "Sensor hardware failure"
+    probability: 0.0005
+    mitigations: ["HS0001"]
+    mitigation_description: "Use high-reliability sensor components"
+    
+  - id: "FT0001-BE03"
+    parent_id: "FT0001-IE03"
+    description: "Poor sensor placement by user"
+    probability: 0.005
+    mitigations: ["Create clear user instructions", "Add setup wizard"]
+    mitigation_description: "User training and device setup guidance"
+    
+  - id: "FT0001-BE04"
+    parent_id: "FT0001-IE04"
+    description: "Detection algorithm fails to identify apnea pattern"
+    probability: 0.002
+    mitigations: ["SS0012", "SS0013"]
+    mitigation_description: "Validated algorithm with clinical testing"
+    
+  - id: "FT0001-BE05"
+    parent_id: "FT0001-IE04"
+    description: "Signal quality too poor for analysis"
+    probability: 0.003
+    mitigations: ["SS0003", "SS0011"]
+    mitigation_description: "Signal quality monitoring with artifact rejection"
+    
+  - id: "FT0001-BE06"
+    parent_id: "FT0001-IE04"
+    description: "Software crash during event processing"
+    probability: 0.0001
+    mitigations: ["SS0070", "Add watchdog timer"]
+    mitigation_description: "Robust error handling and watchdog recovery"
+    
+  - id: "FT0001-BE07"
+    parent_id: "FT0001-IE05"
+    description: "Speaker component fails"
+    probability: 0.0008
+    mitigations: ["HS0005"]
+    mitigation_description: "Use high-reliability audio component"
+    
+  - id: "FT0001-BE08"
+    parent_id: "FT0001-IE05"
+    description: "Audio amplifier fails"
+    probability: 0.0005
+    mitigations: ["HS0006"]
+    mitigation_description: "Redundant audio path with LED backup alarm"
+    
+  - id: "FT0001-BE09"
+    parent_id: "FT0001-IE06"
+    description: "User sets volume to zero or mute"
+    probability: 0.01
+    mitigations: ["Prevent zero volume for alarms", "Add visual alarm"]
+    mitigation_description: "Force minimum alarm volume and multi-modal alerts"
+    
+  - id: "FT0001-BE10"
+    parent_id: "FT0001-IE06"
+    description: "User not in proximity to hear alarm"
+    probability: 0.02
+    mitigations: ["Add remote notification", "Implement mobile app alerts"]
+    mitigation_description: "Multi-channel notification system"
+    
+  - id: "FT0001-BE11"
+    parent_id: "FT0001-IE01"
+    description: "Device powered off or battery dead"
+    probability: 0.004
+    mitigations: ["SS0040", "Implement low battery alert"]
+    mitigation_description: "Battery monitoring with advance warning"
+    
+  - id: "FT0001-BE12"
+    parent_id: "FT0001-IE02"
+    description: "Alarm generation software bug"
+    probability: 0.0002
+    mitigations: ["SS0020", "Implement alarm self-test"]
+    mitigation_description: "Comprehensive software testing and runtime self-checks"
+

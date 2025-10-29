@@ -193,6 +193,30 @@ def configuration():
         return redirect(url_for("main.index"))
 
 
+@main.route("/analyses")
+def analyses():
+    """Analyses page for managing FMEA and FTA documents."""
+    try:
+        # Get available analyses
+        data_manager = get_data_manager()
+        analyses_list = data_manager.get_analyses()
+        user_info = get_git_user_info()
+
+        # Get linkable items for multi-select controls
+        linkable_items = data_manager.get_linkable_items()
+
+        return render_template(
+            "analyses.html",
+            title="Analyses",
+            analyses=analyses_list,
+            linkable_items=linkable_items,
+            user_info=user_info,
+        )
+    except Exception as e:
+        flash(f"Error loading analyses: {str(e)}", "error")
+        return redirect(url_for("main.index"))
+
+
 @main.route("/reports")
 def reports():
     """Reports page for generating and viewing DHF reports."""
@@ -329,6 +353,139 @@ def validation():
     except Exception as e:
         flash(f"Error loading validation page: {str(e)}", "error")
         return redirect(url_for("main.index"))
+
+
+@main.route("/api/analyses")
+def api_get_analyses():
+    """API endpoint to get list of all analyses."""
+    try:
+        data_manager = get_data_manager()
+        analyses_list = data_manager.get_analyses()
+        return jsonify(analyses_list)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route("/api/analyses/<analysis_id>")
+def api_get_analysis(analysis_id):
+    """API endpoint to get a specific analysis."""
+    try:
+        data_manager = get_data_manager()
+        analysis = data_manager.load_analysis(analysis_id)
+        if analysis:
+            return jsonify(analysis)
+        else:
+            return jsonify({"error": "Analysis not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route("/api/analyses/<analysis_id>", methods=["PUT"])
+def api_update_analysis(analysis_id):
+    """API endpoint to update an analysis."""
+    try:
+        data_manager = get_data_manager()
+        updated_data = request.get_json()
+
+        # Update last_modified date
+        from datetime import datetime
+
+        updated_data["last_modified"] = datetime.now().strftime("%Y-%m-%d")
+
+        if data_manager.save_analysis(analysis_id, updated_data):
+            return jsonify({"success": True, "message": "Analysis updated successfully"})
+        else:
+            return jsonify({"error": "Failed to update analysis"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route("/api/analyses/<analysis_id>", methods=["DELETE"])
+def api_delete_analysis(analysis_id):
+    """API endpoint to delete an analysis."""
+    try:
+        data_manager = get_data_manager()
+        if data_manager.delete_analysis(analysis_id):
+            return jsonify({"success": True, "message": "Analysis deleted successfully"})
+        else:
+            return jsonify({"error": "Analysis not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route("/api/analyses", methods=["POST"])
+def api_create_analysis():
+    """API endpoint to create a new analysis."""
+    try:
+        data_manager = get_data_manager()
+        data = request.get_json()
+
+        analysis_type = data.get("type")
+        title = data.get("title")
+        description = data.get("description", "")
+
+        if not analysis_type or not title:
+            return jsonify({"error": "Type and title are required"}), 400
+
+        if analysis_type not in ["fmea", "fta"]:
+            return jsonify({"error": "Type must be 'fmea' or 'fta'"}), 400
+
+        new_analysis = data_manager.create_analysis(analysis_type, title, description)
+
+        if new_analysis:
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Analysis created successfully",
+                    "analysis": new_analysis,
+                }
+            )
+        else:
+            return jsonify({"error": "Failed to create analysis"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route("/api/analyses/<analysis_id>/sync-preview", methods=["GET"])
+def api_sync_preview(analysis_id):
+    """API endpoint to preview DHF sync changes."""
+    try:
+        data_manager = get_data_manager()
+        changes = data_manager.sync_analysis_to_dhf(analysis_id)
+
+        if "error" in changes:
+            return jsonify(changes), 404
+
+        return jsonify(changes)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@main.route("/api/analyses/<analysis_id>/sync", methods=["POST"])
+def api_sync_analysis(analysis_id):
+    """API endpoint to sync analysis to DHF."""
+    try:
+        data_manager = get_data_manager()
+
+        # Get preview first
+        changes = data_manager.sync_analysis_to_dhf(analysis_id)
+
+        if "error" in changes:
+            return jsonify(changes), 404
+
+        # Apply changes
+        if data_manager.apply_dhf_sync(analysis_id, changes):
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Analysis synced to DHF successfully",
+                    "changes": changes,
+                }
+            )
+        else:
+            return jsonify({"error": "Failed to apply sync changes"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @main.route("/api/report/<report_name>")
