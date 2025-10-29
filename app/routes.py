@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 
 from flask import (
     Blueprint,
+    Response,
     current_app,
     flash,
     jsonify,
@@ -23,6 +24,13 @@ from app.data_utils import DHFDataManager
 
 main = Blueprint("main", __name__)
 data_manager = None  # Will be initialized in each route
+file_watcher = None  # Will be set by create_app
+
+
+def set_file_watcher(watcher):
+    """Set the global file watcher instance."""
+    global file_watcher
+    file_watcher = watcher
 
 
 def get_data_manager():
@@ -789,6 +797,45 @@ def export_validation_pdf():
 def health():
     """Health check endpoint."""
     return {"status": "healthy", "service": "pocket-dhf"}
+
+
+@main.route("/api/live-reload/events")
+def live_reload_events():
+    """Server-Sent Events endpoint for live reload notifications."""
+
+    def event_stream():
+        """Generate SSE events when file changes are detected."""
+        global file_watcher
+
+        if file_watcher is None:
+            # File watcher not enabled
+            yield 'data: {"type": "disabled"}\n\n'
+            return
+
+        # Send initial connection message
+        yield 'data: {"type": "connected"}\n\n'
+
+        # Keep connection alive and send events when file changes
+        while True:
+            # Check for file changes (with 30 second timeout for keep-alive)
+            change = file_watcher.get_changes(timeout=30.0)
+
+            if change:
+                # File changed - notify client to reload
+                yield 'data: {"type": "reload", "reason": "file_changed"}\n\n'
+            else:
+                # Keep-alive ping
+                yield 'data: {"type": "ping"}\n\n'
+
+    return Response(
+        event_stream(),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
 
 
 def get_report_templates():

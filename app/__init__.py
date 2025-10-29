@@ -3,11 +3,13 @@
 
 """Pocket DHF - A lightweight Device History File management system."""
 
+import atexit
 import os
 
 from flask import Flask
 
-from app.routes import main
+from app.file_watcher import FileWatcher
+from app.routes import main, set_file_watcher
 
 
 def create_app(data_file_path: str = None, reports_dir: str = None):
@@ -35,5 +37,15 @@ def create_app(data_file_path: str = None, reports_dir: str = None):
 
     # Register blueprints
     app.register_blueprint(main)
+
+    # Initialize file watcher if we have a data file
+    if data_file_path and os.path.exists(data_file_path):
+        watcher = FileWatcher(data_file_path)
+        watcher.start()
+        set_file_watcher(watcher)
+
+        # Ensure watcher stops on app shutdown
+        atexit.register(watcher.stop)
+        print(f"File watcher enabled for: {data_file_path}")
 
     return app

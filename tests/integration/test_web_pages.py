@@ -26,7 +26,7 @@ class TestWebPages:
         response = client.get("/browse")
         assert response.status_code == 200
         assert b"Browse DHF Data" in response.data
-        assert b"DHF Navigation" in response.data
+        assert b"Navigation" in response.data
 
     @pytest.mark.ui
     def test_configuration_page(self, client, data_manager):

@@ -21,13 +21,27 @@ class DHFDataManager:
 
         self.data_file_path = data_file_path
         self._data = None
+        self._last_modified = None
 
-    def load_data(self) -> Dict[str, Any]:
-        """Load DHF data from YAML file."""
-        if self._data is None:
+    def load_data(self, force_reload: bool = False) -> Dict[str, Any]:
+        """Load DHF data from YAML file.
+
+        Args:
+            force_reload: If True, bypass cache and reload from disk
+        """
+        # Check if file has been modified
+        try:
+            current_mtime = os.path.getmtime(self.data_file_path)
+            if self._last_modified is not None and current_mtime > self._last_modified:
+                force_reload = True
+        except OSError:
+            pass
+
+        if self._data is None or force_reload:
             try:
                 with open(self.data_file_path, "r", encoding="utf-8") as file:
                     self._data = yaml.safe_load(file)
+                    self._last_modified = os.path.getmtime(self.data_file_path)
             except FileNotFoundError:
                 raise FileNotFoundError(
                     f"DHF data file not found: {self.data_file_path}"
@@ -43,8 +57,14 @@ class DHFDataManager:
             with open(self.data_file_path, "w", encoding="utf-8") as file:
                 yaml.safe_dump(data, file, default_flow_style=False, sort_keys=False)
             self._data = data  # Update cached data
+            self._last_modified = os.path.getmtime(self.data_file_path)
         except Exception as e:
             raise ValueError(f"Failed to save data: {e}")
+
+    def invalidate_cache(self) -> None:
+        """Invalidate the cached data, forcing a reload on next access."""
+        self._data = None
+        self._last_modified = None
 
     def get_user_needs(self) -> Dict[str, Any]:
         """Get all user needs."""
