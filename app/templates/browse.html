@@ -13,26 +13,39 @@ Licensed under the MIT License. See LICENSE file in the project root.
         <div id="sidebar" class="bg-light border-end d-flex flex-column" style="height: calc(100vh - 160px); width: 42%;">
             <!-- Fixed Header Section (doesn't scroll) -->
             <div class="tree-navigation-header p-3 border-bottom bg-light" style="flex-shrink: 0;">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h5 class="mb-0">
-                        <i class="fas fa-sitemap me-2"></i>DHF Navigation
-                    </h5>
-                    <!-- Navigation Controls - All in one row, icon-only with tooltips -->
-                    <div class="btn-group btn-group-sm" role="group">
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                    <!-- Navigation Title -->
+                    <h6 class="mb-0" style="white-space: nowrap;">
+                        <i class="fas fa-sitemap me-2"></i>Navigation
+                    </h6>
+                    
+                    <!-- Search Field - takes remaining space -->
+                    <div class="flex-grow-1">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control form-control-sm" id="tree-search" 
+                                   placeholder="Search by ID or title...">
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation Controls - icon-only with tooltips -->
+                    <div class="btn-group btn-group-sm" role="group" style="flex-shrink: 0;">
                         <button type="button" class="btn btn-outline-secondary" id="nav-back-btn" disabled 
-                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Back">
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Back (← Left Arrow)">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" id="nav-forward-btn" disabled
-                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Forward">
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Forward (→ Right Arrow)">
                             <i class="fas fa-arrow-right"></i>
                         </button>
                         <button type="button" class="btn btn-outline-primary" id="expand-all-btn"
-                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All">
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All (+ Plus)">
                             <i class="fas fa-expand-alt"></i>
                         </button>
                         <button type="button" class="btn btn-outline-secondary" id="collapse-all-btn"
-                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Collapse All">
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Collapse All (- Minus)">
                             <i class="fas fa-compress-alt"></i>
                         </button>
                     </div>
@@ -682,6 +695,12 @@ Licensed under the MIT License. See LICENSE file in the project root.
         document.getElementById('nav-back-btn').addEventListener('click', navigateBack);
         document.getElementById('nav-forward-btn').addEventListener('click', navigateForward);
 
+        // Keyboard shortcuts
+        initializeKeyboardShortcuts();
+
+        // Initialize search
+        initializeTreeSearch();
+
         // Initialize folder editing
         initializeFolderEditing();
 
@@ -763,6 +782,153 @@ Licensed under the MIT License. See LICENSE file in the project root.
         document.querySelectorAll('.collapse-icon').forEach(icon => {
             icon.classList.remove('fa-chevron-down');
             icon.classList.add('fa-chevron-right');
+        });
+    }
+
+    // Tree search functionality
+    function initializeTreeSearch() {
+        const searchInput = document.getElementById('tree-search');
+        
+        searchInput.addEventListener('input', function() {
+            performTreeSearch(this.value.trim());
+        });
+    }
+
+    function performTreeSearch(searchTerm) {
+        // Clear all previous search styling
+        clearSearchStyling();
+        
+        if (!searchTerm) {
+            // Empty search - show everything normally
+            return;
+        }
+        
+        const searchLower = searchTerm.toLowerCase();
+        const allTreeItems = document.querySelectorAll('.tree-item');
+        const matchingItems = new Set();
+        const parentMatchCounts = new Map(); // Map of parent element to match count
+        
+        // Find all matching items
+        allTreeItems.forEach(item => {
+            const itemId = item.dataset.itemId;
+            const itemText = item.textContent.trim();
+            
+            if (itemId && (
+                itemId.toLowerCase().includes(searchLower) ||
+                itemText.toLowerCase().includes(searchLower)
+            )) {
+                matchingItems.add(item);
+                item.classList.add('search-match');
+                item.style.fontWeight = 'bold';
+                
+                // Mark all parent sections as having matches
+                let parent = item.closest('.collapsible-content');
+                while (parent) {
+                    const parentId = parent.id;
+                    if (parentId) {
+                        parentMatchCounts.set(parentId, (parentMatchCounts.get(parentId) || 0) + 1);
+                    }
+                    // Move up to next parent
+                    parent = parent.parentElement?.closest('.collapsible-content');
+                }
+            }
+        });
+        
+        // Gray out non-matching items
+        allTreeItems.forEach(item => {
+            if (!matchingItems.has(item)) {
+                item.style.opacity = '0.5';
+            }
+        });
+        
+        // Handle parent sections - show match counts for collapsed sections
+        document.querySelectorAll('.tree-header, .tree-group-header, .tree-subgroup-header').forEach(header => {
+            const targetId = header.dataset.target;
+            if (!targetId) return;
+            
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            
+            const matchCount = parentMatchCounts.get(targetId) || 0;
+            
+            if (matchCount > 0) {
+                // This section has matches
+                const isCollapsed = target.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    // Show count badge for collapsed sections
+                    let badge = header.querySelector('.search-match-count');
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'badge bg-warning text-dark ms-2 search-match-count';
+                        header.appendChild(badge);
+                    }
+                    badge.textContent = `(${matchCount})`;
+                    header.style.fontWeight = 'bold';
+                }
+            } else if (matchCount === 0) {
+                // No matches in this section - gray it out
+                header.style.opacity = '0.5';
+            }
+        });
+    }
+
+    function clearSearchStyling() {
+        // Remove all search-related styling
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.classList.remove('search-match');
+            item.style.fontWeight = '';
+            item.style.opacity = '';
+        });
+        
+        document.querySelectorAll('.tree-header, .tree-group-header, .tree-subgroup-header').forEach(header => {
+            header.style.fontWeight = '';
+            header.style.opacity = '';
+            
+            // Remove match count badges
+            const badge = header.querySelector('.search-match-count');
+            if (badge) {
+                badge.remove();
+            }
+        });
+    }
+
+    // Keyboard shortcuts
+    function initializeKeyboardShortcuts() {
+        document.addEventListener('keydown', function(event) {
+            // Don't trigger shortcuts if user is typing in an input/textarea
+            const activeElement = document.activeElement;
+            const isTyping = activeElement && (
+                activeElement.tagName === 'INPUT' ||
+                activeElement.tagName === 'TEXTAREA' ||
+                activeElement.isContentEditable
+            );
+
+            if (isTyping) {
+                return; // User is typing, don't handle shortcuts
+            }
+
+            // Handle keyboard shortcuts
+            switch(event.key) {
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    navigateBack();
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    navigateForward();
+                    break;
+                case '+':
+                case '=': // Plus without shift on most keyboards
+                    event.preventDefault();
+                    expandAll();
+                    break;
+                case '-':
+                case '_': // Minus is also underscore
+                    event.preventDefault();
+                    collapseAll();
+                    break;
+            }
         });
     }
 
