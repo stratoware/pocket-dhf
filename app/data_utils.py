@@ -35,6 +35,7 @@ class DHFDataManager:
             if self._last_modified is not None and current_mtime > self._last_modified:
                 force_reload = True
         except OSError:
+            # File doesn't exist or cannot be accessed; continue without forcing reload
             pass
 
         if self._data is None or force_reload:
