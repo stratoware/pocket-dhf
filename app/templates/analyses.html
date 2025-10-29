@@ -484,13 +484,37 @@
 
     function generateControlsOptions(selected) {
         let options = '';
+        
         // Add software specifications
+        if (linkableItems.software_specifications) {
+            options += '<optgroup label="Software Specifications">';
+            linkableItems.software_specifications.forEach(item => {
+                const isSelected = selected.includes(item.id) ? 'selected' : '';
+                options += `<option value="${item.id}" ${isSelected}>${item.id}: ${item.title}</option>`;
+            });
+            options += '</optgroup>';
+        }
+        
+        // Add hardware specifications
+        if (linkableItems.hardware_specifications) {
+            options += '<optgroup label="Hardware Specifications">';
+            linkableItems.hardware_specifications.forEach(item => {
+                const isSelected = selected.includes(item.id) ? 'selected' : '';
+                options += `<option value="${item.id}" ${isSelected}>${item.id}: ${item.title}</option>`;
+            });
+            options += '</optgroup>';
+        }
+        
+        // Add product requirements (optional, if needed)
         if (linkableItems.product_requirements) {
+            options += '<optgroup label="Product Requirements">';
             linkableItems.product_requirements.forEach(item => {
                 const isSelected = selected.includes(item.id) ? 'selected' : '';
                 options += `<option value="${item.id}" ${isSelected}>${item.id}: ${item.title}</option>`;
             });
+            options += '</optgroup>';
         }
+        
         return options;
     }
 
