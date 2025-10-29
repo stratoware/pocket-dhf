@@ -1028,12 +1028,13 @@ Licensed under the MIT License. See LICENSE file in the project root.
                     isNavigating = false;
                 }
 
-                // Show editor panel
-                document.getElementById('welcome-panel').classList.add('d-none');
-                document.getElementById('editor-panel').classList.remove('d-none');
-
                 // Populate form
                 populateForm(data, itemType);
+
+                // Show editor panel and hide other panels (after successful fetch)
+                document.getElementById('welcome-panel').classList.add('d-none');
+                document.getElementById('traceability-content').classList.add('d-none');
+                document.getElementById('editor-panel').classList.remove('d-none');
 
                 // Update sidebar focus and expand tree
                 updateSidebarFocus(itemId, itemType);
