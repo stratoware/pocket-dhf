@@ -90,7 +90,6 @@ def sample_dhf_data():
                         "harm": "Incorrect treatment decisions",
                         "sequence_of_events": "Sensor malfunction leads to false reading",
                         "hazardous_situation": "Patient receives incorrect insulin dose",
-                        "probability_occurrence": "PO2",
                         "probability_harm": "PH3",
                         "severity": "S3",
                         "cannot_be_reduced_further": False,
@@ -155,11 +154,6 @@ def sample_dhf_data():
                 "S1": {"name": "Low", "description": "Minor impact"},
                 "S2": {"name": "Medium", "description": "Moderate impact"},
                 "S3": {"name": "High", "description": "Significant impact"},
-            },
-            "probability_occurrence_mapping": {
-                "PO1": {"name": "Low", "description": "Unlikely to occur"},
-                "PO2": {"name": "Medium", "description": "May occur occasionally"},
-                "PO3": {"name": "High", "description": "Likely to occur frequently"},
             },
             "probability_harm_mapping": {
                 "PH1": {"name": "Low", "description": "Unlikely to cause harm"},

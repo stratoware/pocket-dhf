@@ -10,128 +10,118 @@ last_modified: "2025-01-20"
 author: "System Engineer"
 status: "active"
 
-# FMEA Table Structure
-# Columns: Process Step, Potential Failure Mode, Potential Effects, Severity, 
-#          Potential Causes, Occurrence, Current Controls, Detection, RPN, Recommended Actions
+# FMEA Table Structure  
+# Columns: Process Step, Potential Failure Mode, Potential Effects, Severity,
+#          Potential Causes, Probability of Harm, Current Controls, Risk Score, Recommended Actions
 
 rows:
   - id: "FM0001-01"
     process_step: "Respiratory Signal Acquisition"
     failure_mode: "Sensor fails to detect breathing"
     effects: "False alarm or missed apnea event"
-    severity: 8
+    severity: 4
     causes: "Sensor displacement, poor skin contact, sensor malfunction"
-    occurrence: 4
+    probability_of_harm: 2
     current_controls: ["SS0001", "SS0002"]  # Links to DHF specifications
-    detection: 5
-    rpn: 160
+    risk_score: 8
     recommended_actions: ["Implement sensor contact quality monitoring", "Add redundant sensor"]
     
   - id: "FM0001-02"
     process_step: "Respiratory Signal Acquisition"
     failure_mode: "Intermittent signal loss"
     effects: "Incomplete monitoring data, unreliable apnea detection"
-    severity: 6
+    severity: 3
     causes: "Loose connection, EMI interference, low battery"
-    occurrence: 5
+    probability_of_harm: 2
     current_controls: ["SS0003", "HS0001"]
-    detection: 6
-    rpn: 180
+    risk_score: 6
     recommended_actions: ["Implement signal quality indicator", "Add EMI shielding"]
     
   - id: "FM0001-03"
     process_step: "Signal Processing"
     failure_mode: "Algorithm misclassifies normal breathing as apnea"
     effects: "False positive alarm, reduced user trust"
-    severity: 5
+    severity: 2
     causes: "Algorithm sensitivity too high, motion artifacts"
-    occurrence: 3
+    probability_of_harm: 2
     current_controls: ["SS0010", "SS0011"]
-    detection: 4
-    rpn: 60
+    risk_score: 4
     recommended_actions: ["Tune algorithm thresholds", "Implement motion artifact rejection"]
     
   - id: "FM0001-04"
     process_step: "Signal Processing"
     failure_mode: "Algorithm fails to detect actual apnea event"
     effects: "Missed critical event, potential patient harm"
-    severity: 9
+    severity: 4
     causes: "Algorithm sensitivity too low, signal noise"
-    occurrence: 2
+    probability_of_harm: 1
     current_controls: ["SS0012", "SS0013"]
-    detection: 3
-    rpn: 54
+    risk_score: 4
     recommended_actions: ["Validate algorithm against clinical data", "Implement multi-parameter detection"]
     
   - id: "FM0001-05"
     process_step: "Alarm Generation"
     failure_mode: "Alarm fails to activate"
     effects: "User not notified of critical apnea event"
-    severity: 10
+    severity: 4
     causes: "Software bug, speaker failure, volume set too low"
-    occurrence: 2
+    probability_of_harm: 1
     current_controls: ["SS0020", "HS0005"]
-    detection: 4
-    rpn: 80
+    risk_score: 4
     recommended_actions: ["Implement alarm self-test", "Add visual alarm indicator"]
     
   - id: "FM0001-06"
     process_step: "Alarm Generation"
     failure_mode: "Alarm delay exceeds specification"
     effects: "Delayed user response to critical event"
-    severity: 7
+    severity: 3
     causes: "Processing bottleneck, interrupt priority issue"
-    occurrence: 3
+    probability_of_harm: 2
     current_controls: ["SS0021"]
-    detection: 5
-    rpn: 105
+    risk_score: 6
     recommended_actions: ["Optimize real-time processing", "Add watchdog timer"]
     
   - id: "FM0001-07"
     process_step: "Data Storage"
     failure_mode: "Memory full, unable to store events"
     effects: "Loss of historical data for analysis"
-    severity: 4
+    severity: 2
     causes: "Insufficient memory allocation, memory leak"
-    occurrence: 4
+    probability_of_harm: 2
     current_controls: ["SS0030"]
-    detection: 6
-    rpn: 96
+    risk_score: 4
     recommended_actions: ["Implement memory management", "Add storage full warning"]
     
   - id: "FM0001-08"
     process_step: "Power Management"
     failure_mode: "Battery depletes faster than specified"
     effects: "Device shutdown during monitoring session"
-    severity: 8
+    severity: 3
     causes: "Power consumption higher than design, battery degradation"
-    occurrence: 3
+    probability_of_harm: 2
     current_controls: ["HS0010", "SS0040"]
-    detection: 3
-    rpn: 72
+    risk_score: 6
     recommended_actions: ["Implement low battery warning", "Optimize power consumption"]
     
   - id: "FM0001-09"
     process_step: "Communication"
     failure_mode: "Bluetooth connection drops"
     effects: "Loss of remote monitoring capability"
-    severity: 5
+    severity: 2
     causes: "Range exceeded, interference, pairing failure"
-    occurrence: 6
+    probability_of_harm: 3
     current_controls: ["SS0050", "HS0015"]
-    detection: 4
-    rpn: 120
+    risk_score: 6
     recommended_actions: ["Implement automatic reconnection", "Add connection status indicator"]
     
   - id: "FM0001-10"
     process_step: "User Interface"
     failure_mode: "Display fails to show information"
     effects: "User cannot view device status or events"
-    severity: 6
+    severity: 2
     causes: "Display hardware failure, driver issue, power loss"
-    occurrence: 2
+    probability_of_harm: 1
     current_controls: ["HS0020", "SS0060"]
-    detection: 2
-    rpn: 24
+    risk_score: 2
     recommended_actions: ["Implement display self-test", "Add audio feedback for status"]
 

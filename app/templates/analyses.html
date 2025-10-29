@@ -99,10 +99,9 @@
                                                 <th style="min-width: 180px; width: 220px;">Effects</th>
                                                 <th style="min-width: 80px; width: 90px;">Severity</th>
                                                 <th style="min-width: 200px; width: 250px;">Causes</th>
-                                                <th style="min-width: 90px; width: 100px;">Occurrence</th>
+                                                <th style="min-width: 120px; width: 140px;">Probability of Harm</th>
                                                 <th style="min-width: 180px; width: 220px;">Controls</th>
-                                                <th style="min-width: 80px; width: 90px;">Detection</th>
-                                                <th style="min-width: 60px; width: 70px;">RPN</th>
+                                                <th style="min-width: 80px; width: 90px;">Risk Score</th>
                                                 <th style="min-width: 180px; width: 220px;">Actions</th>
                                                 <th style="min-width: 50px; width: 50px;"></th>
                                             </tr>
@@ -393,7 +392,7 @@
         // Convert numeric severity to severity ID (e.g., 5 -> "S5")
         const severityId = typeof row.severity === 'number' ? `S${row.severity}` : (row.severity || 'S1');
         const severityValue = getSeverityValue(severityId);
-        const rpn = severityValue * (row.occurrence || 1) * (row.detection || 1);
+        const riskScore = severityValue * (row.probability_of_harm || 1);
 
         tr.innerHTML = `
             <td><input type="text" class="form-control form-control-sm" value="${row.process_step || ''}" data-field="process_step"></td>
@@ -401,26 +400,23 @@
             <td><input type="text" class="form-control form-control-sm" value="${row.effects || ''}" data-field="effects"></td>
             <td><select class="form-select form-select-sm" data-field="severity">${generateSeverityOptions(severityId)}</select></td>
             <td><textarea class="form-control form-control-sm" rows="2" data-field="causes">${row.causes || ''}</textarea></td>
-            <td><input type="number" class="form-control form-control-sm" value="${row.occurrence || 1}" min="1" max="10" data-field="occurrence"></td>
+            <td><input type="number" class="form-control form-control-sm" value="${row.probability_of_harm || 1}" min="1" max="3" data-field="probability_of_harm"></td>
             <td><select class="form-select form-select-sm" multiple data-field="current_controls">${generateControlsOptions(row.current_controls || [])}</select></td>
-            <td><input type="number" class="form-control form-control-sm" value="${row.detection || 1}" min="1" max="10" data-field="detection"></td>
-            <td><input type="number" class="form-control form-control-sm" value="${rpn}" readonly data-field="rpn"></td>
+            <td><input type="number" class="form-control form-control-sm" value="${riskScore}" readonly data-field="risk_score"></td>
             <td><select class="form-select form-select-sm" multiple data-field="recommended_actions">${generateActionsOptions(row.recommended_actions || [])}</select></td>
             <td><button class="btn btn-sm btn-link text-danger delete-row-btn" data-row-index="${index}"><i class="fas fa-trash-alt"></i></button></td>
         `;
 
-        // Add event listeners for RPN calculation
+        // Add event listeners for Risk Score calculation
         const severitySelect = tr.querySelector('[data-field="severity"]');
-        const occurrenceInput = tr.querySelector('[data-field="occurrence"]');
-        const detectionInput = tr.querySelector('[data-field="detection"]');
-        const rpnInput = tr.querySelector('[data-field="rpn"]');
+        const probabilityOfHarmInput = tr.querySelector('[data-field="probability_of_harm"]');
+        const riskScoreInput = tr.querySelector('[data-field="risk_score"]');
 
-        [severitySelect, occurrenceInput, detectionInput].forEach(input => {
+        [severitySelect, probabilityOfHarmInput].forEach(input => {
             input.addEventListener('change', () => {
                 const s = getSeverityValue(severitySelect.value);
-                const o = parseInt(occurrenceInput.value) || 1;
-                const d = parseInt(detectionInput.value) || 1;
-                rpnInput.value = s * o * d;
+                const ph = parseInt(probabilityOfHarmInput.value) || 1;
+                riskScoreInput.value = s * ph;
             });
         });
 
@@ -493,10 +489,9 @@
             effects: '',
             severity: 1,  // Default numeric value
             causes: '',
-            occurrence: 1,
+            probability_of_harm: 1,
             current_controls: [],
-            detection: 1,
-            rpn: 1,
+            risk_score: 1,
             recommended_actions: []
         };
 
@@ -735,10 +730,9 @@
                 effects: tr.querySelector('[data-field="effects"]').value,
                 severity: getSeverityValue(severityId),  // Store numeric value for YAML
                 causes: tr.querySelector('[data-field="causes"]').value,
-                occurrence: parseInt(tr.querySelector('[data-field="occurrence"]').value) || 1,
+                probability_of_harm: parseInt(tr.querySelector('[data-field="probability_of_harm"]').value) || 1,
                 current_controls: Array.from(tr.querySelector('[data-field="current_controls"]').selectedOptions).map(opt => opt.value),
-                detection: parseInt(tr.querySelector('[data-field="detection"]').value) || 1,
-                rpn: parseInt(tr.querySelector('[data-field="rpn"]').value) || 1,
+                risk_score: parseInt(tr.querySelector('[data-field="risk_score"]').value) || 1,
                 recommended_actions: Array.from(tr.querySelector('[data-field="recommended_actions"]').selectedOptions).map(opt => opt.value)
             };
             rows.push(row);

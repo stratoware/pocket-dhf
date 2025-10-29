@@ -3,10 +3,15 @@
 
 """Data utilities for loading and managing DHF YAML data."""
 
+import logging
 import os
 from typing import Any, Dict, List, Optional
 
 import yaml
+
+from app.schema_migrations import migrate_to_latest, needs_migration
+
+logger = logging.getLogger(__name__)
 
 
 class DHFDataManager:
@@ -43,6 +48,14 @@ class DHFDataManager:
                 with open(self.data_file_path, "r", encoding="utf-8") as file:
                     self._data = yaml.safe_load(file)
                     self._last_modified = os.path.getmtime(self.data_file_path)
+                
+                # Check if migration is needed
+                if needs_migration(self._data):
+                    logger.info(f"Schema migration required for {self.data_file_path}")
+                    self._data = migrate_to_latest(self._data)
+                    # Save the migrated data
+                    logger.info("Saving migrated data to disk")
+                    self.save_data(self._data)
             except FileNotFoundError:
                 raise FileNotFoundError(
                     f"DHF data file not found: {self.data_file_path}"
@@ -54,7 +67,16 @@ class DHFDataManager:
 
     def save_data(self, data: Dict[str, Any]) -> None:
         """Save DHF data to YAML file."""
+        from app.schema_migrations import CURRENT_SCHEMA_VERSION
+        
         try:
+            # Ensure metadata section exists
+            if "metadata" not in data:
+                data["metadata"] = {}
+            
+            # Always write current schema version
+            data["metadata"]["schema_version"] = CURRENT_SCHEMA_VERSION
+            
             with open(self.data_file_path, "w", encoding="utf-8") as file:
                 yaml.safe_dump(data, file, default_flow_style=False, sort_keys=False)
             self._data = data  # Update cached data
@@ -345,10 +367,7 @@ class DHFDataManager:
         # Get mapping configuration
         config = data.get("configuration", {})
         severity_mapping = config.get("severity_mapping", {})
-        probability_mapping = config.get("probability_mapping", {})  # Legacy
-        probability_occurrence_mapping = config.get(
-            "probability_occurrence_mapping", {}
-        )
+        probability_mapping = config.get("probability_mapping", {})  # Legacy (deprecated)
         probability_harm_mapping = config.get("probability_harm_mapping", {})
 
         # Default mappings if none found
@@ -384,22 +403,6 @@ class DHFDataManager:
                 },
             }
 
-        if not probability_occurrence_mapping:
-            probability_occurrence_mapping = {
-                "PO1": {
-                    "name": "Low",
-                    "description": "Unlikely to occur under normal conditions",
-                },
-                "PO2": {
-                    "name": "Medium",
-                    "description": "May occur occasionally during normal use",
-                },
-                "PO3": {
-                    "name": "High",
-                    "description": "Likely to occur frequently during normal use",
-                },
-            }
-
         if not probability_harm_mapping:
             probability_harm_mapping = {
                 "PH1": {
@@ -415,30 +418,34 @@ class DHFDataManager:
 
         # Find which IDs are currently in use
         severity_ids_in_use = set()
-        probability_ids_in_use = set()  # Legacy
-        probability_occurrence_ids_in_use = set()
+        probability_ids_in_use = set()  # Legacy (deprecated)
         probability_harm_ids_in_use = set()
 
-        for risk in data.get("risks", {}).values():
-            if "severity" in risk:
-                severity_ids_in_use.add(risk["severity"])
-            if "probability" in risk:  # Legacy
-                probability_ids_in_use.add(risk["probability"])
-            if "probability_occurrence" in risk:
-                probability_occurrence_ids_in_use.add(risk["probability_occurrence"])
-            if "probability_harm" in risk:
-                probability_harm_ids_in_use.add(risk["probability_harm"])
+        for group in data.get("risks", {}).values():
+            if isinstance(group, dict) and "risks" in group:
+                # New grouped structure
+                for risk in group["risks"].values():
+                    if "severity" in risk:
+                        severity_ids_in_use.add(risk["severity"])
+                    if "probability" in risk:  # Legacy
+                        probability_ids_in_use.add(risk["probability"])
+                    if "probability_harm" in risk:
+                        probability_harm_ids_in_use.add(risk["probability_harm"])
+            elif isinstance(group, dict):
+                # Legacy flat structure
+                if "severity" in group:
+                    severity_ids_in_use.add(group["severity"])
+                if "probability" in group:  # Legacy
+                    probability_ids_in_use.add(group["probability"])
+                if "probability_harm" in group:
+                    probability_harm_ids_in_use.add(group["probability_harm"])
 
         return {
             "severity_mapping": severity_mapping,
-            "probability_mapping": probability_mapping,  # Legacy
-            "probability_occurrence_mapping": probability_occurrence_mapping,
+            "probability_mapping": probability_mapping,  # Legacy (deprecated)
             "probability_harm_mapping": probability_harm_mapping,
             "severity_ids_in_use": list(severity_ids_in_use),
-            "probability_ids_in_use": list(probability_ids_in_use),  # Legacy
-            "probability_occurrence_ids_in_use": list(
-                probability_occurrence_ids_in_use
-            ),
+            "probability_ids_in_use": list(probability_ids_in_use),  # Legacy (deprecated)
             "probability_harm_ids_in_use": list(probability_harm_ids_in_use),
         }
 
@@ -562,15 +569,20 @@ class DHFDataManager:
         )
 
     def calculate_rbm_score(
-        self, probability_occurrence_id: str, probability_harm_id: str, severity_id: str
+        self, probability_harm_id: str, severity_id: str
     ) -> int:
-        """Calculate RBM score: Probability of Occurrence × Probability of Harm × Severity."""
-        # Map IDs to numeric values (1, 2, 3)
-        po_value = (
-            int(probability_occurrence_id.replace("PO", ""))
-            if probability_occurrence_id.startswith("PO")
-            else 1
-        )
+        """Calculate RBM score: Severity × Probability of Harm.
+        
+        This follows ISO 14971:2019 risk scoring using a two-factor model.
+        
+        Args:
+            probability_harm_id: Probability of harm ID (PH1, PH2, PH3, etc.)
+            severity_id: Severity ID (S1, S2, S3, etc.)
+            
+        Returns:
+            The calculated risk score (S × PH)
+        """
+        # Map IDs to numeric values
         ph_value = (
             int(probability_harm_id.replace("PH", ""))
             if probability_harm_id.startswith("PH")
@@ -580,7 +592,7 @@ class DHFDataManager:
             int(severity_id.replace("S", "")) if severity_id.startswith("S") else 1
         )
 
-        return po_value * ph_value * s_value
+        return s_value * ph_value
 
     # Analyses Management Methods
 

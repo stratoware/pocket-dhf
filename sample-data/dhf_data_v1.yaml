@@ -8,21 +8,45 @@ metadata:
   created_date: '2025-01-15'
   last_modified: '2025-09-23'
   description: Sample DHF data for a continuous glucose monitoring medical device
-  schema_version: '2.0'
 configuration:
   severity_mapping:
     S1:
-      name: Minor
-      description: Temporary or reversible minor injury or discomfort not requiring professional medical intervention. Examples include minor skin irritation, temporary discomfort, or brief inconvenience that resolves without treatment.
+      name: Updated Low
+      description: Updated description
     S2:
-      name: Moderate
-      description: Reversible injury requiring professional medical intervention but not resulting in permanent impairment. Examples include infections requiring treatment, burns requiring medical care, or temporary loss of function requiring medical attention.
+      name: Medium
+      description: Moderate impact, potential for patient harm
     S3:
-      name: Major
-      description: Irreversible injury or impairment not immediately life-threatening. Examples include permanent loss of function, permanent tissue damage, chronic conditions requiring ongoing management, or significant disability affecting quality of life.
+      name: High
+      description: Significant impact, serious risk to patient safety
     S4:
       name: Critical
-      description: Life-threatening injury or condition that could result in death. Examples include severe organ failure, catastrophic device failures with immediate life-threatening consequences, conditions requiring immediate emergency intervention to prevent death.
+      description: Critical impact
+    S5:
+      name: Critical
+      description: Critical impact
+    S6:
+      name: Critical
+      description: Critical impact
+    S7:
+      name: Critical
+      description: Critical impact
+    S8:
+      name: Critical
+      description: Critical impact
+    S9:
+      name: Critical
+      description: Critical impact
+  probability_occurrence_mapping:
+    PO1:
+      name: Low
+      description: Unlikely to occur under normal conditions
+    PO2:
+      name: Medium
+      description: May occur occasionally during normal use
+    PO3:
+      name: High
+      description: Likely to occur frequently during normal use
   probability_harm_mapping:
     PH1:
       name: Low
@@ -81,6 +105,7 @@ risks:
           glucose management periods
         harm: Inappropriate insulin dosing leading to severe hypoglycemia or diabetic
           ketoacidosis
+        probability_occurrence: PO2
         probability_harm: PH3
         severity: S3
         cannot_be_reduced_further: false
@@ -98,6 +123,7 @@ risks:
           warning or intervention
         harm: Loss of consciousness, seizures, coma, or potential death from untreated
           severe hypoglycemia
+        probability_occurrence: PO1
         probability_harm: PH3
         severity: S3
         cannot_be_reduced_further: false
@@ -115,6 +141,7 @@ risks:
           glucose monitoring
         harm: Missed glucose excursions leading to delayed treatment of hypo/hyperglycemic
           episodes
+        probability_occurrence: PO2
         probability_harm: PH2
         severity: S2
         cannot_be_reduced_further: false
@@ -131,6 +158,7 @@ risks:
           at sensor site
         harm: Contact dermatitis, skin breakdown, secondary infection, or discontinuation
           of therapy
+        probability_occurrence: PO3
         probability_harm: PH1
         severity: S1
         cannot_be_reduced_further: false
@@ -146,6 +174,7 @@ risks:
         hazardous_situation: Patient loses glucose monitoring capability during high-risk
           period
         harm: Delayed detection of dangerous glucose levels leading to medical emergency
+        probability_occurrence: PO1
         probability_harm: PH3
         severity: S3
         cannot_be_reduced_further: false
@@ -166,6 +195,7 @@ risks:
           data and alerts
         harm: Delayed medical intervention, loss of treatment continuity, and potential
           patient harm
+        probability_occurrence: PO2
         probability_harm: PH2
         severity: S2
         cannot_be_reduced_further: false
@@ -181,6 +211,7 @@ risks:
           to crash during hypoglycemic alert
         hazardous_situation: Patient misses critical glucose alert due to app failure
         harm: Delayed response to dangerous glucose levels leading to medical emergency
+        probability_occurrence: PO2
         probability_harm: PH3
         severity: S3
         cannot_be_reduced_further: false
@@ -197,6 +228,7 @@ risks:
         hazardous_situation: Patient loses continuous glucose monitoring capability
         harm: Return to traditional fingerstick testing with reduced monitoring frequency
           and safety
+        probability_occurrence: PO1
         probability_harm: PH2
         severity: S2
         cannot_be_reduced_further: false
@@ -217,6 +249,7 @@ risks:
           parties
         harm: Privacy violation, identity theft, insurance discrimination, or psychological
           distress from data breach
+        probability_occurrence: PO1
         probability_harm: PH2
         severity: S2
         cannot_be_reduced_further: false
@@ -234,6 +267,7 @@ risks:
           parties without consent
         harm: Privacy violation, data misuse, potential discrimination, and loss of
           patient trust
+        probability_occurrence: PO1
         probability_harm: PH2
         severity: S2
         cannot_be_reduced_further: false
@@ -250,6 +284,7 @@ risks:
         hazardous_situation: Critical glucose trend data is permanently lost
         harm: Loss of medical history, delayed diagnosis, and compromised treatment
           decisions
+        probability_occurrence: PO1
         probability_harm: PH2
         severity: S2
         cannot_be_reduced_further: false
@@ -268,6 +303,7 @@ risks:
           glucose prediction algorithms
         hazardous_situation: Competitors gain access to core intellectual property
         harm: Loss of competitive advantage, reduced market share, and financial losses
+        probability_occurrence: PO1
         probability_harm: PH2
         severity: S2
         cannot_be_reduced_further: false
@@ -284,6 +320,7 @@ risks:
         hazardous_situation: Legal action threatens product availability and market
           position
         harm: Product recall, legal costs, market exclusion, and reputational damage
+        probability_occurrence: PO2
         probability_harm: PH2
         severity: S2
         cannot_be_reduced_further: false
@@ -303,6 +340,7 @@ risks:
         hazardous_situation: Company must recall all devices and halt sales
         harm: Loss of customer trust, regulatory sanctions, financial losses, and
           market share decline
+        probability_occurrence: PO1
         probability_harm: PH3
         severity: S3
         cannot_be_reduced_further: false
@@ -320,6 +358,7 @@ risks:
           is damaged
         harm: Reduced sales, investor confidence loss, regulatory scrutiny, and brand
           damage
+        probability_occurrence: PO2
         probability_harm: PH2
         severity: S2
         cannot_be_reduced_further: false
@@ -337,6 +376,7 @@ risks:
           access
         harm: Product withdrawal, regulatory sanctions, delayed approvals, and reputational
           damage
+        probability_occurrence: PO1
         probability_harm: PH3
         severity: S3
         cannot_be_reduced_further: false

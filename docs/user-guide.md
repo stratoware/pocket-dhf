@@ -168,16 +168,15 @@ Pocket DHF supports ISO 14971 risk management.
    - **ID**: Risk identifier (R001, R002, etc.)
    - **Title**: Brief description of the hazard
    - **Description**: Detailed hazard scenario
-   - **Severity**: Select from configured levels (S1-S9)
-   - **Probability of Occurrence**: PO1-PO3
+   - **Severity**: Select from configured levels (S1-S4, configurable up to S9)
    - **Probability of Harm**: PH1-PH3
 
-### Risk-Benefit Matrix (RBM)
+### Risk Score (ISO 14971:2019)
 
-The RBM score is calculated automatically:
+The risk score is calculated automatically per ISO 14971:2019:
 
 ```
-RBM = Severity × Probability of Occurrence × Probability of Harm
+Risk Score = Severity × Probability of Harm
 ```
 
 ### Mitigation Strategies

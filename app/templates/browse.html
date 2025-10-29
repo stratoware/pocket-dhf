@@ -425,18 +425,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
                             <!-- Probability and Severity Row -->
                             <div class="row mb-3">
-                                <div class="col-md-4">
-                                    <label for="edit-probability-occurrence" class="form-label">Probability of
-                                        Occurrence</label>
-                                    <select class="form-select" id="edit-probability-occurrence"
-                                        name="probability_occurrence">
-                                        {% for po_id, po_data in config.probability_occurrence_mapping.items() %}
-                                        <option value="{{ po_id }}">{{ po_data.name }} ({{ po_id.replace('PO', '') }})
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label for="edit-probability-harm" class="form-label">Probability of Harm</label>
                                     <select class="form-select" id="edit-probability-harm" name="probability_harm">
                                         {% for ph_id, ph_data in config.probability_harm_mapping.items() %}
@@ -445,7 +434,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label for="edit-severity" class="form-label">Severity</label>
                                     <select class="form-select" id="edit-severity" name="severity">
                                         {% for severity_id, severity_data in config.severity_mapping.items() %}
@@ -456,21 +445,20 @@ Licensed under the MIT License. See LICENSE file in the project root.
                                 </div>
                             </div>
 
-                            <!-- RBM Score Display -->
+                            <!-- Risk Score Display -->
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <label class="form-label">RBM Score</label>
+                                    <label class="form-label">Risk Score</label>
                                     <div class="alert alert-info">
                                         <div class="d-flex align-items-center mb-2">
                                             <i class="fas fa-calculator me-2"></i>
                                             <span class="fs-4 fw-bold" id="rbm-score-display">-</span>
                                         </div>
                                         <div class="small">
-                                            <strong>Calculation:</strong> <span id="rbm-calculation-display">- × - × - =
-                                                -</span>
+                                            <strong>Calculation:</strong> <span id="rbm-calculation-display">- × - = -</span>
                                         </div>
                                         <div class="small text-muted mt-1">
-                                            Probability of Occurrence × Probability of Harm × Severity
+                                            Severity × Probability of Harm (ISO 14971:2019)
                                         </div>
                                     </div>
                                 </div>
@@ -1298,7 +1286,6 @@ Licensed under the MIT License. See LICENSE file in the project root.
             document.getElementById('edit-harm').value = data.harm || '';
             document.getElementById('edit-sequence-of-events').value = data.sequence_of_events || '';
             document.getElementById('edit-hazardous-situation').value = data.hazardous_situation || '';
-            document.getElementById('edit-probability-occurrence').value = data.probability_occurrence || 'PO1';
             document.getElementById('edit-probability-harm').value = data.probability_harm || 'PH1';
             document.getElementById('edit-severity').value = data.severity || 'S1';
             document.getElementById('edit-cannot-be-reduced').checked = data.cannot_be_reduced_further || false;
@@ -1314,7 +1301,6 @@ Licensed under the MIT License. See LICENSE file in the project root.
             updateRAMScore();
 
             // Add event listeners for score calculations
-            document.getElementById('edit-probability-occurrence').addEventListener('change', updateRBMScore);
             document.getElementById('edit-probability-harm').addEventListener('change', updateRBMScore);
             document.getElementById('edit-severity').addEventListener('change', updateRBMScore);
         } else {
@@ -1347,16 +1333,14 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
     function updateRBMScore() {
         // Get current values from the form
-        const probabilityOccurrence = document.getElementById('edit-probability-occurrence').value;
         const probabilityHarm = document.getElementById('edit-probability-harm').value;
         const severity = document.getElementById('edit-severity').value;
 
-        // Calculate RBM score: PO × PH × S
-        const poValue = parseInt(probabilityOccurrence.replace('PO', '')) || 1;
+        // Calculate Risk Score: S × PH
         const phValue = parseInt(probabilityHarm.replace('PH', '')) || 1;
         const sValue = parseInt(severity.replace('S', '')) || 1;
 
-        const rbmScore = poValue * phValue * sValue;
+        const rbmScore = sValue * phValue;
 
         // Update the main score display
         const rbmDisplay = document.getElementById('rbm-score-display');
@@ -1364,7 +1348,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
         // Update the calculation display
         const rbmCalcDisplay = document.getElementById('rbm-calculation-display');
-        rbmCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${rbmScore}`;
+        rbmCalcDisplay.textContent = `${sValue} × ${phValue} = ${rbmScore}`;
 
         // Color code the score based on risk level
         rbmDisplay.className = 'fs-4 fw-bold';
@@ -1394,16 +1378,12 @@ Licensed under the MIT License. See LICENSE file in the project root.
         });
 
         // Calculate RAM score by applying effects to the base values
-        let poValue = parseInt(document.getElementById('edit-probability-occurrence').value.replace('PO', '')) || 1;
         let phValue = parseInt(document.getElementById('edit-probability-harm').value.replace('PH', '')) || 1;
         let sValue = parseInt(document.getElementById('edit-severity').value.replace('S', '')) || 1;
 
         // Apply effects
         effects.forEach(effect => {
-            if (effect.includes('Reduces probability of occurrence by')) {
-                const reduction = parseInt(effect.match(/\d+/)[0]);
-                poValue = Math.max(1, poValue - reduction);
-            } else if (effect.includes('Reduces probability of harm by')) {
+            if (effect.includes('Reduces probability of harm by')) {
                 const reduction = parseInt(effect.match(/\d+/)[0]);
                 phValue = Math.max(1, phValue - reduction);
             } else if (effect.includes('Reduces severity by')) {
@@ -1412,7 +1392,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
             }
         });
 
-        const ramScore = poValue * phValue * sValue;
+        const ramScore = sValue * phValue;
 
         // Update the main score display
         const ramDisplay = document.getElementById('ram-score-display');
@@ -1421,9 +1401,9 @@ Licensed under the MIT License. See LICENSE file in the project root.
         // Update the calculation display
         const ramCalcDisplay = document.getElementById('ram-calculation-display');
         if (effects.length === 0) {
-            ramCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${ramScore} (no effects applied)`;
+            ramCalcDisplay.textContent = `${sValue} × ${phValue} = ${ramScore} (no effects applied)`;
         } else {
-            ramCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${ramScore} (${effects.length} effect${effects.length > 1 ? 's' : ''} applied)`;
+            ramCalcDisplay.textContent = `${sValue} × ${phValue} = ${ramScore} (${effects.length} effect${effects.length > 1 ? 's' : ''} applied)`;
         }
 
         // Color code the score based on risk level

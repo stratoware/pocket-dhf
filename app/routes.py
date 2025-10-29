@@ -1885,18 +1885,16 @@ def generate_high_priority_risks(data):
     for group in risks.values():
         if "risks" in group:
             for risk_id, risk in group["risks"].items():
-                po = risk.get("probability_occurrence", "PO1")
                 ph = risk.get("probability_harm", "PH1")
                 severity = risk.get("severity", "S1")
 
-                # Calculate RBM score
-                po_value = int(po.replace("PO", "")) if po.startswith("PO") else 1
+                # Calculate RBM score (S × PH)
                 ph_value = int(ph.replace("PH", "")) if ph.startswith("PH") else 1
                 s_value = (
                     int(severity.replace("S", "")) if severity.startswith("S") else 1
                 )
 
-                rbm_score = po_value * ph_value * s_value
+                rbm_score = s_value * ph_value
 
                 if rbm_score >= 6:  # High priority threshold
                     high_priority.append(
@@ -1905,7 +1903,6 @@ def generate_high_priority_risks(data):
                             "title": risk.get("title", "Untitled"),
                             "rbm_score": rbm_score,
                             "severity": severity,
-                            "po": po,
                             "ph": ph,
                         }
                     )
@@ -1916,11 +1913,11 @@ def generate_high_priority_risks(data):
     if not high_priority:
         return "*No high-priority risks identified.*"
 
-    table = "| Risk ID | Title | RBM Score | Severity | PO | PH |\n"
-    table += "|---------|-------|-----------|----------|----|----|\n"
+    table = "| Risk ID | Title | Risk Score | Severity | PH |\n"
+    table += "|---------|-------|------------|----------|----|\n"
 
     for risk in high_priority:
-        table += f"| {risk['id']} | {risk['title']} | {risk['rbm_score']} | {risk['severity']} | {risk['po']} | {risk['ph']} |\n"
+        table += f"| {risk['id']} | {risk['title']} | {risk['rbm_score']} | {risk['severity']} | {risk['ph']} |\n"
 
     return table
 
@@ -1929,8 +1926,8 @@ def generate_detailed_risk_table(data):
     """Generate detailed risk register table."""
     risks = data.get("risks", {})
 
-    table = "| Risk ID | Hazard | Severity | PO | PH | RBM | Harm | Justification |\n"
-    table += "|---------|--------|----------|----|----|-----|------|---------------|\n"
+    table = "| Risk ID | Hazard | Severity | PH | Risk Score | Harm | Justification |\n"
+    table += "|---------|--------|----------|-------|------------|------|---------------|\n"
 
     for group in risks.values():
         if "risks" in group:
@@ -1946,19 +1943,17 @@ def generate_detailed_risk_table(data):
                 if len(justification) > 50:
                     justification = justification[:47] + "..."
 
-                po = risk.get("probability_occurrence", "PO1")
                 ph = risk.get("probability_harm", "PH1")
                 severity = risk.get("severity", "S1")
 
-                # Calculate RBM score
-                po_value = int(po.replace("PO", "")) if po.startswith("PO") else 1
+                # Calculate RBM score (S × PH)
                 ph_value = int(ph.replace("PH", "")) if ph.startswith("PH") else 1
                 s_value = (
                     int(severity.replace("S", "")) if severity.startswith("S") else 1
                 )
-                rbm_score = po_value * ph_value * s_value
+                rbm_score = s_value * ph_value
 
-                table += f"| {risk_id} | {title} | {severity} | {po} | {ph} | {rbm_score} | {harm} | {justification} |\n"
+                table += f"| {risk_id} | {title} | {severity} | {ph} | {rbm_score} | {harm} | {justification} |\n"
 
     return table
 
@@ -2035,12 +2030,10 @@ def generate_residual_risk_summary(data):
                     if link.get("risk_id") == risk_id
                 ]
 
-                # Calculate residual RBM score
-                po = risk.get("probability_occurrence", "PO1")
+                # Calculate residual RBM score (S × PH)
                 ph = risk.get("probability_harm", "PH1")
                 severity = risk.get("severity", "S1")
 
-                po_value = int(po.replace("PO", "")) if po.startswith("PO") else 1
                 ph_value = int(ph.replace("PH", "")) if ph.startswith("PH") else 1
                 s_value = (
                     int(severity.replace("S", "")) if severity.startswith("S") else 1
@@ -2049,35 +2042,31 @@ def generate_residual_risk_summary(data):
                 # Apply control effects
                 for mitigation in linked_mitigations:
                     effect = mitigation.get("effect", "No effect")
-                    if "Reduces probability of occurrence by" in effect:
-                        reduction = int(effect.split()[-1])
-                        po_value = max(1, po_value - reduction)
-                    elif "Reduces probability of harm by" in effect:
+                    if "Reduces probability of harm by" in effect:
                         reduction = int(effect.split()[-1])
                         ph_value = max(1, ph_value - reduction)
                     elif "Reduces severity by" in effect:
                         reduction = int(effect.split()[-1])
                         s_value = max(1, s_value - reduction)
 
-                residual_rbm = po_value * ph_value * s_value
+                residual_rbm = s_value * ph_value
 
                 residual_risks.append(
                     {
                         "id": risk_id,
                         "title": risk.get("title", "Untitled"),
-                        "original_rbm": int(po.replace("PO", ""))
-                        * int(ph.replace("PH", ""))
+                        "original_rbm": int(ph.replace("PH", ""))
                         * int(severity.replace("S", "")),
                         "residual_rbm": residual_rbm,
                         "controls": len(linked_mitigations),
                     }
                 )
 
-    # Sort by residual RBM score
+    # Sort by residual risk score
     residual_risks.sort(key=lambda x: x["residual_rbm"], reverse=True)
 
-    table = "| Risk ID | Title | Original RBM | Residual RBM | Controls | Status |\n"
-    table += "|---------|-------|--------------|--------------|----------|--------|\n"
+    table = "| Risk ID | Title | Original Risk Score | Residual Risk Score | Controls | Status |\n"
+    table += "|---------|-------|---------------------|---------------------|----------|--------|\n"
 
     for risk in residual_risks:
         status = "Acceptable" if risk["residual_rbm"] <= 6 else "Review Required"

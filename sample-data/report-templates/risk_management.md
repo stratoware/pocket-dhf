@@ -33,10 +33,10 @@ This risk management process follows ISO 14971:2019 and includes:
 5. Risk management review and monitoring
 
 ### Risk Acceptability Criteria
-Risks are evaluated using a Risk-Benefit-Management (RBM) scoring system:
-- **RBM Score ≤ 2:** Acceptable risk
-- **RBM Score 3-6:** Acceptable with justification
-- **RBM Score > 6:** Unacceptable risk requiring additional controls
+Risks are evaluated using ISO 14971:2019 risk scoring (Severity × Probability of Harm):
+- **Risk Score ≤ 2:** Acceptable risk
+- **Risk Score 3-6:** Acceptable with justification
+- **Risk Score > 6:** Unacceptable risk requiring additional controls
 
 ---
 
