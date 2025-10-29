@@ -266,6 +266,7 @@
     let currentAnalysisId = null;
     let currentAnalysisData = null;
     let linkableItems = {{ linkable_items | tojson }};
+    let severityMapping = {{ config.severity_mapping | tojson }};
 
     document.addEventListener('DOMContentLoaded', function () {
         // Analysis selection handlers
@@ -389,13 +390,16 @@
         tr.dataset.rowIndex = index;
         tr.dataset.rowId = row.id;
 
-        const rpn = row.severity * row.occurrence * row.detection;
+        // Convert numeric severity to severity ID (e.g., 5 -> "S5")
+        const severityId = typeof row.severity === 'number' ? `S${row.severity}` : (row.severity || 'S1');
+        const severityValue = getSeverityValue(severityId);
+        const rpn = severityValue * (row.occurrence || 1) * (row.detection || 1);
 
         tr.innerHTML = `
             <td><input type="text" class="form-control form-control-sm" value="${row.process_step || ''}" data-field="process_step"></td>
             <td><input type="text" class="form-control form-control-sm" value="${row.failure_mode || ''}" data-field="failure_mode"></td>
             <td><input type="text" class="form-control form-control-sm" value="${row.effects || ''}" data-field="effects"></td>
-            <td><input type="number" class="form-control form-control-sm" value="${row.severity || 1}" min="1" max="10" data-field="severity"></td>
+            <td><select class="form-select form-select-sm" data-field="severity">${generateSeverityOptions(severityId)}</select></td>
             <td><textarea class="form-control form-control-sm" rows="2" data-field="causes">${row.causes || ''}</textarea></td>
             <td><input type="number" class="form-control form-control-sm" value="${row.occurrence || 1}" min="1" max="10" data-field="occurrence"></td>
             <td><select class="form-select form-select-sm" multiple data-field="current_controls">${generateControlsOptions(row.current_controls || [])}</select></td>
@@ -406,14 +410,14 @@
         `;
 
         // Add event listeners for RPN calculation
-        const severityInput = tr.querySelector('[data-field="severity"]');
+        const severitySelect = tr.querySelector('[data-field="severity"]');
         const occurrenceInput = tr.querySelector('[data-field="occurrence"]');
         const detectionInput = tr.querySelector('[data-field="detection"]');
         const rpnInput = tr.querySelector('[data-field="rpn"]');
 
-        [severityInput, occurrenceInput, detectionInput].forEach(input => {
-            input.addEventListener('input', () => {
-                const s = parseInt(severityInput.value) || 1;
+        [severitySelect, occurrenceInput, detectionInput].forEach(input => {
+            input.addEventListener('change', () => {
+                const s = getSeverityValue(severitySelect.value);
                 const o = parseInt(occurrenceInput.value) || 1;
                 const d = parseInt(detectionInput.value) || 1;
                 rpnInput.value = s * o * d;
@@ -426,6 +430,31 @@
         });
 
         return tr;
+    }
+
+    function generateSeverityOptions(selectedSeverity) {
+        let options = '';
+        // Sort severity keys by numeric value (S1, S2, S3, etc.)
+        const sortedKeys = Object.keys(severityMapping).sort((a, b) => {
+            const aNum = parseInt(a.replace('S', ''));
+            const bNum = parseInt(b.replace('S', ''));
+            return aNum - bNum;
+        });
+
+        sortedKeys.forEach(sevId => {
+            const severity = severityMapping[sevId];
+            const isSelected = (selectedSeverity === sevId || (!selectedSeverity && sevId === 'S1')) ? 'selected' : '';
+            options += `<option value="${sevId}" ${isSelected}>${sevId}: ${severity.name}</option>`;
+        });
+
+        return options;
+    }
+
+    function getSeverityValue(severityId) {
+        // Extract numeric value from severity ID (e.g., "S5" -> 5)
+        if (!severityId) return 1;
+        const match = severityId.match(/\d+/);
+        return match ? parseInt(match[0]) : 1;
     }
 
     function generateControlsOptions(selected) {
@@ -462,7 +491,7 @@
             process_step: '',
             failure_mode: '',
             effects: '',
-            severity: 1,
+            severity: 1,  // Default numeric value
             causes: '',
             occurrence: 1,
             current_controls: [],
@@ -698,12 +727,13 @@
         const tbody = document.getElementById('fmea-tbody');
         
         tbody.querySelectorAll('tr').forEach((tr, index) => {
+            const severityId = tr.querySelector('[data-field="severity"]').value;
             const row = {
                 id: tr.dataset.rowId || `${currentAnalysisId}-${String(index + 1).padStart(2, '0')}`,
                 process_step: tr.querySelector('[data-field="process_step"]').value,
                 failure_mode: tr.querySelector('[data-field="failure_mode"]').value,
                 effects: tr.querySelector('[data-field="effects"]').value,
-                severity: parseInt(tr.querySelector('[data-field="severity"]').value) || 1,
+                severity: getSeverityValue(severityId),  // Store numeric value for YAML
                 causes: tr.querySelector('[data-field="causes"]').value,
                 occurrence: parseInt(tr.querySelector('[data-field="occurrence"]').value) || 1,
                 current_controls: Array.from(tr.querySelector('[data-field="current_controls"]').selectedOptions).map(opt => opt.value),

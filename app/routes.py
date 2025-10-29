@@ -205,11 +205,15 @@ def analyses():
         # Get linkable items for multi-select controls
         linkable_items = data_manager.get_linkable_items()
 
+        # Get configuration for severity/probability dropdowns
+        config = data_manager.get_configuration()
+
         return render_template(
             "analyses.html",
             title="Analyses",
             analyses=analyses_list,
             linkable_items=linkable_items,
+            config=config,
             user_info=user_info,
         )
     except Exception as e:
