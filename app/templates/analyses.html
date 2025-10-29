@@ -266,7 +266,7 @@
     let currentAnalysisId = null;
     let currentAnalysisData = null;
     let linkableItems = {{ linkable_items | tojson }};
-    let severityMapping = {{ config.severity_mapping | tojson }};
+    let severityMapping = {{ (config.severity_mapping if config else {}) | tojson }};
 
     document.addEventListener('DOMContentLoaded', function () {
         // Analysis selection handlers
