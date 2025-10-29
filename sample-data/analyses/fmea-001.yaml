@@ -22,7 +22,7 @@ rows:
     severity: 4
     causes: "Sensor displacement, poor skin contact, sensor malfunction"
     probability_of_harm: 2
-    current_controls: ["SS0001", "SS0002"]  # Links to DHF specifications
+    current_controls: ["HS001", "HS002", "SS001"]  # Sensor hardware and signal processing software
     risk_score: 8
     recommended_actions: ["Implement sensor contact quality monitoring", "Add redundant sensor"]
     
@@ -33,7 +33,7 @@ rows:
     severity: 3
     causes: "Loose connection, EMI interference, low battery"
     probability_of_harm: 2
-    current_controls: ["SS0003", "HS0001"]
+    current_controls: ["HS002", "HS003", "SS001"]  # Analog front-end, MCU, and signal processing
     risk_score: 6
     recommended_actions: ["Implement signal quality indicator", "Add EMI shielding"]
     
@@ -44,7 +44,7 @@ rows:
     severity: 2
     causes: "Algorithm sensitivity too high, motion artifacts"
     probability_of_harm: 2
-    current_controls: ["SS0010", "SS0011"]
+    current_controls: ["SS001", "SS002", "SS003"]  # Signal processing and detection algorithms
     risk_score: 4
     recommended_actions: ["Tune algorithm thresholds", "Implement motion artifact rejection"]
     
@@ -55,7 +55,7 @@ rows:
     severity: 4
     causes: "Algorithm sensitivity too low, signal noise"
     probability_of_harm: 1
-    current_controls: ["SS0012", "SS0013"]
+    current_controls: ["SS001", "SS003"]  # Signal processing and detection software
     risk_score: 4
     recommended_actions: ["Validate algorithm against clinical data", "Implement multi-parameter detection"]
     
@@ -66,7 +66,7 @@ rows:
     severity: 4
     causes: "Software bug, speaker failure, volume set too low"
     probability_of_harm: 1
-    current_controls: ["SS0020", "HS0005"]
+    current_controls: ["SS010", "HS007", "HS008"]  # Alert software, LED, and vibration hardware
     risk_score: 4
     recommended_actions: ["Implement alarm self-test", "Add visual alarm indicator"]
     
@@ -77,7 +77,7 @@ rows:
     severity: 3
     causes: "Processing bottleneck, interrupt priority issue"
     probability_of_harm: 2
-    current_controls: ["SS0021"]
+    current_controls: ["SS010", "HS003"]  # Alert software and processing hardware
     risk_score: 6
     recommended_actions: ["Optimize real-time processing", "Add watchdog timer"]
     
@@ -88,7 +88,7 @@ rows:
     severity: 2
     causes: "Insufficient memory allocation, memory leak"
     probability_of_harm: 2
-    current_controls: ["SS0030"]
+    current_controls: ["SS004", "HS004"]  # Data storage software and flash memory hardware
     risk_score: 4
     recommended_actions: ["Implement memory management", "Add storage full warning"]
     
@@ -99,7 +99,7 @@ rows:
     severity: 3
     causes: "Power consumption higher than design, battery degradation"
     probability_of_harm: 2
-    current_controls: ["HS0010", "SS0040"]
+    current_controls: ["HS005", "HS006", "SS006"]  # Battery, power management hardware, and lifecycle software
     risk_score: 6
     recommended_actions: ["Implement low battery warning", "Optimize power consumption"]
     
@@ -110,7 +110,7 @@ rows:
     severity: 2
     causes: "Range exceeded, interference, pairing failure"
     probability_of_harm: 3
-    current_controls: ["SS0050", "HS0015"]
+    current_controls: ["SS005", "HS009"]  # Communication software and BLE hardware
     risk_score: 6
     recommended_actions: ["Implement automatic reconnection", "Add connection status indicator"]
     
@@ -121,7 +121,7 @@ rows:
     severity: 2
     causes: "Display hardware failure, driver issue, power loss"
     probability_of_harm: 1
-    current_controls: ["HS0020", "SS0060"]
+    current_controls: ["HS007", "SS010"]  # Status LED hardware and alert software
     risk_score: 2
     recommended_actions: ["Implement display self-test", "Add audio feedback for status"]
 
