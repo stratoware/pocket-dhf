@@ -266,6 +266,7 @@
     let currentAnalysisData = null;
     let linkableItems = {{ linkable_items | tojson }};
     let severityMapping = {{ (config.severity_mapping if config else {}) | tojson }};
+    let probabilityHarmMapping = {{ (config.probability_harm_mapping if config else {}) | tojson }};
 
     document.addEventListener('DOMContentLoaded', function () {
         // Analysis selection handlers
@@ -392,7 +393,11 @@
         // Convert numeric severity to severity ID (e.g., 5 -> "S5")
         const severityId = typeof row.severity === 'number' ? `S${row.severity}` : (row.severity || 'S1');
         const severityValue = getSeverityValue(severityId);
-        const riskScore = severityValue * (row.probability_of_harm || 1);
+        
+        // Convert numeric probability_of_harm to PH ID (e.g., 2 -> "PH2")
+        const phId = typeof row.probability_of_harm === 'number' ? `PH${row.probability_of_harm}` : (row.probability_of_harm || 'PH1');
+        const phValue = getProbabilityHarmValue(phId);
+        const riskScore = severityValue * phValue;
 
         tr.innerHTML = `
             <td><input type="text" class="form-control form-control-sm" value="${row.process_step || ''}" data-field="process_step"></td>
@@ -400,23 +405,23 @@
             <td><input type="text" class="form-control form-control-sm" value="${row.effects || ''}" data-field="effects"></td>
             <td><select class="form-select form-select-sm" data-field="severity">${generateSeverityOptions(severityId)}</select></td>
             <td><textarea class="form-control form-control-sm" rows="2" data-field="causes">${row.causes || ''}</textarea></td>
-            <td><input type="number" class="form-control form-control-sm" value="${row.probability_of_harm || 1}" min="1" max="3" data-field="probability_of_harm"></td>
+            <td><select class="form-select form-select-sm" data-field="probability_of_harm">${generateProbabilityHarmOptions(phId)}</select></td>
             <td><select class="form-select form-select-sm" multiple data-field="current_controls">${generateControlsOptions(row.current_controls || [])}</select></td>
-            <td><input type="number" class="form-control form-control-sm" value="${riskScore}" readonly data-field="risk_score"></td>
+            <td><span class="d-inline-block text-center fw-bold" style="min-width: 40px;" data-field="risk_score">${riskScore}</span></td>
             <td><select class="form-select form-select-sm" multiple data-field="recommended_actions">${generateActionsOptions(row.recommended_actions || [])}</select></td>
             <td><button class="btn btn-sm btn-link text-danger delete-row-btn" data-row-index="${index}"><i class="fas fa-trash-alt"></i></button></td>
         `;
 
         // Add event listeners for Risk Score calculation
         const severitySelect = tr.querySelector('[data-field="severity"]');
-        const probabilityOfHarmInput = tr.querySelector('[data-field="probability_of_harm"]');
-        const riskScoreInput = tr.querySelector('[data-field="risk_score"]');
+        const probabilityOfHarmSelect = tr.querySelector('[data-field="probability_of_harm"]');
+        const riskScoreDisplay = tr.querySelector('[data-field="risk_score"]');
 
-        [severitySelect, probabilityOfHarmInput].forEach(input => {
+        [severitySelect, probabilityOfHarmSelect].forEach(input => {
             input.addEventListener('change', () => {
                 const s = getSeverityValue(severitySelect.value);
-                const ph = parseInt(probabilityOfHarmInput.value) || 1;
-                riskScoreInput.value = s * ph;
+                const ph = getProbabilityHarmValue(probabilityOfHarmSelect.value);
+                riskScoreDisplay.textContent = s * ph;
             });
         });
 
@@ -450,6 +455,30 @@
         // Extract numeric value from severity ID (e.g., "S5" -> 5)
         if (!severityId) return 1;
         const match = severityId.match(/\d+/);
+        return match ? parseInt(match[0]) : 1;
+    }
+
+    function generateProbabilityHarmOptions(selectedPH) {
+        let options = '';
+        // Sort probability harm keys by numeric value (PH1, PH2, PH3, etc.)
+        const sortedKeys = Object.keys(probabilityHarmMapping).sort((a, b) => {
+            const aNum = parseInt(a.replace('PH', ''));
+            const bNum = parseInt(b.replace('PH', ''));
+            return aNum - bNum;
+        });
+
+        sortedKeys.forEach(phId => {
+            const ph = probabilityHarmMapping[phId];
+            const selected = phId === selectedPH ? 'selected' : '';
+            options += `<option value="${phId}" ${selected}>${ph.name} (${phId})</option>`;
+        });
+        return options;
+    }
+
+    function getProbabilityHarmValue(phId) {
+        // Extract numeric value from PH ID (e.g., "PH2" -> 2)
+        if (!phId) return 1;
+        const match = phId.match(/\d+/);
         return match ? parseInt(match[0]) : 1;
     }
 
@@ -723,6 +752,7 @@
         
         tbody.querySelectorAll('tr').forEach((tr, index) => {
             const severityId = tr.querySelector('[data-field="severity"]').value;
+            const phId = tr.querySelector('[data-field="probability_of_harm"]').value;
             const row = {
                 id: tr.dataset.rowId || `${currentAnalysisId}-${String(index + 1).padStart(2, '0')}`,
                 process_step: tr.querySelector('[data-field="process_step"]').value,
@@ -730,9 +760,9 @@
                 effects: tr.querySelector('[data-field="effects"]').value,
                 severity: getSeverityValue(severityId),  // Store numeric value for YAML
                 causes: tr.querySelector('[data-field="causes"]').value,
-                probability_of_harm: parseInt(tr.querySelector('[data-field="probability_of_harm"]').value) || 1,
+                probability_of_harm: getProbabilityHarmValue(phId),  // Store numeric value for YAML
                 current_controls: Array.from(tr.querySelector('[data-field="current_controls"]').selectedOptions).map(opt => opt.value),
-                risk_score: parseInt(tr.querySelector('[data-field="risk_score"]').value) || 1,
+                risk_score: parseInt(tr.querySelector('[data-field="risk_score"]').textContent) || 1,
                 recommended_actions: Array.from(tr.querySelector('[data-field="recommended_actions"]').selectedOptions).map(opt => opt.value)
             };
             rows.push(row);
