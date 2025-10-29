@@ -10,26 +10,38 @@ Licensed under the MIT License. See LICENSE file in the project root.
 <div class="container-fluid" style="min-height: calc(100vh - 200px);">
     <div class="d-flex">
         <!-- Left Sidebar - Tree Navigation -->
-        <div id="sidebar" class="bg-light border-end" style="height: calc(100vh - 160px); width: 42%;">
-            <div class="tree-navigation">
-                <div class="p-1">
-                    <h5 class="mb-3">
+        <div id="sidebar" class="bg-light border-end d-flex flex-column" style="height: calc(100vh - 160px); width: 42%;">
+            <!-- Fixed Header Section (doesn't scroll) -->
+            <div class="tree-navigation-header p-3 border-bottom bg-light" style="flex-shrink: 0;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">
                         <i class="fas fa-sitemap me-2"></i>DHF Navigation
                     </h5>
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <button type="button" class="btn btn-sm btn-outline-primary w-100" id="expand-all-btn">
-                                <i class="fas fa-expand-alt me-1"></i>Expand All
-                            </button>
-                        </div>
-                        <div class="col-6">
-                            <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="collapse-all-btn">
-                                <i class="fas fa-compress-alt me-1"></i>Collapse All
-                            </button>
-                        </div>
+                    <!-- Navigation Controls - All in one row, icon-only with tooltips -->
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" id="nav-back-btn" disabled 
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Back">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="nav-forward-btn" disabled
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Forward">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="expand-all-btn"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="collapse-all-btn"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Collapse All">
+                            <i class="fas fa-compress-alt"></i>
+                        </button>
                     </div>
+                </div>
+            </div>
 
-                    <!-- User Needs Section -->
+            <!-- Scrollable Tree Section -->
+            <div class="tree-navigation p-3" style="flex: 1; overflow-y: auto;">
+                <!-- User Needs Section -->
                     <div class="tree-section mb-3">
                         <div class="tree-header collapsible-header" data-target="userNeedsItems">
                             <i class="fas fa-chevron-down me-2 collapse-icon"></i>
@@ -290,9 +302,8 @@ Licensed under the MIT License. See LICENSE file in the project root.
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </div> <!-- End tree-navigation (scrollable section) -->
+        </div> <!-- End sidebar -->
 
         <!-- Resize Handle -->
         <div id="resize-handle" class="resize-handle"></div>
@@ -609,6 +620,11 @@ Licensed under the MIT License. See LICENSE file in the project root.
     const hardwareSpecs = {{ hardware_specifications | tojson }};
     const mitigationLinks = {{ mitigation_links | tojson }};
 
+    // Navigation history
+    let navigationHistory = [];  // Array of {id, type} objects
+    let navigationPosition = -1;  // Current position in history (-1 = no history)
+    let isNavigating = false;     // Flag to prevent adding to history during back/forward
+
     // Make specs available globally for risk controls
     window.softwareSpecs = softwareSpecs;
     window.hardwareSpecs = hardwareSpecs;
@@ -616,6 +632,12 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
     // DOM Ready
     document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
         // Initialize collapse functionality
         initializeCollapse();
 
@@ -655,6 +677,10 @@ Licensed under the MIT License. See LICENSE file in the project root.
         // Expand/Collapse All buttons
         document.getElementById('expand-all-btn').addEventListener('click', expandAll);
         document.getElementById('collapse-all-btn').addEventListener('click', collapseAll);
+
+        // Navigation Back/Forward buttons
+        document.getElementById('nav-back-btn').addEventListener('click', navigateBack);
+        document.getElementById('nav-forward-btn').addEventListener('click', navigateForward);
 
         // Initialize folder editing
         initializeFolderEditing();
@@ -740,6 +766,81 @@ Licensed under the MIT License. See LICENSE file in the project root.
         });
     }
 
+    // Navigation history functions
+    function addToNavigationHistory(itemId, itemType) {
+        // If we're not at the end of history, truncate forward history
+        if (navigationPosition < navigationHistory.length - 1) {
+            navigationHistory = navigationHistory.slice(0, navigationPosition + 1);
+        }
+
+        // Don't add duplicate if it's the same as current position
+        if (navigationPosition >= 0 && 
+            navigationHistory[navigationPosition].id === itemId &&
+            navigationHistory[navigationPosition].type === itemType) {
+            return;
+        }
+
+        // Add new item to history
+        navigationHistory.push({ id: itemId, type: itemType });
+        navigationPosition = navigationHistory.length - 1;
+
+        // Update button states
+        updateNavigationButtons();
+    }
+
+    function navigateBack() {
+        if (navigationPosition > 0) {
+            navigationPosition--;
+            const historyItem = navigationHistory[navigationPosition];
+            
+            // Set flag to prevent adding to history
+            isNavigating = true;
+            loadItem(historyItem.id, historyItem.type);
+
+            updateNavigationButtons();
+        }
+    }
+
+    function navigateForward() {
+        if (navigationPosition < navigationHistory.length - 1) {
+            navigationPosition++;
+            const historyItem = navigationHistory[navigationPosition];
+            
+            // Set flag to prevent adding to history
+            isNavigating = true;
+            loadItem(historyItem.id, historyItem.type);
+
+            updateNavigationButtons();
+        }
+    }
+
+    function updateNavigationButtons() {
+        const backBtn = document.getElementById('nav-back-btn');
+        const forwardBtn = document.getElementById('nav-forward-btn');
+
+        // Enable/disable back button
+        if (navigationPosition > 0) {
+            backBtn.disabled = false;
+            backBtn.classList.remove('btn-outline-secondary');
+            backBtn.classList.add('btn-outline-primary');
+        } else {
+            backBtn.disabled = true;
+            backBtn.classList.remove('btn-outline-primary');
+            backBtn.classList.add('btn-outline-secondary');
+        }
+
+        // Enable/disable forward button
+        if (navigationPosition < navigationHistory.length - 1) {
+            forwardBtn.disabled = false;
+            forwardBtn.classList.remove('btn-outline-secondary');
+            forwardBtn.classList.add('btn-outline-primary');
+        } else {
+            forwardBtn.disabled = true;
+            forwardBtn.classList.remove('btn-outline-primary');
+            forwardBtn.classList.add('btn-outline-secondary');
+        }
+    }
+
     function loadItem(itemId, itemType = null) {
         fetch(`/api/item/${itemId}`)
             .then(response => response.json())
@@ -752,6 +853,14 @@ Licensed under the MIT License. See LICENSE file in the project root.
                 currentItemId = itemId;
                 currentItemData = data;
                 hasUnsavedChanges = false;
+
+                // Add to navigation history (unless we're navigating back/forward)
+                if (!isNavigating) {
+                    addToNavigationHistory(itemId, itemType);
+                } else {
+                    // Reset the flag after handling navigation
+                    isNavigating = false;
+                }
 
                 // Show editor panel
                 document.getElementById('welcome-panel').classList.add('d-none');
