@@ -359,6 +359,20 @@ Licensed under the MIT License. See LICENSE file in the project root.
                                 required></textarea>
                         </div>
 
+                        <!-- User Need-specific fields -->
+                        <div id="user-need-fields" class="d-none">
+                            <!-- Linked Product Requirements (read-only, derived from PRs that link to this UN) -->
+                            <div class="mb-3">
+                                <label class="form-label">Linked Product Requirements</label>
+                                <div id="user-need-linked-requirements-display" class="border rounded p-2 bg-light">
+                                    <span class="text-muted">No product requirements link to this user need</span>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>This is a read-only view. Edit links from the Product Requirements side.
+                                </small>
+                            </div>
+                        </div>
+
                         <!-- Risk-specific fields -->
                         <div id="risk-fields" class="d-none">
                             <!-- Hazard (reuses title field) -->
@@ -844,6 +858,37 @@ Licensed under the MIT License. See LICENSE file in the project root.
         return typeMap[sectionName] || sectionName;
     }
 
+    function updateUserNeedLinkedRequirements(userNeedId) {
+        const displayElement = document.getElementById('user-need-linked-requirements-display');
+        if (!displayElement) return;
+
+        // Fetch traceability data to find which product requirements link to this user need
+        fetch('/api/traceability/user-needs-to-requirements')
+            .then(response => response.json())
+            .then(data => {
+                // Find the entry for this user need
+                const userNeedEntry = data.find(entry => entry.user_need.id === userNeedId);
+                
+                if (!userNeedEntry || userNeedEntry.requirements.length === 0) {
+                    displayElement.innerHTML = '<span class="text-muted">No product requirements link to this user need</span>';
+                    return;
+                }
+
+                // Build clickable links for each linked requirement
+                const links = userNeedEntry.requirements.map(req => {
+                    return `<a href="#" onclick="loadItem('${req.id}', 'product_requirement'); return false;" class="text-decoration-none d-block mb-1">
+                        <i class="fas fa-file-alt me-1"></i>${req.id}: ${req.title}
+                    </a>`;
+                });
+
+                displayElement.innerHTML = links.join('');
+            })
+            .catch(error => {
+                console.error('Error loading linked requirements:', error);
+                displayElement.innerHTML = '<span class="text-muted text-danger">Error loading linked requirements</span>';
+            });
+    }
+
     function openLinkedItemsModal(sectionType) {
         const modal = new bootstrap.Modal(document.getElementById('linkedItemsModal'));
         const modalTitle = document.getElementById('linkedItemsModalLabel');
@@ -960,10 +1005,16 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
         // Hide all conditional fields
         document.getElementById('risk-fields').classList.add('d-none');
+        document.getElementById('user-need-fields').classList.add('d-none');
         document.getElementById('linked-items-fields').classList.add('d-none');
 
         // Show relevant fields based on item type
-        if (itemType === 'risk') {
+        if (itemType === 'user_need') {
+            // Show user need specific fields
+            document.getElementById('user-need-fields').classList.remove('d-none');
+            // Populate linked product requirements (reverse lookup)
+            updateUserNeedLinkedRequirements(data.id);
+        } else if (itemType === 'risk') {
             document.getElementById('risk-fields').classList.remove('d-none');
             document.getElementById('description-field').classList.add('d-none'); // Hide description for risks
 
