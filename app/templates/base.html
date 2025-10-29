@@ -145,6 +145,46 @@ Licensed under the MIT License. See LICENSE file in the project root.
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Live Reload Script -->
+    <script>
+        (function() {
+            // Connect to Server-Sent Events endpoint for live reload
+            const eventSource = new EventSource('{{ url_for("main.live_reload_events") }}');
+            let reloadTimeout = null;
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'connected') {
+                        console.log('Live reload connected');
+                    } else if (data.type === 'reload') {
+                        console.log('File changed, reloading page...');
+                        // Add a small delay to ensure file is fully written
+                        if (reloadTimeout) clearTimeout(reloadTimeout);
+                        reloadTimeout = setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                    } else if (data.type === 'ping') {
+                        // Keep-alive ping, no action needed
+                    }
+                } catch (e) {
+                    console.error('Error parsing live reload event:', e);
+                }
+            };
+            
+            eventSource.onerror = function(error) {
+                console.warn('Live reload connection error, retrying...');
+                // EventSource will automatically reconnect
+            };
+            
+            // Clean up on page unload
+            window.addEventListener('beforeunload', function() {
+                eventSource.close();
+            });
+        })();
+    </script>
 </body>
 
 </html>

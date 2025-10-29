@@ -10,26 +10,51 @@ Licensed under the MIT License. See LICENSE file in the project root.
 <div class="container-fluid" style="min-height: calc(100vh - 200px);">
     <div class="d-flex">
         <!-- Left Sidebar - Tree Navigation -->
-        <div id="sidebar" class="bg-light border-end" style="height: calc(100vh - 160px); width: 42%;">
-            <div class="tree-navigation">
-                <div class="p-1">
-                    <h5 class="mb-3">
-                        <i class="fas fa-sitemap me-2"></i>DHF Navigation
-                    </h5>
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <button type="button" class="btn btn-sm btn-outline-primary w-100" id="expand-all-btn">
-                                <i class="fas fa-expand-alt me-1"></i>Expand All
-                            </button>
-                        </div>
-                        <div class="col-6">
-                            <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="collapse-all-btn">
-                                <i class="fas fa-compress-alt me-1"></i>Collapse All
-                            </button>
+        <div id="sidebar" class="bg-light border-end d-flex flex-column" style="height: calc(100vh - 160px); width: 42%;">
+            <!-- Fixed Header Section (doesn't scroll) -->
+            <div class="tree-navigation-header p-3 border-bottom bg-light" style="flex-shrink: 0;">
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                    <!-- Navigation Title -->
+                    <h6 class="mb-0" style="white-space: nowrap;">
+                        <i class="fas fa-sitemap me-2"></i>Navigation
+                    </h6>
+                    
+                    <!-- Search Field - takes remaining space -->
+                    <div class="flex-grow-1">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control form-control-sm" id="tree-search" 
+                                   placeholder="Search by ID or title...">
                         </div>
                     </div>
+                    
+                    <!-- Navigation Controls - icon-only with tooltips -->
+                    <div class="btn-group btn-group-sm" role="group" style="flex-shrink: 0;">
+                        <button type="button" class="btn btn-outline-secondary" id="nav-back-btn" disabled 
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Back (← Left Arrow)">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="nav-forward-btn" disabled
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Forward (→ Right Arrow)">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="expand-all-btn"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All (+ Plus)">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="collapse-all-btn"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Collapse All (- Minus)">
+                            <i class="fas fa-compress-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-                    <!-- User Needs Section -->
+            <!-- Scrollable Tree Section -->
+            <div class="tree-navigation p-3" style="flex: 1; overflow-y: auto;">
+                <!-- User Needs Section -->
                     <div class="tree-section mb-3">
                         <div class="tree-header collapsible-header" data-target="userNeedsItems">
                             <i class="fas fa-chevron-down me-2 collapse-icon"></i>
@@ -290,9 +315,8 @@ Licensed under the MIT License. See LICENSE file in the project root.
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </div> <!-- End tree-navigation (scrollable section) -->
+        </div> <!-- End sidebar -->
 
         <!-- Resize Handle -->
         <div id="resize-handle" class="resize-handle"></div>
@@ -357,6 +381,20 @@ Licensed under the MIT License. See LICENSE file in the project root.
                             <label for="description" class="form-label">Description</label>
                             <textarea class="form-control" id="description" name="description" rows="4"
                                 required></textarea>
+                        </div>
+
+                        <!-- User Need-specific fields -->
+                        <div id="user-need-fields" class="d-none">
+                            <!-- Linked Product Requirements (read-only, derived from PRs that link to this UN) -->
+                            <div class="mb-3">
+                                <label class="form-label">Linked Product Requirements</label>
+                                <div id="user-need-linked-requirements-display" class="border rounded p-2 bg-light">
+                                    <span class="text-muted">No product requirements link to this user need</span>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>This is a read-only view. Edit links from the Product Requirements side.
+                                </small>
+                            </div>
                         </div>
 
                         <!-- Risk-specific fields -->
@@ -595,6 +633,11 @@ Licensed under the MIT License. See LICENSE file in the project root.
     const hardwareSpecs = {{ hardware_specifications | tojson }};
     const mitigationLinks = {{ mitigation_links | tojson }};
 
+    // Navigation history
+    let navigationHistory = [];  // Array of {id, type} objects
+    let navigationPosition = -1;  // Current position in history (-1 = no history)
+    let isNavigating = false;     // Flag to prevent adding to history during back/forward
+
     // Make specs available globally for risk controls
     window.softwareSpecs = softwareSpecs;
     window.hardwareSpecs = hardwareSpecs;
@@ -602,6 +645,12 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
     // DOM Ready
     document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
         // Initialize collapse functionality
         initializeCollapse();
 
@@ -642,8 +691,21 @@ Licensed under the MIT License. See LICENSE file in the project root.
         document.getElementById('expand-all-btn').addEventListener('click', expandAll);
         document.getElementById('collapse-all-btn').addEventListener('click', collapseAll);
 
+        // Navigation Back/Forward buttons
+        document.getElementById('nav-back-btn').addEventListener('click', navigateBack);
+        document.getElementById('nav-forward-btn').addEventListener('click', navigateForward);
+
+        // Keyboard shortcuts
+        initializeKeyboardShortcuts();
+
+        // Initialize search
+        initializeTreeSearch();
+
         // Initialize folder editing
         initializeFolderEditing();
+
+        // Restore previously selected item after page reload (e.g., after save)
+        restoreSelectedItem();
     });
 
     function initializeCollapse() {
@@ -723,6 +785,228 @@ Licensed under the MIT License. See LICENSE file in the project root.
         });
     }
 
+    // Tree search functionality
+    function initializeTreeSearch() {
+        const searchInput = document.getElementById('tree-search');
+        
+        searchInput.addEventListener('input', function() {
+            performTreeSearch(this.value.trim());
+        });
+    }
+
+    function performTreeSearch(searchTerm) {
+        // Clear all previous search styling
+        clearSearchStyling();
+        
+        if (!searchTerm) {
+            // Empty search - show everything normally
+            return;
+        }
+        
+        const searchLower = searchTerm.toLowerCase();
+        const allTreeItems = document.querySelectorAll('.tree-item');
+        const matchingItems = new Set();
+        const parentMatchCounts = new Map(); // Map of parent element to match count
+        
+        // Find all matching items
+        allTreeItems.forEach(item => {
+            const itemId = item.dataset.itemId;
+            const itemText = item.textContent.trim();
+            
+            if (itemId && (
+                itemId.toLowerCase().includes(searchLower) ||
+                itemText.toLowerCase().includes(searchLower)
+            )) {
+                matchingItems.add(item);
+                item.classList.add('search-match');
+                item.style.fontWeight = 'bold';
+                
+                // Mark all parent sections as having matches
+                let parent = item.closest('.collapsible-content');
+                while (parent) {
+                    const parentId = parent.id;
+                    if (parentId) {
+                        parentMatchCounts.set(parentId, (parentMatchCounts.get(parentId) || 0) + 1);
+                    }
+                    // Move up to next parent
+                    parent = parent.parentElement?.closest('.collapsible-content');
+                }
+            }
+        });
+        
+        // Gray out non-matching items
+        allTreeItems.forEach(item => {
+            if (!matchingItems.has(item)) {
+                item.style.opacity = '0.5';
+            }
+        });
+        
+        // Handle parent sections - show match counts for collapsed sections
+        document.querySelectorAll('.tree-header, .tree-group-header, .tree-subgroup-header').forEach(header => {
+            const targetId = header.dataset.target;
+            if (!targetId) return;
+            
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            
+            const matchCount = parentMatchCounts.get(targetId) || 0;
+            
+            if (matchCount > 0) {
+                // This section has matches
+                const isCollapsed = target.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    // Show count badge for collapsed sections
+                    let badge = header.querySelector('.search-match-count');
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'badge bg-warning text-dark ms-2 search-match-count';
+                        header.appendChild(badge);
+                    }
+                    badge.textContent = `(${matchCount})`;
+                    header.style.fontWeight = 'bold';
+                }
+            } else if (matchCount === 0) {
+                // No matches in this section - gray it out
+                header.style.opacity = '0.5';
+            }
+        });
+    }
+
+    function clearSearchStyling() {
+        // Remove all search-related styling
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.classList.remove('search-match');
+            item.style.fontWeight = '';
+            item.style.opacity = '';
+        });
+        
+        document.querySelectorAll('.tree-header, .tree-group-header, .tree-subgroup-header').forEach(header => {
+            header.style.fontWeight = '';
+            header.style.opacity = '';
+            
+            // Remove match count badges
+            const badge = header.querySelector('.search-match-count');
+            if (badge) {
+                badge.remove();
+            }
+        });
+    }
+
+    // Keyboard shortcuts
+    function initializeKeyboardShortcuts() {
+        document.addEventListener('keydown', function(event) {
+            // Don't trigger shortcuts if user is typing in an input/textarea
+            const activeElement = document.activeElement;
+            const isTyping = activeElement && (
+                activeElement.tagName === 'INPUT' ||
+                activeElement.tagName === 'TEXTAREA' ||
+                activeElement.isContentEditable
+            );
+
+            if (isTyping) {
+                return; // User is typing, don't handle shortcuts
+            }
+
+            // Handle keyboard shortcuts
+            switch(event.key) {
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    navigateBack();
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    navigateForward();
+                    break;
+                case '+':
+                case '=': // Plus without shift on most keyboards
+                    event.preventDefault();
+                    expandAll();
+                    break;
+                case '-':
+                case '_': // Minus is also underscore
+                    event.preventDefault();
+                    collapseAll();
+                    break;
+            }
+        });
+    }
+
+    // Navigation history functions
+    function addToNavigationHistory(itemId, itemType) {
+        // If we're not at the end of history, truncate forward history
+        if (navigationPosition < navigationHistory.length - 1) {
+            navigationHistory = navigationHistory.slice(0, navigationPosition + 1);
+        }
+
+        // Don't add duplicate if it's the same as current position
+        if (navigationPosition >= 0 && 
+            navigationHistory[navigationPosition].id === itemId &&
+            navigationHistory[navigationPosition].type === itemType) {
+            return;
+        }
+
+        // Add new item to history
+        navigationHistory.push({ id: itemId, type: itemType });
+        navigationPosition = navigationHistory.length - 1;
+
+        // Update button states
+        updateNavigationButtons();
+    }
+
+    function navigateBack() {
+        if (navigationPosition > 0) {
+            navigationPosition--;
+            const historyItem = navigationHistory[navigationPosition];
+            
+            // Set flag to prevent adding to history
+            isNavigating = true;
+            loadItem(historyItem.id, historyItem.type);
+
+            updateNavigationButtons();
+        }
+    }
+
+    function navigateForward() {
+        if (navigationPosition < navigationHistory.length - 1) {
+            navigationPosition++;
+            const historyItem = navigationHistory[navigationPosition];
+            
+            // Set flag to prevent adding to history
+            isNavigating = true;
+            loadItem(historyItem.id, historyItem.type);
+
+            updateNavigationButtons();
+        }
+    }
+
+    function updateNavigationButtons() {
+        const backBtn = document.getElementById('nav-back-btn');
+        const forwardBtn = document.getElementById('nav-forward-btn');
+
+        // Enable/disable back button
+        if (navigationPosition > 0) {
+            backBtn.disabled = false;
+            backBtn.classList.remove('btn-outline-secondary');
+            backBtn.classList.add('btn-outline-primary');
+        } else {
+            backBtn.disabled = true;
+            backBtn.classList.remove('btn-outline-primary');
+            backBtn.classList.add('btn-outline-secondary');
+        }
+
+        // Enable/disable forward button
+        if (navigationPosition < navigationHistory.length - 1) {
+            forwardBtn.disabled = false;
+            forwardBtn.classList.remove('btn-outline-secondary');
+            forwardBtn.classList.add('btn-outline-primary');
+        } else {
+            forwardBtn.disabled = true;
+            forwardBtn.classList.remove('btn-outline-primary');
+            forwardBtn.classList.add('btn-outline-secondary');
+        }
+    }
+
     function loadItem(itemId, itemType = null) {
         fetch(`/api/item/${itemId}`)
             .then(response => response.json())
@@ -736,12 +1020,21 @@ Licensed under the MIT License. See LICENSE file in the project root.
                 currentItemData = data;
                 hasUnsavedChanges = false;
 
-                // Show editor panel
-                document.getElementById('welcome-panel').classList.add('d-none');
-                document.getElementById('editor-panel').classList.remove('d-none');
+                // Add to navigation history (unless we're navigating back/forward)
+                if (!isNavigating) {
+                    addToNavigationHistory(itemId, itemType);
+                } else {
+                    // Reset the flag after handling navigation
+                    isNavigating = false;
+                }
 
                 // Populate form
                 populateForm(data, itemType);
+
+                // Show editor panel and hide other panels (after successful fetch)
+                document.getElementById('welcome-panel').classList.add('d-none');
+                document.getElementById('traceability-content').classList.add('d-none');
+                document.getElementById('editor-panel').classList.remove('d-none');
 
                 // Update sidebar focus and expand tree
                 updateSidebarFocus(itemId, itemType);
@@ -839,6 +1132,37 @@ Licensed under the MIT License. See LICENSE file in the project root.
             'product-requirements': 'product_requirement'
         };
         return typeMap[sectionName] || sectionName;
+    }
+
+    function updateUserNeedLinkedRequirements(userNeedId) {
+        const displayElement = document.getElementById('user-need-linked-requirements-display');
+        if (!displayElement) return;
+
+        // Fetch traceability data to find which product requirements link to this user need
+        fetch('/api/traceability/user-needs-to-requirements')
+            .then(response => response.json())
+            .then(data => {
+                // Find the entry for this user need
+                const userNeedEntry = data.find(entry => entry.user_need.id === userNeedId);
+                
+                if (!userNeedEntry || userNeedEntry.requirements.length === 0) {
+                    displayElement.innerHTML = '<span class="text-muted">No product requirements link to this user need</span>';
+                    return;
+                }
+
+                // Build clickable links for each linked requirement
+                const links = userNeedEntry.requirements.map(req => {
+                    return `<a href="#" onclick="loadItem('${req.id}', 'product_requirement'); return false;" class="text-decoration-none d-block mb-1">
+                        <i class="fas fa-file-alt me-1"></i>${req.id}: ${req.title}
+                    </a>`;
+                });
+
+                displayElement.innerHTML = links.join('');
+            })
+            .catch(error => {
+                console.error('Error loading linked requirements:', error);
+                displayElement.innerHTML = '<span class="text-muted text-danger">Error loading linked requirements</span>';
+            });
     }
 
     function openLinkedItemsModal(sectionType) {
@@ -957,10 +1281,16 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
         // Hide all conditional fields
         document.getElementById('risk-fields').classList.add('d-none');
+        document.getElementById('user-need-fields').classList.add('d-none');
         document.getElementById('linked-items-fields').classList.add('d-none');
 
         // Show relevant fields based on item type
-        if (itemType === 'risk') {
+        if (itemType === 'user_need') {
+            // Show user need specific fields
+            document.getElementById('user-need-fields').classList.remove('d-none');
+            // Populate linked product requirements (reverse lookup)
+            updateUserNeedLinkedRequirements(data.id);
+        } else if (itemType === 'risk') {
             document.getElementById('risk-fields').classList.remove('d-none');
             document.getElementById('description-field').classList.add('d-none'); // Hide description for risks
 
@@ -1295,26 +1625,16 @@ Licensed under the MIT License. See LICENSE file in the project root.
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showStatus('Item saved successfully!', 'success');
+                    showStatus('Item saved successfully! Reloading...', 'success');
                     hasUnsavedChanges = false;
-                    document.getElementById('save-btn').classList.remove('btn-warning');
-                    document.getElementById('save-btn').classList.add('btn-success');
-
-                    // Update tree item title if changed
-                    const treeItem = document.querySelector(`[data-item-id="${currentItemId}"]`);
-                    if (treeItem && updateData.title) {
-                        const titleElement = treeItem.querySelector('i').nextSibling;
-                        // Update the title part (after the ID span)
-                        const idSpan = titleElement.querySelector('span');
-                        if (idSpan) {
-                            // If there's already an ID span, update the text after it
-                            titleElement.childNodes[2].textContent = updateData.title;
-                        } else {
-                            // If no ID span, just update the text content
-                            titleElement.textContent = updateData.title;
-                        }
-                        document.getElementById('item-title-display').textContent = updateData.title;
-                    }
+                    
+                    // Store the current item ID in sessionStorage to restore after reload
+                    sessionStorage.setItem('selectedItemId', currentItemId);
+                    sessionStorage.setItem('selectedItemType', document.getElementById('item-type').value);
+                    
+                    // Reload the page to get fresh data from the server
+                    // This ensures complete consistency with the backend
+                    window.location.reload();
                 } else {
                     showStatus('Error saving item: ' + (data.error || 'Unknown error'), 'danger');
                 }
@@ -1334,6 +1654,21 @@ Licensed under the MIT License. See LICENSE file in the project root.
         setTimeout(() => {
             statusDiv.classList.add('d-none');
         }, 5000);
+    }
+
+    function restoreSelectedItem() {
+        // Check if we have a previously selected item (e.g., after save and reload)
+        const savedItemId = sessionStorage.getItem('selectedItemId');
+        const savedItemType = sessionStorage.getItem('selectedItemType');
+        
+        if (savedItemId && savedItemType) {
+            // Clear the stored values
+            sessionStorage.removeItem('selectedItemId');
+            sessionStorage.removeItem('selectedItemType');
+            
+            // Load the item
+            loadItem(savedItemId, savedItemType);
+        }
     }
 
     function initializeFolderEditing() {
