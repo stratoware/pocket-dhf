@@ -644,6 +644,9 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
         // Initialize folder editing
         initializeFolderEditing();
+
+        // Restore previously selected item after page reload (e.g., after save)
+        restoreSelectedItem();
     });
 
     function initializeCollapse() {
@@ -1295,26 +1298,16 @@ Licensed under the MIT License. See LICENSE file in the project root.
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showStatus('Item saved successfully!', 'success');
+                    showStatus('Item saved successfully! Reloading...', 'success');
                     hasUnsavedChanges = false;
-                    document.getElementById('save-btn').classList.remove('btn-warning');
-                    document.getElementById('save-btn').classList.add('btn-success');
-
-                    // Update tree item title if changed
-                    const treeItem = document.querySelector(`[data-item-id="${currentItemId}"]`);
-                    if (treeItem && updateData.title) {
-                        const titleElement = treeItem.querySelector('i').nextSibling;
-                        // Update the title part (after the ID span)
-                        const idSpan = titleElement.querySelector('span');
-                        if (idSpan) {
-                            // If there's already an ID span, update the text after it
-                            titleElement.childNodes[2].textContent = updateData.title;
-                        } else {
-                            // If no ID span, just update the text content
-                            titleElement.textContent = updateData.title;
-                        }
-                        document.getElementById('item-title-display').textContent = updateData.title;
-                    }
+                    
+                    // Store the current item ID in sessionStorage to restore after reload
+                    sessionStorage.setItem('selectedItemId', currentItemId);
+                    sessionStorage.setItem('selectedItemType', document.getElementById('item-type').value);
+                    
+                    // Reload the page to get fresh data from the server
+                    // This ensures complete consistency with the backend
+                    window.location.reload();
                 } else {
                     showStatus('Error saving item: ' + (data.error || 'Unknown error'), 'danger');
                 }
@@ -1334,6 +1327,21 @@ Licensed under the MIT License. See LICENSE file in the project root.
         setTimeout(() => {
             statusDiv.classList.add('d-none');
         }, 5000);
+    }
+
+    function restoreSelectedItem() {
+        // Check if we have a previously selected item (e.g., after save and reload)
+        const savedItemId = sessionStorage.getItem('selectedItemId');
+        const savedItemType = sessionStorage.getItem('selectedItemType');
+        
+        if (savedItemId && savedItemType) {
+            // Clear the stored values
+            sessionStorage.removeItem('selectedItemId');
+            sessionStorage.removeItem('selectedItemType');
+            
+            // Load the item
+            loadItem(savedItemId, savedItemType);
+        }
     }
 
     function initializeFolderEditing() {
