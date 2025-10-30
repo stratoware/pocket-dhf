@@ -1,0 +1,2058 @@
+<!--
+HTML document
+
+Copyright (c) 2025 Stratoware LLC
+Licensed under the MIT License. See LICENSE file in the project root.
+-->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid" style="min-height: calc(100vh - 200px);">
+    <div class="d-flex">
+        <!-- Left Sidebar - Tree Navigation -->
+        <div id="sidebar" class="bg-light border-end d-flex flex-column" style="height: calc(100vh - 160px); width: 42%;">
+            <!-- Fixed Header Section (doesn't scroll) -->
+            <div class="tree-navigation-header p-3 border-bottom bg-light" style="flex-shrink: 0;">
+<<<<<<< HEAD
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                    <!-- Navigation Title -->
+                    <h6 class="mb-0" style="white-space: nowrap;">
+                        <i class="fas fa-sitemap me-2"></i>Navigation
+                    </h6>
+                    
+                    <!-- Search Field - takes remaining space -->
+                    <div class="flex-grow-1">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control form-control-sm" id="tree-search" 
+                                   placeholder="Search by ID or title...">
+                        </div>
+                    </div>
+                    
+                    <!-- Navigation Controls - icon-only with tooltips -->
+                    <div class="btn-group btn-group-sm" role="group" style="flex-shrink: 0;">
+                        <button type="button" class="btn btn-outline-secondary" id="nav-back-btn" disabled 
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Back (← Left Arrow)">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="nav-forward-btn" disabled
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Forward (→ Right Arrow)">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="expand-all-btn"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All (+ Plus)">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="collapse-all-btn"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Collapse All (- Minus)">
+                            <i class="fas fa-compress-alt"></i>
+                        </button>
+                    </div>
+=======
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sitemap me-2"></i>DHF Navigation
+                    </h5>
+                    <!-- Navigation Controls - All in one row, icon-only with tooltips -->
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" id="nav-back-btn" disabled 
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Back">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="nav-forward-btn" disabled
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Forward">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="expand-all-btn"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="collapse-all-btn"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Collapse All">
+                            <i class="fas fa-compress-alt"></i>
+                        </button>
+                    </div>
+>>>>>>> ff9404c (Feature: Add navigation history with back/forward controls)
+                </div>
+            </div>
+
+            <!-- Scrollable Tree Section -->
+            <div class="tree-navigation p-3" style="flex: 1; overflow-y: auto;">
+                <!-- User Needs Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="userNeedsItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            User Needs
+                            <span class="badge bg-secondary ms-2">{{ user_needs_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="userNeedsItems">
+                            {% for id, item in user_needs.items() %}
+                            <div class="tree-item" data-item-id="{{ id }}" data-item-type="user_need">
+                                <i class="fas fa-user me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Product Requirements Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="productRequirementsItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-clipboard-list me-2 text-success"></i>
+                            Product Requirements
+                            <span class="badge bg-secondary ms-2">{{ product_requirements_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="productRequirementsItems">
+                            {% for group_key, group in product_requirements.items() %}
+                            <div class="tree-group mb-2">
+                                <div class="tree-group-header collapsible-header" data-target="req-{{ group_key }}">
+                                    <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                    <i class="fas fa-folder me-2"></i>
+                                    <div class="editable-folder-name flex-grow-1" data-group-key="{{ group_key }}"
+                                        data-group-type="product_requirements">
+                                        <span class="folder-name-display">{{ group.group_name }}</span>
+                                        <input type="text" class="folder-name-input d-none form-control form-control-sm"
+                                            value="{{ group.group_name }}">
+                                        <div class="folder-edit-buttons d-none">
+                                            <button class="btn btn-xs btn-success save-folder-btn me-1">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-xs btn-secondary cancel-folder-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="floating-edit-btn" data-group-key="{{ group_key }}"
+                                            data-group-type="product_requirements">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    {% if group.requirements is defined %}
+                                        {% set req_count = group.requirements|length %}
+                                    {% else %}
+                                        {% set req_count = 0 %}
+                                        {% for sub_key, sub_group in group.requirements.items() %}
+                                            {% if sub_group.requirements is defined %}
+                                                {% set req_count = req_count + sub_group.requirements|length %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    <span class="badge bg-light text-dark ms-2">{{ req_count }}</span>
+                                </div>
+                                <div class="ms-3 collapsible-content collapsed" id="req-{{ group_key }}">
+                                    {% if group.requirements is defined and group.requirements.items()|selectattr('1.id', 'defined')|list|length > 0 %}
+                                        <!-- Direct requirements (2-level structure) -->
+                                        {% for id, item in group.requirements.items() %}
+                                        <div class="tree-item" data-item-id="{{ id }}" data-item-type="product_requirement">
+                                            <i class="fas fa-file-alt me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <!-- Nested requirements (3-level structure) -->
+                                        {% for sub_key, sub_group in group.requirements.items() %}
+                                        <div class="tree-subgroup mb-2">
+                                            <div class="tree-subgroup-header collapsible-header" data-target="req-{{ group_key }}-{{ sub_key }}">
+                                                <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                                <i class="fas fa-folder-open me-2"></i>
+                                                <span class="subgroup-name">{{ sub_group.group_name }}</span>
+                                                <span class="badge bg-light text-dark ms-2">{{ sub_group.requirements|length }}</span>
+                                            </div>
+                                            <div class="ms-3 collapsible-content collapsed" id="req-{{ group_key }}-{{ sub_key }}">
+                                                {% for id, item in sub_group.requirements.items() %}
+                                                <div class="tree-item" data-item-id="{{ id }}" data-item-type="product_requirement">
+                                                    <i class="fas fa-file-alt me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Risks Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="risksItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+                            Risks
+                            <span class="badge bg-secondary ms-2">{{ risk_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="risksItems">
+                            {% for group_key, group in risks.items() %}
+                            {% if group.risks is defined %}
+                            <div class="tree-group mb-2">
+                                <div class="tree-group-header collapsible-header" data-target="risk-{{ group_key }}">
+                                    <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                    <i class="fas fa-folder me-2"></i>
+                                    <div class="editable-folder-name flex-grow-1" data-group-key="{{ group_key }}"
+                                        data-group-type="risks">
+                                        <span class="folder-name-display">{{ group.group_name }}</span>
+                                        <input type="text" class="folder-name-input d-none form-control form-control-sm"
+                                            value="{{ group.group_name }}">
+                                        <div class="folder-edit-buttons d-none">
+                                            <button class="btn btn-xs btn-success save-folder-btn me-1">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-xs btn-secondary cancel-folder-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="floating-edit-btn" data-group-key="{{ group_key }}"
+                                            data-group-type="risks">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    <span class="badge bg-light text-dark ms-2">{{ group.risks|length }}</span>
+                                </div>
+                                <div class="ms-3 collapsible-content collapsed" id="risk-{{ group_key }}">
+                                    {% for id, item in group.risks.items() %}
+                                    <div class="tree-item" data-item-id="{{ id }}" data-item-type="risk">
+                                        <i class="fas fa-exclamation-circle me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <!-- Legacy flat structure -->
+                            <div class="tree-item" data-item-id="{{ group_key }}" data-item-type="risk">
+                                <i class="fas fa-exclamation-circle me-2"></i><span class="fw-bold text-muted me-2">{{ group_key }}:</span>{{ group.title }}
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Software Specifications Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="softwareSpecsItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-code me-2 text-info"></i>
+                            Software Specifications
+                            <span class="badge bg-secondary ms-2">{{ software_specifications_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="softwareSpecsItems">
+                            {% for group_key, group in software_specifications.items() %}
+                            <div class="tree-group mb-2">
+                                <div class="tree-group-header collapsible-header" data-target="sw-{{ group_key }}">
+                                    <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                    <i class="fas fa-folder me-2"></i>
+                                    <div class="editable-folder-name flex-grow-1" data-group-key="{{ group_key }}"
+                                        data-group-type="software_specifications">
+                                        <span class="folder-name-display">{{ group.group_name }}</span>
+                                        <input type="text" class="folder-name-input d-none form-control form-control-sm"
+                                            value="{{ group.group_name }}">
+                                        <div class="folder-edit-buttons d-none">
+                                            <button class="btn btn-xs btn-success save-folder-btn me-1">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-xs btn-secondary cancel-folder-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="floating-edit-btn" data-group-key="{{ group_key }}"
+                                            data-group-type="software_specifications">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    <span class="badge bg-light text-dark ms-2">{{ group.specifications|length }}</span>
+                                </div>
+                                <div class="ms-3 collapsible-content collapsed" id="sw-{{ group_key }}">
+                                    {% for id, item in group.specifications.items() %}
+                                    <div class="tree-item" data-item-id="{{ id }}"
+                                        data-item-type="software_specification">
+                                        <i class="fas fa-cog me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Hardware Specifications Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="hardwareSpecsItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-microchip me-2 text-danger"></i>
+                            Hardware Specifications
+                            <span class="badge bg-secondary ms-2">{{ hardware_specifications_count }}</span>
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="hardwareSpecsItems">
+                            {% for group_key, group in hardware_specifications.items() %}
+                            <div class="tree-group mb-2">
+                                <div class="tree-group-header collapsible-header" data-target="hw-{{ group_key }}">
+                                    <i class="fas fa-chevron-right me-2 collapse-icon"></i>
+                                    <i class="fas fa-folder me-2"></i>
+                                    <div class="editable-folder-name flex-grow-1" data-group-key="{{ group_key }}"
+                                        data-group-type="hardware_specifications">
+                                        <span class="folder-name-display">{{ group.group_name }}</span>
+                                        <input type="text" class="folder-name-input d-none form-control form-control-sm"
+                                            value="{{ group.group_name }}">
+                                        <div class="folder-edit-buttons d-none">
+                                            <button class="btn btn-xs btn-success save-folder-btn me-1">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-xs btn-secondary cancel-folder-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <button class="floating-edit-btn" data-group-key="{{ group_key }}"
+                                            data-group-type="hardware_specifications">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                    <span class="badge bg-light text-dark ms-2">{{ group.specifications|length }}</span>
+                                </div>
+                                <div class="ms-3 collapsible-content collapsed" id="hw-{{ group_key }}">
+                                    {% for id, item in group.specifications.items() %}
+                                    <div class="tree-item" data-item-id="{{ id }}"
+                                        data-item-type="hardware_specification">
+                                        <i class="fas fa-microchip me-2"></i><span class="fw-bold text-muted me-2">{{ id }}:</span>{{ item.title }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Traceability Tables Section -->
+                    <div class="tree-section mb-3">
+                        <div class="tree-header collapsible-header" data-target="traceabilityItems">
+                            <i class="fas fa-chevron-down me-2 collapse-icon"></i>
+                            <i class="fas fa-project-diagram me-2 text-warning"></i>
+                            Traceability Tables
+                        </div>
+                        <div class="tree-items ms-4 collapsible-content" id="traceabilityItems">
+                            <div class="tree-item" data-traceability-type="user-needs-to-requirements">
+                                <i class="fas fa-link me-2"></i>User Needs to Product Requirements
+                            </div>
+                            <div class="tree-item" data-traceability-type="requirements-to-specifications">
+                                <i class="fas fa-link me-2"></i>Product Requirements to Specifications
+                            </div>
+                            <div class="tree-item" data-traceability-type="risks-to-mitigations">
+                                <i class="fas fa-link me-2"></i>Risks to Mitigations
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- End tree-navigation (scrollable section) -->
+        </div> <!-- End sidebar -->
+
+        <!-- Resize Handle -->
+        <div id="resize-handle" class="resize-handle"></div>
+
+        <!-- Right Panel - Item Editor -->
+        <div id="main-content" style="width: 58%;">
+            <div class="p-4">
+                <div id="welcome-panel" class="text-center text-muted">
+                    <div class="mt-5 pt-5">
+                        <i class="fas fa-mouse-pointer fa-3x mb-3"></i>
+                        <h4>Select an item to edit</h4>
+                        <p>Click on any item in the navigation tree to view and edit its details.</p>
+                    </div>
+                </div>
+
+                <!-- Traceability Tables Content -->
+                <div id="traceability-content" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 id="traceability-title">Traceability Table</h3>
+                        <button type="button" class="btn btn-outline-secondary" onclick="hideTraceabilityTable()">
+                            <i class="fas fa-times me-2"></i>Close
+                        </button>
+                    </div>
+                    <div id="traceability-table-container">
+                        <!-- Table content will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div id="editor-panel" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 id="item-title-display">
+                            <span id="item-icon"></span>
+                            <span id="item-title-text"></span>
+                        </h4>
+                        <div>
+                            <button id="save-btn" class="btn btn-success me-2 mb-2">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <button id="cancel-btn" class="btn btn-secondary mb-2">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="item-form">
+                        <input type="hidden" id="item-id" name="id">
+                        <input type="hidden" id="item-type" name="type">
+
+                        <!-- Basic Fields -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="id-display" class="form-label">ID</label>
+                                <input type="text" class="form-control" id="id-display" readonly>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="description-field">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4"
+                                required></textarea>
+                        </div>
+
+                        <!-- User Need-specific fields -->
+                        <div id="user-need-fields" class="d-none">
+                            <!-- Linked Product Requirements (read-only, derived from PRs that link to this UN) -->
+                            <div class="mb-3">
+                                <label class="form-label">Linked Product Requirements</label>
+                                <div id="user-need-linked-requirements-display" class="border rounded p-2 bg-light">
+                                    <span class="text-muted">No product requirements link to this user need</span>
+                                </div>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>This is a read-only view. Edit links from the Product Requirements side.
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Risk-specific fields -->
+                        <div id="risk-fields" class="d-none">
+                            <!-- Hazard (reuses title field) -->
+
+                            <!-- Harm -->
+                            <div class="mb-3">
+                                <label for="edit-harm" class="form-label">Harm</label>
+                                <textarea class="form-control" id="edit-harm" name="harm" rows="3"
+                                    placeholder="Describe the potential harm that could result"></textarea>
+                            </div>
+
+                            <!-- Sequence of Events -->
+                            <div class="mb-3">
+                                <label for="edit-sequence-of-events" class="form-label">Sequence of Events</label>
+                                <textarea class="form-control" id="edit-sequence-of-events" name="sequence_of_events"
+                                    rows="3"
+                                    placeholder="Describe the sequence of events that leads to the hazardous situation"></textarea>
+                            </div>
+
+                            <!-- Hazardous Situation -->
+                            <div class="mb-3">
+                                <label for="edit-hazardous-situation" class="form-label">Hazardous Situation</label>
+                                <textarea class="form-control" id="edit-hazardous-situation" name="hazardous_situation"
+                                    rows="3" placeholder="Describe the hazardous situation that could occur"></textarea>
+                            </div>
+
+                            <!-- Probability and Severity Row -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="edit-probability-occurrence" class="form-label">Probability of
+                                        Occurrence</label>
+                                    <select class="form-select" id="edit-probability-occurrence"
+                                        name="probability_occurrence">
+                                        {% for po_id, po_data in config.probability_occurrence_mapping.items() %}
+                                        <option value="{{ po_id }}">{{ po_data.name }} ({{ po_id.replace('PO', '') }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit-probability-harm" class="form-label">Probability of Harm</label>
+                                    <select class="form-select" id="edit-probability-harm" name="probability_harm">
+                                        {% for ph_id, ph_data in config.probability_harm_mapping.items() %}
+                                        <option value="{{ ph_id }}">{{ ph_data.name }} ({{ ph_id.replace('PH', '') }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="edit-severity" class="form-label">Severity</label>
+                                    <select class="form-select" id="edit-severity" name="severity">
+                                        {% for severity_id, severity_data in config.severity_mapping.items() %}
+                                        <option value="{{ severity_id }}">{{ severity_data.name }} ({{
+                                            severity_id.replace('S', '') }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- RBM Score Display -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">RBM Score</label>
+                                    <div class="alert alert-info">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-calculator me-2"></i>
+                                            <span class="fs-4 fw-bold" id="rbm-score-display">-</span>
+                                        </div>
+                                        <div class="small">
+                                            <strong>Calculation:</strong> <span id="rbm-calculation-display">- × - × - =
+                                                -</span>
+                                        </div>
+                                        <div class="small text-muted mt-1">
+                                            Probability of Occurrence × Probability of Harm × Severity
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Risk Controls -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Risk Controls</label>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div id="risk-controls-list">
+                                                <p class="text-muted mb-0">No linked specifications found for this risk.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RAM Score Display -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">RAM Score (Residual Risk After Mitigation)</label>
+                                    <div class="alert alert-warning">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-shield-alt me-2"></i>
+                                            <span class="fs-4 fw-bold" id="ram-score-display">-</span>
+                                        </div>
+                                        <div class="small">
+                                            <strong>Calculation:</strong> <span id="ram-calculation-display">-</span>
+                                        </div>
+                                        <div class="small text-muted mt-1">
+                                            RBM Score with risk control effects applied
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Risk Assessment Checkboxes -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="edit-cannot-be-reduced"
+                                            name="cannot_be_reduced_further">
+                                        <label class="form-check-label" for="edit-cannot-be-reduced">
+                                            Cannot be reduced any further
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="edit-benefits-outweigh"
+                                            name="benefits_outweigh_risk">
+                                        <label class="form-check-label" for="edit-benefits-outweigh">
+                                            Benefits outweigh remaining risk
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Justification -->
+                            <div class="mb-3">
+                                <label for="edit-justification" class="form-label">Justification / Comments</label>
+                                <textarea class="form-control" id="edit-justification" name="justification" rows="4"
+                                    placeholder="Provide justification for risk acceptance and/or comments on risk mitigation"></textarea>
+                            </div>
+
+                            <!-- Legacy Probability (for backward compatibility) -->
+                            <div class="mb-3 d-none">
+                                <label for="edit-probability" class="form-label">Legacy Probability</label>
+                                <select class="form-select" id="edit-probability" name="probability">
+                                    {% for probability_id, probability_data in config.probability_mapping.items() %}
+                                    <option value="{{ probability_id }}">{{ probability_data.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Linked items fields -->
+                        <div id="linked-items-fields" class="mb-3 d-none">
+                            <!-- User Needs Links -->
+                            <div id="user-needs-links" class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">Linked User Needs</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openLinkedItemsModal('user_needs')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </div>
+                                <div id="user-needs-display" class="border rounded p-2 bg-light">
+                                    <span class="text-muted">No user needs linked</span>
+                                </div>
+                            </div>
+
+                            <!-- Risks Links -->
+                            <div id="risks-links" class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">Linked Risks</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openLinkedItemsModal('risks')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </div>
+                                <div id="risks-display" class="border rounded p-2 bg-light">
+                                    <span class="text-muted">No risks linked</span>
+                                </div>
+                            </div>
+
+                            <!-- Product Requirements Links -->
+                            <div id="product-requirements-links" class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label mb-0">Linked Product Requirements</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openLinkedItemsModal('product_requirements')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                </div>
+                                <div id="product-requirements-display" class="border rounded p-2 bg-light">
+                                    <span class="text-muted">No product requirements linked</span>
+                                </div>
+                            </div>
+                        </div> <!-- End linked-items-fields -->
+                    </form>
+
+                    <!-- Status Messages -->
+                    <div id="save-status" class="alert d-none" role="alert"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Linked Items Edit Modal -->
+<div class="modal fade" id="linkedItemsModal" tabindex="-1" aria-labelledby="linkedItemsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="linkedItemsModalLabel">Edit Linked Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-linked-items-content">
+                    <!-- Content will be populated dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="save-linked-items">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global variables
+    let currentItemId = null;
+    let currentItemData = null;
+    let hasUnsavedChanges = false;
+    const linkableItems = {{ linkable_items | tojson }};
+    const softwareSpecs = {{ software_specifications | tojson }};
+    const hardwareSpecs = {{ hardware_specifications | tojson }};
+    const mitigationLinks = {{ mitigation_links | tojson }};
+
+    // Navigation history
+    let navigationHistory = [];  // Array of {id, type} objects
+    let navigationPosition = -1;  // Current position in history (-1 = no history)
+    let isNavigating = false;     // Flag to prevent adding to history during back/forward
+
+    // Make specs available globally for risk controls
+    window.softwareSpecs = softwareSpecs;
+    window.hardwareSpecs = hardwareSpecs;
+    window.mitigationLinks = mitigationLinks;
+
+    // DOM Ready
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Bootstrap tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Initialize collapse functionality
+        initializeCollapse();
+
+        // Tree item click handlers
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.addEventListener('click', function () {
+                const itemId = this.dataset.itemId;
+                const itemType = this.dataset.itemType;
+                loadItem(itemId, itemType);
+
+                // Update visual selection
+                document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Form change detection
+        document.getElementById('item-form').addEventListener('input', function () {
+            hasUnsavedChanges = true;
+            document.getElementById('save-btn').classList.remove('btn-success');
+            document.getElementById('save-btn').classList.add('btn-warning');
+        });
+
+        // Save button
+        document.getElementById('save-btn').addEventListener('click', saveItem);
+
+        // Cancel button
+        document.getElementById('cancel-btn').addEventListener('click', function () {
+            if (hasUnsavedChanges && !confirm('You have unsaved changes. Are you sure you want to cancel?')) {
+                return;
+            }
+            if (currentItemId) {
+                loadItem(currentItemId);
+            }
+        });
+
+        // Expand/Collapse All buttons
+        document.getElementById('expand-all-btn').addEventListener('click', expandAll);
+        document.getElementById('collapse-all-btn').addEventListener('click', collapseAll);
+
+        // Navigation Back/Forward buttons
+        document.getElementById('nav-back-btn').addEventListener('click', navigateBack);
+        document.getElementById('nav-forward-btn').addEventListener('click', navigateForward);
+
+<<<<<<< HEAD
+        // Keyboard shortcuts
+        initializeKeyboardShortcuts();
+
+        // Initialize search
+        initializeTreeSearch();
+
+=======
+>>>>>>> ff9404c (Feature: Add navigation history with back/forward controls)
+        // Initialize folder editing
+        initializeFolderEditing();
+
+        // Restore previously selected item after page reload (e.g., after save)
+        restoreSelectedItem();
+    });
+
+    function initializeCollapse() {
+        // Add event listener for save linked items button
+        document.getElementById('save-linked-items').addEventListener('click', saveLinkedItems);
+
+        // Add click handlers to all collapsible headers
+        document.querySelectorAll('.collapsible-header').forEach(header => {
+            header.addEventListener('click', function () {
+                const targetId = this.dataset.target;
+                const target = document.getElementById(targetId);
+                const icon = this.querySelector('.collapse-icon');
+
+                if (target.classList.contains('collapsed')) {
+                    // Expand
+                    target.classList.remove('collapsed');
+                    if (icon.classList.contains('fa-chevron-right')) {
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                } else {
+                    // Collapse
+                    target.classList.add('collapsed');
+                    if (icon.classList.contains('fa-chevron-down')) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-right');
+                    }
+                }
+            });
+        });
+
+        // Add click handlers to collapse triggers (limited region)
+        document.querySelectorAll('.collapse-trigger').forEach(trigger => {
+            trigger.addEventListener('click', function () {
+                const targetId = this.dataset.target;
+                const target = document.getElementById(targetId);
+                const icon = this.querySelector('.collapse-icon');
+
+                if (target.classList.contains('collapsed')) {
+                    // Expand
+                    target.classList.remove('collapsed');
+                    if (icon.classList.contains('fa-chevron-right')) {
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                } else {
+                    // Collapse
+                    target.classList.add('collapsed');
+                    if (icon.classList.contains('fa-chevron-down')) {
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-right');
+                    }
+                }
+            });
+        });
+    }
+
+    function expandAll() {
+        document.querySelectorAll('.collapsible-content').forEach(content => {
+            content.classList.remove('collapsed');
+        });
+
+        document.querySelectorAll('.collapse-icon').forEach(icon => {
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-down');
+        });
+    }
+
+    function collapseAll() {
+        document.querySelectorAll('.collapsible-content').forEach(content => {
+            content.classList.add('collapsed');
+        });
+
+        document.querySelectorAll('.collapse-icon').forEach(icon => {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-right');
+        });
+    }
+
+<<<<<<< HEAD
+    // Tree search functionality
+    function initializeTreeSearch() {
+        const searchInput = document.getElementById('tree-search');
+        
+        searchInput.addEventListener('input', function() {
+            performTreeSearch(this.value.trim());
+        });
+    }
+
+    function performTreeSearch(searchTerm) {
+        // Clear all previous search styling
+        clearSearchStyling();
+        
+        if (!searchTerm) {
+            // Empty search - show everything normally
+            return;
+        }
+        
+        const searchLower = searchTerm.toLowerCase();
+        const allTreeItems = document.querySelectorAll('.tree-item');
+        const matchingItems = new Set();
+        const parentMatchCounts = new Map(); // Map of parent element to match count
+        
+        // Find all matching items
+        allTreeItems.forEach(item => {
+            const itemId = item.dataset.itemId;
+            const itemText = item.textContent.trim();
+            
+            if (itemId && (
+                itemId.toLowerCase().includes(searchLower) ||
+                itemText.toLowerCase().includes(searchLower)
+            )) {
+                matchingItems.add(item);
+                item.classList.add('search-match');
+                item.style.fontWeight = 'bold';
+                
+                // Mark all parent sections as having matches
+                let parent = item.closest('.collapsible-content');
+                while (parent) {
+                    const parentId = parent.id;
+                    if (parentId) {
+                        parentMatchCounts.set(parentId, (parentMatchCounts.get(parentId) || 0) + 1);
+                    }
+                    // Move up to next parent
+                    parent = parent.parentElement?.closest('.collapsible-content');
+                }
+            }
+        });
+        
+        // Gray out non-matching items
+        allTreeItems.forEach(item => {
+            if (!matchingItems.has(item)) {
+                item.style.opacity = '0.5';
+            }
+        });
+        
+        // Handle parent sections - show match counts for collapsed sections
+        document.querySelectorAll('.tree-header, .tree-group-header, .tree-subgroup-header').forEach(header => {
+            const targetId = header.dataset.target;
+            if (!targetId) return;
+            
+            const target = document.getElementById(targetId);
+            if (!target) return;
+            
+            const matchCount = parentMatchCounts.get(targetId) || 0;
+            
+            if (matchCount > 0) {
+                // This section has matches
+                const isCollapsed = target.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    // Show count badge for collapsed sections
+                    let badge = header.querySelector('.search-match-count');
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'badge bg-warning text-dark ms-2 search-match-count';
+                        header.appendChild(badge);
+                    }
+                    badge.textContent = `(${matchCount})`;
+                    header.style.fontWeight = 'bold';
+                }
+            } else if (matchCount === 0) {
+                // No matches in this section - gray it out
+                header.style.opacity = '0.5';
+            }
+        });
+    }
+
+    function clearSearchStyling() {
+        // Remove all search-related styling
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.classList.remove('search-match');
+            item.style.fontWeight = '';
+            item.style.opacity = '';
+        });
+        
+        document.querySelectorAll('.tree-header, .tree-group-header, .tree-subgroup-header').forEach(header => {
+            header.style.fontWeight = '';
+            header.style.opacity = '';
+            
+            // Remove match count badges
+            const badge = header.querySelector('.search-match-count');
+            if (badge) {
+                badge.remove();
+            }
+        });
+    }
+
+    // Keyboard shortcuts
+    function initializeKeyboardShortcuts() {
+        document.addEventListener('keydown', function(event) {
+            // Don't trigger shortcuts if user is typing in an input/textarea
+            const activeElement = document.activeElement;
+            const isTyping = activeElement && (
+                activeElement.tagName === 'INPUT' ||
+                activeElement.tagName === 'TEXTAREA' ||
+                activeElement.isContentEditable
+            );
+
+            if (isTyping) {
+                return; // User is typing, don't handle shortcuts
+            }
+
+            // Handle keyboard shortcuts
+            switch(event.key) {
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    navigateBack();
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    navigateForward();
+                    break;
+                case '+':
+                case '=': // Plus without shift on most keyboards
+                    event.preventDefault();
+                    expandAll();
+                    break;
+                case '-':
+                case '_': // Minus is also underscore
+                    event.preventDefault();
+                    collapseAll();
+                    break;
+            }
+        });
+    }
+
+=======
+>>>>>>> ff9404c (Feature: Add navigation history with back/forward controls)
+    // Navigation history functions
+    function addToNavigationHistory(itemId, itemType) {
+        // If we're not at the end of history, truncate forward history
+        if (navigationPosition < navigationHistory.length - 1) {
+            navigationHistory = navigationHistory.slice(0, navigationPosition + 1);
+        }
+
+        // Don't add duplicate if it's the same as current position
+        if (navigationPosition >= 0 && 
+            navigationHistory[navigationPosition].id === itemId &&
+            navigationHistory[navigationPosition].type === itemType) {
+            return;
+        }
+
+        // Add new item to history
+        navigationHistory.push({ id: itemId, type: itemType });
+        navigationPosition = navigationHistory.length - 1;
+
+        // Update button states
+        updateNavigationButtons();
+    }
+
+    function navigateBack() {
+        if (navigationPosition > 0) {
+            navigationPosition--;
+            const historyItem = navigationHistory[navigationPosition];
+            
+            // Set flag to prevent adding to history
+            isNavigating = true;
+            loadItem(historyItem.id, historyItem.type);
+
+            updateNavigationButtons();
+        }
+    }
+
+    function navigateForward() {
+        if (navigationPosition < navigationHistory.length - 1) {
+            navigationPosition++;
+            const historyItem = navigationHistory[navigationPosition];
+            
+            // Set flag to prevent adding to history
+            isNavigating = true;
+            loadItem(historyItem.id, historyItem.type);
+
+            updateNavigationButtons();
+        }
+    }
+
+    function updateNavigationButtons() {
+        const backBtn = document.getElementById('nav-back-btn');
+        const forwardBtn = document.getElementById('nav-forward-btn');
+
+        // Enable/disable back button
+        if (navigationPosition > 0) {
+            backBtn.disabled = false;
+            backBtn.classList.remove('btn-outline-secondary');
+            backBtn.classList.add('btn-outline-primary');
+        } else {
+            backBtn.disabled = true;
+            backBtn.classList.remove('btn-outline-primary');
+            backBtn.classList.add('btn-outline-secondary');
+        }
+
+        // Enable/disable forward button
+        if (navigationPosition < navigationHistory.length - 1) {
+            forwardBtn.disabled = false;
+            forwardBtn.classList.remove('btn-outline-secondary');
+            forwardBtn.classList.add('btn-outline-primary');
+        } else {
+            forwardBtn.disabled = true;
+            forwardBtn.classList.remove('btn-outline-primary');
+            forwardBtn.classList.add('btn-outline-secondary');
+        }
+    }
+
+    function loadItem(itemId, itemType = null) {
+        fetch(`/api/item/${itemId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showStatus('Error loading item: ' + data.error, 'danger');
+                    return;
+                }
+
+                currentItemId = itemId;
+                currentItemData = data;
+                hasUnsavedChanges = false;
+
+                // Add to navigation history (unless we're navigating back/forward)
+                if (!isNavigating) {
+                    addToNavigationHistory(itemId, itemType);
+                } else {
+                    // Reset the flag after handling navigation
+                    isNavigating = false;
+                }
+<<<<<<< HEAD
+=======
+
+                // Show editor panel
+                document.getElementById('welcome-panel').classList.add('d-none');
+                document.getElementById('editor-panel').classList.remove('d-none');
+>>>>>>> ff9404c (Feature: Add navigation history with back/forward controls)
+
+                // Populate form
+                populateForm(data, itemType);
+
+                // Show editor panel and hide other panels (after successful fetch)
+                document.getElementById('welcome-panel').classList.add('d-none');
+                document.getElementById('traceability-content').classList.add('d-none');
+                document.getElementById('editor-panel').classList.remove('d-none');
+
+                // Update sidebar focus and expand tree
+                updateSidebarFocus(itemId, itemType);
+            })
+            .catch(error => {
+                showStatus('Error loading item: ' + error.message, 'danger');
+            });
+    }
+
+    function updateSidebarFocus(itemId, itemType) {
+        // Remove any existing active/focus classes
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.classList.remove('active', 'bg-primary', 'text-white');
+        });
+
+        // Find the target item in the sidebar
+        const targetItem = document.querySelector(`[data-item-id="${itemId}"]`);
+        if (!targetItem) {
+            console.warn(`Item ${itemId} not found in sidebar`);
+            return;
+        }
+
+        // Add active styling to the target item
+        targetItem.classList.add('active', 'bg-primary', 'text-white');
+
+        // Expand all parent sections to make the item visible
+        expandParentSections(targetItem);
+
+        // Scroll the item into view
+        targetItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function expandParentSections(element) {
+        let current = element;
+        while (current) {
+            // Check if this element is inside a collapsible section
+            const collapsibleContent = current.closest('[id$="Items"], [id^="req-"], [id^="risk-"], [id^="sw-"], [id^="hw-"]');
+            if (collapsibleContent) {
+                // Find the corresponding header
+                const header = document.querySelector(`[data-target="${collapsibleContent.id}"]`);
+                if (header) {
+                    // Expand the section
+                    collapsibleContent.classList.remove('collapsed');
+                    const icon = header.querySelector('.collapse-icon');
+                    if (icon && icon.classList.contains('fa-chevron-right')) {
+                        icon.classList.remove('fa-chevron-right');
+                        icon.classList.add('fa-chevron-down');
+                    }
+                }
+            }
+            current = current.parentElement;
+        }
+    }
+
+    function updateLinkedItemsDisplay(data) {
+        // Update user needs display
+        updateLinkedItemsSection('user-needs', data.linked_user_needs || []);
+
+        // Update risks display
+        updateLinkedItemsSection('risks', data.linked_risks || []);
+
+        // Update product requirements display
+        updateLinkedItemsSection('product-requirements', data.linked_product_requirements || []);
+    }
+
+    function updateLinkedItemsSection(sectionName, linkedIds) {
+        const displayElement = document.getElementById(`${sectionName}-display`);
+        if (!displayElement) return;
+
+        if (linkedIds.length === 0) {
+            displayElement.innerHTML = '<span class="text-muted">No items linked</span>';
+            return;
+        }
+
+        const links = linkedIds.map(id => {
+            const item = findLinkableItem(id, sectionName);
+            if (item) {
+                return `<a href="#" onclick="loadItem('${id}', '${getItemType(sectionName)}')" class="text-decoration-none me-2">${id}: ${item.title}</a>`;
+            }
+            return `<span class="text-muted me-2">${id}: Unknown</span>`;
+        });
+
+        displayElement.innerHTML = links.join('');
+    }
+
+    function findLinkableItem(id, sectionName) {
+        const sectionKey = sectionName.replace('-', '_');
+        return linkableItems[sectionKey]?.find(item => item.id === id);
+    }
+
+    function getItemType(sectionName) {
+        const typeMap = {
+            'user-needs': 'user_need',
+            'risks': 'risk',
+            'product-requirements': 'product_requirement'
+        };
+        return typeMap[sectionName] || sectionName;
+    }
+
+    function updateUserNeedLinkedRequirements(userNeedId) {
+        const displayElement = document.getElementById('user-need-linked-requirements-display');
+        if (!displayElement) return;
+
+        // Fetch traceability data to find which product requirements link to this user need
+        fetch('/api/traceability/user-needs-to-requirements')
+            .then(response => response.json())
+            .then(data => {
+                // Find the entry for this user need
+                const userNeedEntry = data.find(entry => entry.user_need.id === userNeedId);
+                
+                if (!userNeedEntry || userNeedEntry.requirements.length === 0) {
+                    displayElement.innerHTML = '<span class="text-muted">No product requirements link to this user need</span>';
+                    return;
+                }
+
+                // Build clickable links for each linked requirement
+                const links = userNeedEntry.requirements.map(req => {
+                    return `<a href="#" onclick="loadItem('${req.id}', 'product_requirement'); return false;" class="text-decoration-none d-block mb-1">
+                        <i class="fas fa-file-alt me-1"></i>${req.id}: ${req.title}
+                    </a>`;
+                });
+
+                displayElement.innerHTML = links.join('');
+            })
+            .catch(error => {
+                console.error('Error loading linked requirements:', error);
+                displayElement.innerHTML = '<span class="text-muted text-danger">Error loading linked requirements</span>';
+            });
+    }
+
+    function openLinkedItemsModal(sectionType) {
+        const modal = new bootstrap.Modal(document.getElementById('linkedItemsModal'));
+        const modalTitle = document.getElementById('linkedItemsModalLabel');
+        const modalContent = document.getElementById('modal-linked-items-content');
+
+        // Set modal title
+        modalTitle.textContent = `Edit Linked ${sectionType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+
+        // Generate modal content
+        modalContent.innerHTML = generateModalContent(sectionType);
+
+        // Store current section type for saving
+        modalContent.dataset.sectionType = sectionType;
+
+        // Show modal
+        modal.show();
+    }
+
+    function generateModalContent(sectionType) {
+        const items = linkableItems[sectionType] || [];
+        const currentLinked = getCurrentLinkedItems(sectionType);
+
+        let content = '<div class="modal-linked-items-list">';
+
+        items.forEach(item => {
+            const isChecked = currentLinked.includes(item.id);
+
+            content += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" value="${item.id}"
+                           id="modal-${item.id}" ${isChecked ? 'checked' : ''}>
+                    <label class="form-check-label" for="modal-${item.id}">
+                        <strong>${item.id}:</strong> ${item.title}
+                    </label>
+                </div>
+            `;
+        });
+
+        content += '</div>';
+
+        if (items.length === 0) {
+            content = '<p class="text-muted text-center py-3">No items available to link.</p>';
+        }
+
+        return content;
+    }
+
+    function getCurrentLinkedItems(sectionType) {
+        if (!currentItemData) return [];
+
+        const fieldMap = {
+            'user_needs': 'linked_user_needs',
+            'risks': 'linked_risks',
+            'product_requirements': 'linked_product_requirements'
+        };
+
+        return currentItemData[fieldMap[sectionType]] || [];
+    }
+
+    function saveLinkedItems() {
+        const modalContent = document.getElementById('modal-linked-items-content');
+        const sectionType = modalContent.dataset.sectionType;
+
+        if (!sectionType || !currentItemData) return;
+
+        // Get checked items
+        const checkboxes = modalContent.querySelectorAll('input[type="checkbox"]:checked');
+        const linkedIds = Array.from(checkboxes).map(cb => cb.value);
+
+        // Update current item data
+        const fieldMap = {
+            'user_needs': 'linked_user_needs',
+            'risks': 'linked_risks',
+            'product_requirements': 'linked_product_requirements'
+        };
+
+        currentItemData[fieldMap[sectionType]] = linkedIds;
+
+        // Update display
+        updateLinkedItemsDisplay(currentItemData);
+
+        // Mark as having unsaved changes
+        hasUnsavedChanges = true;
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('linkedItemsModal'));
+        modal.hide();
+
+        showStatus('Linked items updated. Don\'t forget to save the item.', 'info');
+    }
+
+    function populateForm(data, itemType) {
+        // Basic fields
+        document.getElementById('item-id').value = data.id;
+        document.getElementById('item-type').value = data.type || itemType;
+        document.getElementById('title').value = data.title || '';
+        document.getElementById('description').value = data.description || '';
+
+        // Update linked items display
+        updateLinkedItemsDisplay(data);
+
+        // Update title display
+        const icons = {
+            'user_need': 'fas fa-user',
+            'risk': 'fas fa-exclamation-triangle',
+            'product_requirement': 'fas fa-file-alt',
+            'software_specification': 'fas fa-cog',
+            'hardware_specification': 'fas fa-microchip'
+        };
+
+        // Update header display
+        document.getElementById('item-title-display').textContent = data.title || 'Untitled';
+        document.getElementById('id-display').value = data.id;
+
+        // Hide all conditional fields
+        document.getElementById('risk-fields').classList.add('d-none');
+        document.getElementById('user-need-fields').classList.add('d-none');
+        document.getElementById('linked-items-fields').classList.add('d-none');
+
+        // Show relevant fields based on item type
+        if (itemType === 'user_need') {
+            // Show user need specific fields
+            document.getElementById('user-need-fields').classList.remove('d-none');
+            // Populate linked product requirements (reverse lookup)
+            updateUserNeedLinkedRequirements(data.id);
+        } else if (itemType === 'risk') {
+            document.getElementById('risk-fields').classList.remove('d-none');
+            document.getElementById('description-field').classList.add('d-none'); // Hide description for risks
+
+            // Populate all risk-specific fields
+            document.getElementById('edit-harm').value = data.harm || '';
+            document.getElementById('edit-sequence-of-events').value = data.sequence_of_events || '';
+            document.getElementById('edit-hazardous-situation').value = data.hazardous_situation || '';
+            document.getElementById('edit-probability-occurrence').value = data.probability_occurrence || 'PO1';
+            document.getElementById('edit-probability-harm').value = data.probability_harm || 'PH1';
+            document.getElementById('edit-severity').value = data.severity || 'S1';
+            document.getElementById('edit-cannot-be-reduced').checked = data.cannot_be_reduced_further || false;
+            document.getElementById('edit-benefits-outweigh').checked = data.benefits_outweigh_risk || false;
+            document.getElementById('edit-justification').value = data.justification || '';
+
+            // Legacy field (hidden)
+            document.getElementById('edit-probability').value = data.probability || 'P1';
+
+            // Calculate and display scores
+            updateRBMScore();
+            updateRiskControls(data);
+            updateRAMScore();
+
+            // Add event listeners for score calculations
+            document.getElementById('edit-probability-occurrence').addEventListener('change', updateRBMScore);
+            document.getElementById('edit-probability-harm').addEventListener('change', updateRBMScore);
+            document.getElementById('edit-severity').addEventListener('change', updateRBMScore);
+        } else {
+            // Show description field for non-risk items
+            document.getElementById('description-field').classList.remove('d-none');
+        }
+
+        // Show linking fields for items that can have links
+        if (['product_requirement', 'software_specification', 'hardware_specification'].includes(itemType)) {
+            document.getElementById('linked-items-fields').classList.remove('d-none');
+
+            if (itemType === 'product_requirement') {
+                // Show only user needs for product requirements
+                document.getElementById('user-needs-links').classList.remove('d-none');
+                document.getElementById('risks-links').classList.add('d-none');
+                document.getElementById('product-requirements-links').classList.add('d-none');
+            } else {
+                // For specifications, show product requirements and risks, hide user needs
+                document.getElementById('user-needs-links').classList.add('d-none');
+                document.getElementById('risks-links').classList.remove('d-none');
+                document.getElementById('product-requirements-links').classList.remove('d-none');
+            }
+        }
+
+        // Reset save button
+        document.getElementById('save-btn').classList.remove('btn-warning');
+        document.getElementById('save-btn').classList.add('btn-success');
+    }
+
+
+    function updateRBMScore() {
+        // Get current values from the form
+        const probabilityOccurrence = document.getElementById('edit-probability-occurrence').value;
+        const probabilityHarm = document.getElementById('edit-probability-harm').value;
+        const severity = document.getElementById('edit-severity').value;
+
+        // Calculate RBM score: PO × PH × S
+        const poValue = parseInt(probabilityOccurrence.replace('PO', '')) || 1;
+        const phValue = parseInt(probabilityHarm.replace('PH', '')) || 1;
+        const sValue = parseInt(severity.replace('S', '')) || 1;
+
+        const rbmScore = poValue * phValue * sValue;
+
+        // Update the main score display
+        const rbmDisplay = document.getElementById('rbm-score-display');
+        rbmDisplay.textContent = rbmScore;
+
+        // Update the calculation display
+        const rbmCalcDisplay = document.getElementById('rbm-calculation-display');
+        rbmCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${rbmScore}`;
+
+        // Color code the score based on risk level
+        rbmDisplay.className = 'fs-4 fw-bold';
+        if (rbmScore <= 2) {
+            rbmDisplay.classList.add('text-success');
+        } else if (rbmScore <= 6) {
+            rbmDisplay.classList.add('text-warning');
+        } else {
+            rbmDisplay.classList.add('text-danger');
+        }
+
+        // Update RAM score when RBM changes
+        updateRAMScore();
+    }
+
+    function updateRAMScore() {
+        // Get base RBM score
+        const rbmScore = parseInt(document.getElementById('rbm-score-display').textContent) || 0;
+
+        // Get current risk control effects
+        const effects = [];
+        document.querySelectorAll('.mitigation-effect-select').forEach(select => {
+            const effect = select.value;
+            if (effect && effect !== 'No effect' && effect !== 'No measurable effect') {
+                effects.push(effect);
+            }
+        });
+
+        // Calculate RAM score by applying effects to the base values
+        let poValue = parseInt(document.getElementById('edit-probability-occurrence').value.replace('PO', '')) || 1;
+        let phValue = parseInt(document.getElementById('edit-probability-harm').value.replace('PH', '')) || 1;
+        let sValue = parseInt(document.getElementById('edit-severity').value.replace('S', '')) || 1;
+
+        // Apply effects
+        effects.forEach(effect => {
+            if (effect.includes('Reduces probability of occurrence by')) {
+                const reduction = parseInt(effect.match(/\d+/)[0]);
+                poValue = Math.max(1, poValue - reduction);
+            } else if (effect.includes('Reduces probability of harm by')) {
+                const reduction = parseInt(effect.match(/\d+/)[0]);
+                phValue = Math.max(1, phValue - reduction);
+            } else if (effect.includes('Reduces severity by')) {
+                const reduction = parseInt(effect.match(/\d+/)[0]);
+                sValue = Math.max(1, sValue - reduction);
+            }
+        });
+
+        const ramScore = poValue * phValue * sValue;
+
+        // Update the main score display
+        const ramDisplay = document.getElementById('ram-score-display');
+        ramDisplay.textContent = ramScore;
+
+        // Update the calculation display
+        const ramCalcDisplay = document.getElementById('ram-calculation-display');
+        if (effects.length === 0) {
+            ramCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${ramScore} (no effects applied)`;
+        } else {
+            ramCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${ramScore} (${effects.length} effect${effects.length > 1 ? 's' : ''} applied)`;
+        }
+
+        // Color code the score based on risk level
+        ramDisplay.className = 'fs-4 fw-bold';
+        if (ramScore <= 2) {
+            ramDisplay.classList.add('text-success');
+        } else if (ramScore <= 6) {
+            ramDisplay.classList.add('text-warning');
+        } else {
+            ramDisplay.classList.add('text-danger');
+        }
+    }
+
+    function updateRiskControls(data) {
+        const controlsList = document.getElementById('risk-controls-list');
+
+        // Find mitigation links for this risk
+        const linkedSpecs = [];
+
+        if (window.mitigationLinks) {
+            for (const [linkId, link] of Object.entries(window.mitigationLinks)) {
+                if (link.risk_id === data.id) {
+                    // Find the specification details
+                    let spec = null;
+                    let specType = '';
+                    let groupName = '';
+
+                    if (link.specification_type === 'software' && window.softwareSpecs) {
+                        for (const group of Object.values(window.softwareSpecs)) {
+                            if (group.specifications && group.specifications[link.specification_id]) {
+                                spec = group.specifications[link.specification_id];
+                                specType = 'Software';
+                                groupName = group.group_name;
+                                break;
+                            }
+                        }
+                    } else if (link.specification_type === 'hardware' && window.hardwareSpecs) {
+                        for (const group of Object.values(window.hardwareSpecs)) {
+                            if (group.specifications && group.specifications[link.specification_id]) {
+                                spec = group.specifications[link.specification_id];
+                                specType = 'Hardware';
+                                groupName = group.group_name;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (spec) {
+                        linkedSpecs.push({
+                            linkId: linkId,
+                            specId: link.specification_id,
+                            title: spec.title,
+                            type: specType,
+                            group: groupName,
+                            effect: link.effect
+                        });
+                    }
+                }
+            }
+        }
+
+        if (linkedSpecs.length === 0) {
+            controlsList.innerHTML = '<p class="text-muted mb-0">No linked specifications found for this risk.</p>';
+        } else {
+            let html = '<div class="list-group list-group-flush">';
+            linkedSpecs.forEach(spec => {
+                html += `
+                            <div class="list-group-item d-flex justify-content-between align-items-start">
+                                <div class="ms-2 me-auto flex-grow-1">
+                                    <div class="fw-bold">
+                                        <a href="#" class="text-decoration-none spec-link" data-spec-id="${spec.specId}" data-spec-type="${spec.type.toLowerCase()}">
+                                            ${spec.specId}: ${spec.title}
+                                        </a>
+                                    </div>
+                                    <small class="text-muted">${spec.type} Specification - ${spec.group}</small>
+                                    <div class="mt-2">
+                                        <label class="form-label small">Effect:</label>
+                                        <select class="form-select form-select-sm mitigation-effect-select" data-link-id="${spec.linkId}">
+                                            <option value="No effect" ${spec.effect === 'No effect' ? 'selected' : ''}>No effect</option>
+                                            <option value="No measurable effect" ${spec.effect === 'No measurable effect' ? 'selected' : ''}>No measurable effect</option>
+                                            <option value="Reduces probability of occurrence by 1" ${spec.effect === 'Reduces probability of occurrence by 1' ? 'selected' : ''}>Reduces probability of occurrence by 1</option>
+                                            <option value="Reduces probability of occurrence by 2" ${spec.effect === 'Reduces probability of occurrence by 2' ? 'selected' : ''}>Reduces probability of occurrence by 2</option>
+                                            <option value="Reduces probability of occurrence by 3" ${spec.effect === 'Reduces probability of occurrence by 3' ? 'selected' : ''}>Reduces probability of occurrence by 3</option>
+                                            <option value="Reduces probability of harm by 1" ${spec.effect === 'Reduces probability of harm by 1' ? 'selected' : ''}>Reduces probability of harm by 1</option>
+                                            <option value="Reduces probability of harm by 2" ${spec.effect === 'Reduces probability of harm by 2' ? 'selected' : ''}>Reduces probability of harm by 2</option>
+                                            <option value="Reduces probability of harm by 3" ${spec.effect === 'Reduces probability of harm by 3' ? 'selected' : ''}>Reduces probability of harm by 3</option>
+                                            <option value="Reduces severity by 1" ${spec.effect === 'Reduces severity by 1' ? 'selected' : ''}>Reduces severity by 1</option>
+                                            <option value="Reduces severity by 2" ${spec.effect === 'Reduces severity by 2' ? 'selected' : ''}>Reduces severity by 2</option>
+                                            <option value="Reduces severity by 3" ${spec.effect === 'Reduces severity by 3' ? 'selected' : ''}>Reduces severity by 3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">${spec.type}</span>
+                            </div>
+                        `;
+            });
+            html += '</div>';
+            controlsList.innerHTML = html;
+
+            // Add event listeners for effect changes
+            controlsList.querySelectorAll('.mitigation-effect-select').forEach(select => {
+                select.addEventListener('change', function () {
+                    updateMitigationEffect(this.dataset.linkId, this.value);
+                    updateRAMScore(); // Update RAM score when effects change
+                });
+            });
+
+            // Add event listeners for specification links
+            controlsList.querySelectorAll('.spec-link').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const specId = this.dataset.specId;
+                    const specType = this.dataset.specType;
+                    loadItem(specId, specType + '_specification');
+                });
+            });
+        }
+    }
+
+    function updateMitigationEffect(linkId, newEffect) {
+        // Update the mitigation link effect
+        fetch('/api/mitigation-link', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                link_id: linkId,
+                effect: newEffect
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the local data
+                    if (window.mitigationLinks && window.mitigationLinks[linkId]) {
+                        window.mitigationLinks[linkId].effect = newEffect;
+                    }
+                    showStatus('Mitigation effect updated successfully!', 'success');
+                } else {
+                    showStatus('Error updating mitigation effect: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                showStatus('Error updating mitigation effect: ' + error.message, 'danger');
+            });
+    }
+
+    function saveItem() {
+        const formData = new FormData(document.getElementById('item-form'));
+        const updateData = {};
+
+        // Basic fields
+        updateData.title = formData.get('title');
+
+        // Risk fields
+        if (!document.getElementById('risk-fields').classList.contains('d-none')) {
+            // New comprehensive risk fields
+            updateData.hazard = formData.get('title'); // Hazard reuses title
+            updateData.sequence_of_events = formData.get('sequence_of_events');
+            updateData.hazardous_situation = formData.get('hazardous_situation');
+            updateData.harm = formData.get('harm');
+            updateData.probability_occurrence = formData.get('probability_occurrence');
+            updateData.probability_harm = formData.get('probability_harm');
+            updateData.severity = formData.get('severity');
+            updateData.cannot_be_reduced_further = document.getElementById('edit-cannot-be-reduced').checked;
+            updateData.benefits_outweigh_risk = document.getElementById('edit-benefits-outweigh').checked;
+            updateData.justification = formData.get('justification');
+
+            // Legacy fields for backward compatibility
+            updateData.probability = formData.get('probability');
+
+            // Don't save description for risks
+        } else {
+            // For non-risk items, include description
+            updateData.description = formData.get('description');
+        }
+
+        // Link fields - use current item data instead of form checkboxes
+        if (!document.getElementById('linked-items-fields').classList.contains('d-none')) {
+            const itemType = document.getElementById('item-type').value;
+
+            if (itemType === 'product_requirement') {
+                updateData.linked_user_needs = currentItemData.linked_user_needs || [];
+            } else if (['software_specification', 'hardware_specification'].includes(itemType)) {
+                updateData.linked_product_requirements = currentItemData.linked_product_requirements || [];
+                updateData.linked_risks = currentItemData.linked_risks || [];
+            }
+        }
+
+        // Save via API
+        fetch(`/api/item/${currentItemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updateData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('Item saved successfully! Reloading...', 'success');
+                    hasUnsavedChanges = false;
+                    
+                    // Store the current item ID in sessionStorage to restore after reload
+                    sessionStorage.setItem('selectedItemId', currentItemId);
+                    sessionStorage.setItem('selectedItemType', document.getElementById('item-type').value);
+                    
+                    // Reload the page to get fresh data from the server
+                    // This ensures complete consistency with the backend
+                    window.location.reload();
+                } else {
+                    showStatus('Error saving item: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                showStatus('Error saving item: ' + error.message, 'danger');
+            });
+    }
+
+    function showStatus(message, type) {
+        const statusDiv = document.getElementById('save-status');
+        statusDiv.className = `alert alert-${type}`;
+        statusDiv.textContent = message;
+        statusDiv.classList.remove('d-none');
+
+        // Hide after 5 seconds
+        setTimeout(() => {
+            statusDiv.classList.add('d-none');
+        }, 5000);
+    }
+
+    function restoreSelectedItem() {
+        // Check if we have a previously selected item (e.g., after save and reload)
+        const savedItemId = sessionStorage.getItem('selectedItemId');
+        const savedItemType = sessionStorage.getItem('selectedItemType');
+        
+        if (savedItemId && savedItemType) {
+            // Clear the stored values
+            sessionStorage.removeItem('selectedItemId');
+            sessionStorage.removeItem('selectedItemType');
+            
+            // Load the item
+            loadItem(savedItemId, savedItemType);
+        }
+    }
+
+    function initializeFolderEditing() {
+        // Add click handlers to floating edit buttons
+        document.querySelectorAll('.floating-edit-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation(); // Prevent folder collapse/expand
+                const folderContainer = this.closest('.editable-folder-name');
+                startFolderEdit(folderContainer);
+            });
+        });
+
+        // Add click handlers to save/cancel buttons
+        document.querySelectorAll('.save-folder-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const folderContainer = this.closest('.editable-folder-name');
+                saveFolderEdit(folderContainer);
+            });
+        });
+
+        document.querySelectorAll('.cancel-folder-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const folderContainer = this.closest('.editable-folder-name');
+                cancelFolderEdit(folderContainer);
+            });
+        });
+
+        // Add enter/escape key handlers for folder inputs
+        document.querySelectorAll('.folder-name-input').forEach(input => {
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const folderContainer = this.closest('.editable-folder-name');
+                    saveFolderEdit(folderContainer);
+                } else if (e.key === 'Escape') {
+                    const folderContainer = this.closest('.editable-folder-name');
+                    cancelFolderEdit(folderContainer);
+                }
+            });
+        });
+    }
+
+    function startFolderEdit(folderContainer) {
+        const display = folderContainer.querySelector('.folder-name-display');
+        const input = folderContainer.querySelector('.folder-name-input');
+        const buttons = folderContainer.querySelector('.folder-edit-buttons');
+
+        display.classList.add('d-none');
+        input.classList.remove('d-none');
+        buttons.classList.remove('d-none');
+
+        input.focus();
+        input.select();
+    }
+
+    function saveFolderEdit(folderContainer) {
+        const display = folderContainer.querySelector('.folder-name-display');
+        const input = folderContainer.querySelector('.folder-name-input');
+        const buttons = folderContainer.querySelector('.folder-edit-buttons');
+        const groupKey = folderContainer.dataset.groupKey;
+        const groupType = folderContainer.dataset.groupType;
+        const newName = input.value.trim();
+
+        if (newName === '') {
+            showStatus('Folder name cannot be empty', 'warning');
+            return;
+        }
+
+        // Save via API
+        fetch('/api/folder-name', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                group_type: groupType,
+                group_key: groupKey,
+                new_name: newName
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    display.textContent = newName;
+                    cancelFolderEdit(folderContainer);
+                    showStatus('Folder name updated successfully!', 'success');
+                } else {
+                    showStatus('Error updating folder name: ' + (data.error || 'Unknown error'), 'danger');
+                }
+            })
+            .catch(error => {
+                showStatus('Error updating folder name: ' + error.message, 'danger');
+            });
+    }
+
+    function cancelFolderEdit(folderContainer) {
+        const display = folderContainer.querySelector('.folder-name-display');
+        const input = folderContainer.querySelector('.folder-name-input');
+        const buttons = folderContainer.querySelector('.folder-edit-buttons');
+
+        // Reset input to original value
+        input.value = display.textContent;
+
+        display.classList.remove('d-none');
+        input.classList.add('d-none');
+        buttons.classList.add('d-none');
+    }
+
+    // Resize handle functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const resizeHandle = document.getElementById('resize-handle');
+
+        let isResizing = false;
+        let startX = 0;
+        let startSidebarWidth = 0;
+
+        resizeHandle.addEventListener('mousedown', function(e) {
+            isResizing = true;
+            startX = e.clientX;
+            startSidebarWidth = parseFloat(sidebar.style.width);
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+
+            const deltaX = e.clientX - startX;
+            const containerWidth = sidebar.parentElement.offsetWidth;
+            const newSidebarWidth = startSidebarWidth + (deltaX / containerWidth) * 100;
+
+            // Constrain between 25% and 75%
+            const constrainedWidth = Math.max(25, Math.min(75, newSidebarWidth));
+            const mainWidth = 100 - constrainedWidth;
+
+            sidebar.style.width = constrainedWidth + '%';
+            mainContent.style.width = mainWidth + '%';
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        // Traceability table functionality
+        document.querySelectorAll('[data-traceability-type]').forEach(item => {
+            item.addEventListener('click', function() {
+                const traceabilityType = this.getAttribute('data-traceability-type');
+                showTraceabilityTable(traceabilityType);
+            });
+        });
+    });
+
+    function showTraceabilityTable(type) {
+        const welcomePanel = document.getElementById('welcome-panel');
+        const editorPanel = document.getElementById('editor-panel');
+        const traceabilityContent = document.getElementById('traceability-content');
+        const traceabilityTitle = document.getElementById('traceability-title');
+        const tableContainer = document.getElementById('traceability-table-container');
+
+        // Hide other panels
+        welcomePanel.classList.add('d-none');
+        editorPanel.classList.add('d-none');
+
+        // Show traceability content
+        traceabilityContent.classList.remove('d-none');
+
+        // Set title and generate table
+        switch(type) {
+            case 'user-needs-to-requirements':
+                traceabilityTitle.textContent = 'User Needs to Product Requirements Traceability';
+                generateUserNeedsToRequirementsTable(tableContainer);
+                break;
+            case 'requirements-to-specifications':
+                traceabilityTitle.textContent = 'Product Requirements to Specifications Traceability';
+                generateRequirementsToSpecificationsTable(tableContainer);
+                break;
+            case 'risks-to-mitigations':
+                traceabilityTitle.textContent = 'Risks to Mitigations Traceability';
+                generateRisksToMitigationsTable(tableContainer);
+                break;
+        }
+    }
+
+    function hideTraceabilityTable() {
+        const welcomePanel = document.getElementById('welcome-panel');
+        const traceabilityContent = document.getElementById('traceability-content');
+
+        traceabilityContent.classList.add('d-none');
+        welcomePanel.classList.remove('d-none');
+    }
+
+    function generateUserNeedsToRequirementsTable(container) {
+        // This will be populated with actual data from the server
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>User Need</th>
+                            <th>Product Requirements</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-needs-requirements-tbody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        // Load data via API
+        loadUserNeedsToRequirementsData();
+    }
+
+    function generateRequirementsToSpecificationsTable(container) {
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Product Requirement</th>
+                            <th>Software Specifications</th>
+                            <th>Hardware Specifications</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requirements-specifications-tbody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        loadRequirementsToSpecificationsData();
+    }
+
+    function generateRisksToMitigationsTable(container) {
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Risk</th>
+                            <th>Mitigations</th>
+                        </tr>
+                    </thead>
+                    <tbody id="risks-mitigations-tbody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        loadRisksToMitigationsData();
+    }
+
+    function loadUserNeedsToRequirementsData() {
+        fetch('/api/traceability/user-needs-to-requirements')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('user-needs-requirements-tbody');
+                tbody.innerHTML = '';
+
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><a href="#" onclick="loadItem('${row.user_need.id}', 'user_need')" class="text-decoration-none">${row.user_need.id}: ${row.user_need.title}</a></td>
+                        <td>
+                            ${row.requirements.map(req =>
+                                `<a href="#" onclick="loadItem('${req.id}', 'product_requirement')" class="text-decoration-none d-block">${req.id}: ${req.title}</a>`
+                            ).join('')}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading user needs to requirements data:', error);
+                document.getElementById('user-needs-requirements-tbody').innerHTML =
+                    '<tr><td colspan="2" class="text-center text-muted">Error loading data</td></tr>';
+            });
+    }
+
+    function loadRequirementsToSpecificationsData() {
+        fetch('/api/traceability/requirements-to-specifications')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('requirements-specifications-tbody');
+                tbody.innerHTML = '';
+
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><a href="#" onclick="loadItem('${row.requirement.id}', 'product_requirement')" class="text-decoration-none">${row.requirement.id}: ${row.requirement.title}</a></td>
+                        <td>
+                            ${row.software_specs.map(spec =>
+                                `<a href="#" onclick="loadItem('${spec.id}', 'software_specification')" class="text-decoration-none d-block">${spec.id}: ${spec.title}</a>`
+                            ).join('')}
+                        </td>
+                        <td>
+                            ${row.hardware_specs.map(spec =>
+                                `<a href="#" onclick="loadItem('${spec.id}', 'hardware_specification')" class="text-decoration-none d-block">${spec.id}: ${spec.title}</a>`
+                            ).join('')}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading requirements to specifications data:', error);
+                document.getElementById('requirements-specifications-tbody').innerHTML =
+                    '<tr><td colspan="3" class="text-center text-muted">Error loading data</td></tr>';
+            });
+    }
+
+    function loadRisksToMitigationsData() {
+        fetch('/api/traceability/risks-to-mitigations')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('risks-mitigations-tbody');
+                tbody.innerHTML = '';
+
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><a href="#" onclick="loadItem('${row.risk.id}', 'risk')" class="text-decoration-none">${row.risk.id}: ${row.risk.title}</a></td>
+                        <td>
+                            ${row.mitigations.map(mit =>
+                                `<a href="#" onclick="loadItem('${mit.id}', '${mit.type === 'software' ? 'software_specification' : 'hardware_specification'}')" class="text-decoration-none d-block">${mit.id}: ${mit.title}</a>`
+                            ).join('')}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading risks to mitigations data:', error);
+                document.getElementById('risks-mitigations-tbody').innerHTML =
+                    '<tr><td colspan="2" class="text-center text-muted">Error loading data</td></tr>';
+            });
+    }
+</script>
+{% endblock %}

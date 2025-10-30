@@ -30,7 +30,7 @@ def app(sample_dhf_data):
     # Create subdirectories
     os.makedirs(os.path.join(temp_dir, "analyses"), exist_ok=True)
     os.makedirs(os.path.join(temp_dir, "report-templates"), exist_ok=True)
-    
+
     # Copy report templates from sample-data for report generation tests
     sample_templates_dir = os.path.join(
         os.path.dirname(os.path.dirname(__file__)), "sample-data", "report-templates"

@@ -3,6 +3,7 @@
 
 """Main routes for the Pocket DHF application."""
 
+import logging
 import os
 import re
 import subprocess
@@ -21,6 +22,9 @@ from flask import (
 )
 
 from app.data_utils import DHFDataManager
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 main = Blueprint("main", __name__)
 data_manager = None  # Will be initialized in each route
@@ -43,6 +47,29 @@ def get_data_manager():
         analyses_dir = current_app.config.get("DHF_ANALYSES_DIR")
         data_manager = DHFDataManager(data_file_path, analyses_dir=analyses_dir)
     return data_manager
+
+
+def sanitize_error_response(
+    exception, generic_message="An error occurred", status_code=500
+):
+    """
+    Sanitize error responses by logging the actual error and returning a generic message.
+
+    Args:
+        exception: The exception that was raised
+        generic_message: A generic user-friendly error message
+        status_code: HTTP status code to return
+
+    Returns:
+        A tuple of (jsonify response, status code)
+    """
+    # Log the full error details for debugging
+    logger.error(
+        f"Error occurred: {type(exception).__name__}: {str(exception)}", exc_info=True
+    )
+
+    # Return a generic message to the client
+    return jsonify({"error": generic_message}), status_code
 
 
 @main.route("/")
@@ -368,7 +395,7 @@ def api_get_analyses():
         analyses_list = data_manager.get_analyses()
         return jsonify(analyses_list)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to retrieve analyses")
 
 
 @main.route("/api/analyses/<analysis_id>")
@@ -382,7 +409,7 @@ def api_get_analysis(analysis_id):
         else:
             return jsonify({"error": "Analysis not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to retrieve analysis")
 
 
 @main.route("/api/analyses/<analysis_id>", methods=["PUT"])
@@ -404,7 +431,7 @@ def api_update_analysis(analysis_id):
         else:
             return jsonify({"error": "Failed to update analysis"}), 500
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to update analysis")
 
 
 @main.route("/api/analyses/<analysis_id>", methods=["DELETE"])
@@ -419,7 +446,7 @@ def api_delete_analysis(analysis_id):
         else:
             return jsonify({"error": "Analysis not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to delete analysis")
 
 
 @main.route("/api/analyses", methods=["POST"])
@@ -452,7 +479,7 @@ def api_create_analysis():
         else:
             return jsonify({"error": "Failed to create analysis"}), 500
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to create analysis")
 
 
 @main.route("/api/analyses/<analysis_id>/sync-preview", methods=["GET"])
@@ -467,7 +494,7 @@ def api_sync_preview(analysis_id):
 
         return jsonify(changes)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to preview sync changes")
 
 
 @main.route("/api/analyses/<analysis_id>/sync", methods=["POST"])
@@ -494,7 +521,7 @@ def api_sync_analysis(analysis_id):
         else:
             return jsonify({"error": "Failed to apply sync changes"}), 500
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to sync analysis")
 
 
 @main.route("/api/report/<report_name>")
@@ -507,7 +534,7 @@ def generate_report(report_name):
         else:
             return jsonify({"error": "Report not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to generate report")
 
 
 @main.route("/api/item/<item_id>")
@@ -544,7 +571,7 @@ def get_item(item_id):
         else:
             return jsonify({"error": "Item not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to retrieve item")
 
 
 @main.route("/api/item/<item_id>", methods=["PUT"])
@@ -558,7 +585,7 @@ def update_item(item_id):
         else:
             return jsonify({"error": "Item not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to update item")
 
 
 @main.route("/api/folder-name", methods=["PUT"])
@@ -581,7 +608,7 @@ def update_folder_name():
         else:
             return jsonify({"error": "Folder not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to update folder name")
 
 
 @main.route("/api/mitigation-link", methods=["PUT"])
@@ -608,7 +635,7 @@ def update_mitigation_link():
             return jsonify({"error": "Mitigation link not found"}), 404
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to update mitigation link")
 
 
 @main.route("/api/configuration", methods=["PUT"])
@@ -672,7 +699,7 @@ def update_configuration():
             return jsonify({"error": "Failed to update configuration"}), 500
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to update configuration")
 
 
 @main.route("/api/run-tests", methods=["POST"])
@@ -780,7 +807,8 @@ def run_tests():
         )
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error occurred: {type(e).__name__}: {str(e)}", exc_info=True)
+        return jsonify({"success": False, "error": "Failed to run tests"}), 500
 
 
 @main.route("/api/export-validation-pdf", methods=["POST"])
@@ -956,7 +984,11 @@ def export_validation_pdf():
         )
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error occurred: {type(e).__name__}: {str(e)}", exc_info=True)
+        return (
+            jsonify({"success": False, "error": "Failed to export validation PDF"}),
+            500,
+        )
 
 
 @main.route("/health")
