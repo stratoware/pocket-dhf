@@ -35,7 +35,19 @@ def create_app(data_dir: str = None):
         data_dir = os.getenv("DHF_DATA_DIR", "sample-data")
     
     # Construct paths from data directory
-    data_file_path = os.path.join(data_dir, "dhf_data.yaml") if data_dir else None
+    # Look for dhf_data.yaml or any .dhf file
+    data_file_path = None
+    if data_dir:
+        default_path = os.path.join(data_dir, "dhf_data.yaml")
+        if os.path.exists(default_path):
+            data_file_path = default_path
+        else:
+            # Look for any .dhf file
+            import glob
+            dhf_files = glob.glob(os.path.join(data_dir, "*.dhf"))
+            if dhf_files:
+                data_file_path = dhf_files[0]  # Use first .dhf file found
+    
     reports_dir = os.path.join(data_dir, "report-templates") if data_dir else None
     analyses_dir = os.path.join(data_dir, "analyses") if data_dir else None
 
