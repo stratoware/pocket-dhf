@@ -597,17 +597,23 @@ class DHFDataManager:
     # Analyses Management Methods
 
     def get_analyses_directory(self) -> str:
-        """Get the analyses directory path, checking parent repo first."""
-        # Check for parent repo analyses directory (sibling to pocket-dhf)
+        """Get the analyses directory path.
+        
+        By default, uses internal sample data (sample-data/analyses).
+        To use external project data, set environment variable POCKET_DHF_USE_EXTERNAL=1
+        """
         current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        parent_analyses_dir = os.path.join(
-            os.path.dirname(current_dir), "analyses"
-        )
+        
+        # Check if explicitly configured to use external data
+        if os.getenv('POCKET_DHF_USE_EXTERNAL'):
+            # Check for parent repo analyses directory (sibling to pocket-dhf)
+            parent_analyses_dir = os.path.join(
+                os.path.dirname(current_dir), "analyses"
+            )
+            if os.path.exists(parent_analyses_dir) and os.path.isdir(parent_analyses_dir):
+                return parent_analyses_dir
 
-        if os.path.exists(parent_analyses_dir) and os.path.isdir(parent_analyses_dir):
-            return parent_analyses_dir
-
-        # Fall back to sample-data/analyses
+        # Default to sample-data/analyses
         return os.path.join(current_dir, "sample-data", "analyses")
 
     def get_analyses(self) -> List[Dict[str, Any]]:
