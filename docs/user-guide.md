@@ -34,9 +34,15 @@ Navigate to http://localhost:8080 to see the application.
    cp sample-data/dhf_data.yaml my-project.yaml
    ```
 
-2. Launch with your project file:
+2. Set up your project directory:
    ```bash
-   poetry run python main.py --data-file my-project.yaml
+   mkdir -p my-project/analyses my-project/report-templates
+   mv my-project.yaml my-project/dhf_data.yaml
+   ```
+
+3. Launch with your project directory:
+   ```bash
+   poetry run python main.py --data-dir my-project
    ```
 
 3. Edit the metadata section to reflect your device information

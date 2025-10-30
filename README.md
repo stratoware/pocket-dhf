@@ -106,8 +106,9 @@ my-medical-device/              # Your main device repository
 ├── tests/                      # Your device tests
 ├── docs/                       # Your device documentation
 ├── dhf/                        # DHF documentation
-│   ├── device-dhf.yaml        # Your DHF data file
-│   └── reports/               # Generated reports
+│   ├── dhf_data.yaml          # Your DHF data file (or custom-name.dhf)
+│   ├── analyses/              # FMEA and FTA analyses
+│   └── report-templates/      # Custom report templates
 └── pocket-dhf/                 # Git submodule
     ├── app/
     ├── main.py
@@ -130,17 +131,18 @@ my-medical-device/              # Your main device repository
    cd ..
    ```
 
-3. **Create your DHF data file:**
+3. **Create your DHF data directory:**
    ```bash
-   mkdir -p dhf
-   cp pocket-dhf/sample-data/dhf_data.yaml dhf/device-dhf.yaml
-   # Edit dhf/device-dhf.yaml with your project details
+   mkdir -p dhf/analyses dhf/report-templates
+   cp pocket-dhf/sample-data/dhf_data.yaml dhf/
+   cp -r pocket-dhf/sample-data/report-templates/* dhf/report-templates/
+   # Edit dhf/dhf_data.yaml with your project details
    ```
 
-4. **Run Pocket DHF pointing to your data file:**
+4. **Run Pocket DHF pointing to your data directory:**
    ```bash
    cd pocket-dhf
-   poetry run python main.py --data-file ../dhf/device-dhf.yaml
+   poetry run python main.py --data-dir ../dhf
    ```
 
 5. **Access the application:**
@@ -203,12 +205,12 @@ python main.py  # Uses sample data
 From your main device repository root:
 ```bash
 cd pocket-dhf
-poetry run python main.py --data-file ../dhf/device-dhf.yaml
+poetry run python main.py --data-dir ../dhf
 ```
 
 Or from within the pocket-dhf directory:
 ```bash
-poetry run python main.py --data-file /path/to/your/device-dhf.yaml
+poetry run python main.py --data-dir /path/to/your/dhf
 ```
 
 ### With Sample Data (Standalone)
@@ -221,7 +223,7 @@ poetry run python main.py
 ### Custom Port
 
 ```bash
-poetry run python main.py --data-file ../dhf/device-dhf.yaml --port 5000
+poetry run python main.py --data-dir ../dhf --port 5000
 ```
 
 ## Usage
@@ -229,9 +231,14 @@ poetry run python main.py --data-file ../dhf/device-dhf.yaml --port 5000
 ### First Time Setup
 
 1. **Add Pocket DHF as a submodule** (see Installation above)
-2. **Copy sample data** as a starting point: `cp pocket-dhf/sample-data/dhf_data.yaml dhf/device-dhf.yaml`
-3. **Customize your data file** with your device information
-4. **Run Pocket DHF** pointing to your data file
+2. **Set up DHF directory structure**:
+   ```bash
+   mkdir -p dhf/analyses dhf/report-templates
+   cp pocket-dhf/sample-data/dhf_data.yaml dhf/
+   cp -r pocket-dhf/sample-data/report-templates/* dhf/report-templates/
+   ```
+3. **Customize your data file** (dhf/dhf_data.yaml) with your device information
+4. **Run Pocket DHF** pointing to your data directory: `poetry run python main.py --data-dir ../dhf`
 5. **Edit via web UI** or directly in YAML (both work!)
 6. **Commit changes** to your device repository to track DHF history
 

@@ -15,16 +15,22 @@ from app.data_utils import DHFDataManager
 @pytest.fixture
 def app(sample_dhf_data):
     """Create and configure a new app instance for each test."""
-    # Create a temporary file for testing
-    db_fd, db_path = tempfile.mkstemp()
-
-    # Write sample data to the temporary file
+    # Create a temporary directory for testing
     import yaml
-
-    with open(db_path, "w") as f:
+    import shutil
+    
+    temp_dir = tempfile.mkdtemp()
+    dhf_data_path = os.path.join(temp_dir, "dhf_data.yaml")
+    
+    # Write sample data to the temporary file
+    with open(dhf_data_path, "w") as f:
         yaml.dump(sample_dhf_data, f)
 
-    app = create_app(data_file_path=db_path)
+    # Create subdirectories
+    os.makedirs(os.path.join(temp_dir, "analyses"), exist_ok=True)
+    os.makedirs(os.path.join(temp_dir, "report-templates"), exist_ok=True)
+
+    app = create_app(data_dir=temp_dir)
     app.config.update(
         {
             "TESTING": True,
@@ -33,14 +39,13 @@ def app(sample_dhf_data):
         }
     )
 
-    # Override the data file path for testing
-    app.config["DHF_DATA_FILE"] = db_path
+    # Paths are already set by create_app
+    # app.config["DHF_DATA_FILE"] is now set to temp_dir/dhf_data.yaml
 
     yield app
 
     # Clean up
-    os.close(db_fd)
-    os.unlink(db_path)
+    shutil.rmtree(temp_dir)
 
 
 @pytest.fixture
