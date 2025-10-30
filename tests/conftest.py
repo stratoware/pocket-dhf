@@ -30,6 +30,17 @@ def app(sample_dhf_data):
     # Create subdirectories
     os.makedirs(os.path.join(temp_dir, "analyses"), exist_ok=True)
     os.makedirs(os.path.join(temp_dir, "report-templates"), exist_ok=True)
+    
+    # Copy report templates from sample-data for report generation tests
+    sample_templates_dir = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "sample-data", "report-templates"
+    )
+    if os.path.exists(sample_templates_dir):
+        for template_file in os.listdir(sample_templates_dir):
+            if template_file.endswith(".md"):
+                src = os.path.join(sample_templates_dir, template_file)
+                dst = os.path.join(temp_dir, "report-templates", template_file)
+                shutil.copy2(src, dst)
 
     app = create_app(data_dir=temp_dir)
     app.config.update(
