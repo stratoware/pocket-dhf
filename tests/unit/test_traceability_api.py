@@ -75,18 +75,23 @@ class TestTraceabilityAPI:
         """Test traceability endpoints with empty data."""
         # Create a new app with empty data
         import os
+        import shutil
         import tempfile
 
         from app import create_app
 
-        # Create empty data file
-        db_fd, db_path = tempfile.mkstemp()
-        with open(db_path, "w") as f:
+        # Create temporary directory structure
+        temp_dir = tempfile.mkdtemp()
+        dhf_data_path = os.path.join(temp_dir, "dhf_data.yaml")
+        os.makedirs(os.path.join(temp_dir, "analyses"), exist_ok=True)
+        os.makedirs(os.path.join(temp_dir, "report-templates"), exist_ok=True)
+
+        with open(dhf_data_path, "w") as f:
             f.write("{}")
 
         try:
             # Create app without using the fixture
-            app = create_app(data_file_path=db_path)
+            app = create_app(data_dir=temp_dir)
             app.config["TESTING"] = True
             test_client = app.test_client()
 
@@ -106,8 +111,7 @@ class TestTraceabilityAPI:
                 assert isinstance(data, list)
 
         finally:
-            os.close(db_fd)
-            os.unlink(db_path)
+            shutil.rmtree(temp_dir)
 
     def test_traceability_data_structure_consistency(self, client, data_manager):
         """Test that traceability data has consistent structure."""
