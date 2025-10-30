@@ -49,7 +49,7 @@ class DHFDataManager:
                 with open(self.data_file_path, "r", encoding="utf-8") as file:
                     self._data = yaml.safe_load(file)
                     self._last_modified = os.path.getmtime(self.data_file_path)
-                
+
                 # Check if migration is needed
                 if needs_migration(self._data):
                     logger.info(f"Schema migration required for {self.data_file_path}")
@@ -69,15 +69,15 @@ class DHFDataManager:
     def save_data(self, data: Dict[str, Any]) -> None:
         """Save DHF data to YAML file."""
         from app.schema_migrations import CURRENT_SCHEMA_VERSION
-        
+
         try:
             # Ensure metadata section exists
             if "metadata" not in data:
                 data["metadata"] = {}
-            
+
             # Always write current schema version
             data["metadata"]["schema_version"] = CURRENT_SCHEMA_VERSION
-            
+
             with open(self.data_file_path, "w", encoding="utf-8") as file:
                 yaml.safe_dump(data, file, default_flow_style=False, sort_keys=False)
             self._data = data  # Update cached data
@@ -368,7 +368,9 @@ class DHFDataManager:
         # Get mapping configuration
         config = data.get("configuration", {})
         severity_mapping = config.get("severity_mapping", {})
-        probability_mapping = config.get("probability_mapping", {})  # Legacy (deprecated)
+        probability_mapping = config.get(
+            "probability_mapping", {}
+        )  # Legacy (deprecated)
         probability_harm_mapping = config.get("probability_harm_mapping", {})
 
         # Default mappings if none found
@@ -446,7 +448,9 @@ class DHFDataManager:
             "probability_mapping": probability_mapping,  # Legacy (deprecated)
             "probability_harm_mapping": probability_harm_mapping,
             "severity_ids_in_use": list(severity_ids_in_use),
-            "probability_ids_in_use": list(probability_ids_in_use),  # Legacy (deprecated)
+            "probability_ids_in_use": list(
+                probability_ids_in_use
+            ),  # Legacy (deprecated)
             "probability_harm_ids_in_use": list(probability_harm_ids_in_use),
         }
 
@@ -569,17 +573,15 @@ class DHFDataManager:
             .get("name", probability_harm_id)
         )
 
-    def calculate_rbm_score(
-        self, probability_harm_id: str, severity_id: str
-    ) -> int:
+    def calculate_rbm_score(self, probability_harm_id: str, severity_id: str) -> int:
         """Calculate RBM score: Severity × Probability of Harm.
-        
+
         This follows ISO 14971:2019 risk scoring using a two-factor model.
-        
+
         Args:
             probability_harm_id: Probability of harm ID (PH1, PH2, PH3, etc.)
             severity_id: Severity ID (S1, S2, S3, etc.)
-            
+
         Returns:
             The calculated risk score (S × PH)
         """
@@ -599,14 +601,14 @@ class DHFDataManager:
 
     def get_analyses_directory(self) -> str:
         """Get the analyses directory path.
-        
+
         If analyses_dir was provided during initialization, use that.
         Otherwise, defaults to internal sample data (sample-data/analyses).
         """
         # If a custom analyses directory was specified, use it
         if self.analyses_dir:
             return self.analyses_dir
-        
+
         # Default to sample-data/analyses
         current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         return os.path.join(current_dir, "sample-data", "analyses")
@@ -631,9 +633,7 @@ class DHFDataManager:
                                     "id": analysis_data.get("id", filename),
                                     "title": analysis_data.get("title", filename),
                                     "type": analysis_data.get("type", "unknown"),
-                                    "description": analysis_data.get(
-                                        "description", ""
-                                    ),
+                                    "description": analysis_data.get("description", ""),
                                     "status": analysis_data.get("status", "active"),
                                     "last_modified": analysis_data.get(
                                         "last_modified", ""
@@ -663,10 +663,7 @@ class DHFDataManager:
                     filepath = os.path.join(analyses_dir, filename)
                     with open(filepath, "r", encoding="utf-8") as file:
                         analysis_data = yaml.safe_load(file)
-                        if (
-                            analysis_data
-                            and analysis_data.get("id") == analysis_id
-                        ):
+                        if analysis_data and analysis_data.get("id") == analysis_id:
                             analysis_data["filename"] = filename
                             return analysis_data
                 except Exception as e:
@@ -675,9 +672,7 @@ class DHFDataManager:
 
         return None
 
-    def save_analysis(
-        self, analysis_id: str, analysis_data: Dict[str, Any]
-    ) -> bool:
+    def save_analysis(self, analysis_id: str, analysis_data: Dict[str, Any]) -> bool:
         """Save an analysis to its file."""
         analyses_dir = self.get_analyses_directory()
 
@@ -697,7 +692,9 @@ class DHFDataManager:
             save_data = {k: v for k, v in analysis_data.items() if k != "filename"}
 
             with open(filepath, "w", encoding="utf-8") as file:
-                yaml.safe_dump(save_data, file, default_flow_style=False, sort_keys=False)
+                yaml.safe_dump(
+                    save_data, file, default_flow_style=False, sort_keys=False
+                )
             return True
         except Exception as e:
             print(f"Error saving analysis {analysis_id}: {e}")
@@ -717,10 +714,7 @@ class DHFDataManager:
                     filepath = os.path.join(analyses_dir, filename)
                     with open(filepath, "r", encoding="utf-8") as file:
                         analysis_data = yaml.safe_load(file)
-                        if (
-                            analysis_data
-                            and analysis_data.get("id") == analysis_id
-                        ):
+                        if analysis_data and analysis_data.get("id") == analysis_id:
                             os.remove(filepath)
                             return True
                 except Exception as e:
@@ -794,9 +788,7 @@ class DHFDataManager:
 
         return None
 
-    def sync_analysis_to_dhf(
-        self, analysis_id: str
-    ) -> Dict[str, Any]:
+    def sync_analysis_to_dhf(self, analysis_id: str) -> Dict[str, Any]:
         """
         Sync an analysis to DHF, creating or updating risk and specification entities.
         Returns a dict with preview of changes to be made.
@@ -821,7 +813,10 @@ class DHFDataManager:
         return changes
 
     def _sync_fmea_to_dhf(
-        self, analysis: Dict[str, Any], dhf_data: Dict[str, Any], changes: Dict[str, Any]
+        self,
+        analysis: Dict[str, Any],
+        dhf_data: Dict[str, Any],
+        changes: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Sync FMEA to DHF data."""
         # For each FMEA row, check if controls/actions need to be created or linked
@@ -852,7 +847,11 @@ class DHFDataManager:
 
             # Check recommended actions
             for action in row.get("recommended_actions", []):
-                if isinstance(action, str) and action.startswith("SS") or action.startswith("HS"):
+                if (
+                    isinstance(action, str)
+                    and action.startswith("SS")
+                    or action.startswith("HS")
+                ):
                     existing_spec = self.get_item_by_id(action)
                     if not existing_spec:
                         changes["specs_to_create"].append(
@@ -867,7 +866,10 @@ class DHFDataManager:
         return changes
 
     def _sync_fta_to_dhf(
-        self, analysis: Dict[str, Any], dhf_data: Dict[str, Any], changes: Dict[str, Any]
+        self,
+        analysis: Dict[str, Any],
+        dhf_data: Dict[str, Any],
+        changes: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Sync FTA to DHF data."""
         # Check top event - may need to create or link risk
@@ -914,9 +916,7 @@ class DHFDataManager:
 
         return changes
 
-    def apply_dhf_sync(
-        self, analysis_id: str, changes: Dict[str, Any]
-    ) -> bool:
+    def apply_dhf_sync(self, analysis_id: str, changes: Dict[str, Any]) -> bool:
         """Apply the DHF sync changes."""
         dhf_data = self.load_data()
 

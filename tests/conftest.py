@@ -16,12 +16,13 @@ from app.data_utils import DHFDataManager
 def app(sample_dhf_data):
     """Create and configure a new app instance for each test."""
     # Create a temporary directory for testing
-    import yaml
     import shutil
-    
+
+    import yaml
+
     temp_dir = tempfile.mkdtemp()
     dhf_data_path = os.path.join(temp_dir, "dhf_data.yaml")
-    
+
     # Write sample data to the temporary file
     with open(dhf_data_path, "w") as f:
         yaml.dump(sample_dhf_data, f)

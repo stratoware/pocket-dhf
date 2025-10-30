@@ -14,7 +14,7 @@ from app.routes import main, set_file_watcher
 
 def create_app(data_dir: str = None):
     """Create and configure the Flask application.
-    
+
     Args:
         data_dir: Path to the data directory containing:
                   - dhf_data.yaml (DHF data file)
@@ -33,7 +33,7 @@ def create_app(data_dir: str = None):
     # Determine data directory
     if data_dir is None:
         data_dir = os.getenv("DHF_DATA_DIR", "sample-data")
-    
+
     # Construct paths from data directory
     # Look for dhf_data.yaml or any .dhf file
     data_file_path = None
@@ -44,10 +44,11 @@ def create_app(data_dir: str = None):
         else:
             # Look for any .dhf file
             import glob
+
             dhf_files = glob.glob(os.path.join(data_dir, "*.dhf"))
             if dhf_files:
                 data_file_path = dhf_files[0]  # Use first .dhf file found
-    
+
     reports_dir = os.path.join(data_dir, "report-templates") if data_dir else None
     analyses_dir = os.path.join(data_dir, "analyses") if data_dir else None
 

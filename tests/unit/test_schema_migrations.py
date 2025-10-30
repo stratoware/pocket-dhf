@@ -5,6 +5,7 @@
 
 import pytest
 import yaml
+
 from app.schema_migrations import (
     CURRENT_SCHEMA_VERSION,
     SCHEMA_VERSION_1_0,
@@ -322,7 +323,6 @@ class TestRealWorldMigration:
             if "risks" in group:
                 v2_risk_count += len(group["risks"])
 
-        assert v1_risk_count == v2_risk_count, (
-            f"Migration lost risks: v1 had {v1_risk_count}, v2 has {v2_risk_count}"
-        )
-
+        assert (
+            v1_risk_count == v2_risk_count
+        ), f"Migration lost risks: v1 had {v1_risk_count}, v2 has {v2_risk_count}"

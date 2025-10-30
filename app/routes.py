@@ -398,7 +398,9 @@ def api_update_analysis(analysis_id):
         updated_data["last_modified"] = datetime.now().strftime("%Y-%m-%d")
 
         if data_manager.save_analysis(analysis_id, updated_data):
-            return jsonify({"success": True, "message": "Analysis updated successfully"})
+            return jsonify(
+                {"success": True, "message": "Analysis updated successfully"}
+            )
         else:
             return jsonify({"error": "Failed to update analysis"}), 500
     except Exception as e:
@@ -411,7 +413,9 @@ def api_delete_analysis(analysis_id):
     try:
         data_manager = get_data_manager()
         if data_manager.delete_analysis(analysis_id):
-            return jsonify({"success": True, "message": "Analysis deleted successfully"})
+            return jsonify(
+                {"success": True, "message": "Analysis deleted successfully"}
+            )
         else:
             return jsonify({"error": "Analysis not found"}), 404
     except Exception as e:
@@ -1928,7 +1932,9 @@ def generate_detailed_risk_table(data):
     risks = data.get("risks", {})
 
     table = "| Risk ID | Hazard | Severity | PH | Risk Score | Harm | Justification |\n"
-    table += "|---------|--------|----------|-------|------------|------|---------------|\n"
+    table += (
+        "|---------|--------|----------|-------|------------|------|---------------|\n"
+    )
 
     for group in risks.values():
         if "risks" in group:
