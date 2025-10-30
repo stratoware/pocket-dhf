@@ -674,6 +674,8 @@ class DHFDataManager:
 
     def save_analysis(self, analysis_id: str, analysis_data: Dict[str, Any]) -> bool:
         """Save an analysis to its file."""
+        import re
+
         analyses_dir = self.get_analyses_directory()
 
         if not os.path.exists(analyses_dir):
@@ -685,7 +687,26 @@ class DHFDataManager:
             # Generate filename from ID
             filename = f"{analysis_id.lower()}.yaml"
 
-        filepath = os.path.join(analyses_dir, filename)
+        # Security: Validate filename to prevent path traversal
+        # Use basename to strip any path components
+        safe_filename = os.path.basename(filename)
+
+        # Only allow safe characters: alphanumeric, underscore, hyphen, and dots
+        # Must end with .yaml or .yml
+        if not re.match(r"^[a-zA-Z0-9_\-]+\.(yaml|yml)$", safe_filename):
+            print(
+                f"Error: Invalid filename '{safe_filename}' for analysis {analysis_id}"
+            )
+            return False
+
+        filepath = os.path.join(analyses_dir, safe_filename)
+
+        # Security: Verify the resolved path is within analyses_dir
+        real_path = os.path.realpath(filepath)
+        real_dir = os.path.realpath(analyses_dir)
+        if not real_path.startswith(real_dir + os.sep):
+            print(f"Error: Path traversal attempt detected for analysis {analysis_id}")
+            return False
 
         try:
             # Remove filename from data before saving

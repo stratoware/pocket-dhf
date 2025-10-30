@@ -1048,10 +1048,26 @@ def get_report_templates():
 
 def generate_report_content(report_name):
     """Generate report content by processing template and inserting DHF data."""
+    # Security: Validate report_name to prevent path traversal
+    # Only allow alphanumeric, underscore, and hyphen characters
+    import re
+
+    if not re.match(r"^[a-zA-Z0-9_\-]+$", report_name):
+        return None
+
     templates_dir = current_app.config.get(
         "DHF_REPORTS_DIR", "sample-data/report-templates"
     )
-    template_path = os.path.join(templates_dir, f"{report_name}.md")
+
+    # Use basename to strip any path components
+    safe_name = os.path.basename(report_name)
+    template_path = os.path.join(templates_dir, f"{safe_name}.md")
+
+    # Security: Verify the resolved path is within templates_dir
+    real_path = os.path.realpath(template_path)
+    real_dir = os.path.realpath(templates_dir)
+    if not real_path.startswith(real_dir + os.sep):
+        return None
 
     if not os.path.exists(template_path):
         return None
