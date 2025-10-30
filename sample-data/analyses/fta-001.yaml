@@ -2,9 +2,9 @@
 # Licensed under the MIT License. See LICENSE file in the project root.
 
 id: FT0001
-title: "Sleep Apnea Monitor - Missed Critical Event FTA"
+title: "Continuous Glucose Monitor - Missed Hypoglycemic Event FTA"
 type: fta
-description: "Fault Tree Analysis for the top event: Patient experiences critical apnea event that is not detected or alarmed"
+description: "Fault Tree Analysis for the top event: Patient experiences severe hypoglycemia that is not detected or reported by the CGM system"
 created_date: "2025-01-15"
 last_modified: "2025-01-20"
 author: "System Engineer"
@@ -16,124 +16,113 @@ status: "active"
 
 top_event:
   id: "FT0001-TE"
-  description: "Critical apnea event not detected or alarmed"
+  description: "Severe hypoglycemic event not detected or reported"
   gate_type: "OR"
   severity: 10
-  linked_risks: ["RK0001"]  # Link to existing DHF risk if applicable
+  linked_risks: []  # Can link to DHF risks if applicable
   
 intermediate_events:
   - id: "FT0001-IE01"
     parent_id: "FT0001-TE"
-    description: "Apnea event not detected by system"
+    description: "Hypoglycemia not detected by sensor system"
     gate_type: "OR"
     
   - id: "FT0001-IE02"
     parent_id: "FT0001-TE"
-    description: "Alarm fails to notify user"
+    description: "Hypoglycemia detected but not reported to user"
     gate_type: "OR"
     
   - id: "FT0001-IE03"
     parent_id: "FT0001-IE01"
-    description: "Sensor system failure"
+    description: "Sensor hardware fails to measure glucose"
     gate_type: "OR"
     
   - id: "FT0001-IE04"
     parent_id: "FT0001-IE01"
-    description: "Signal processing failure"
+    description: "Sensor measurement is inaccurate"
     gate_type: "OR"
     
   - id: "FT0001-IE05"
     parent_id: "FT0001-IE02"
-    description: "Alarm hardware failure"
-    gate_type: "AND"
-    
-  - id: "FT0001-IE06"
-    parent_id: "FT0001-IE02"
-    description: "Alarm notification blocked"
+    description: "Alert system fails"
     gate_type: "OR"
-
+    
 basic_events:
   - id: "FT0001-BE01"
     parent_id: "FT0001-IE03"
-    description: "Respiratory sensor disconnected"
-    probability: 0.001
-    mitigations: ["SS0001", "SS0002"]  # Links to specifications
-    mitigation_description: "Sensor contact quality monitoring with alert"
+    description: "Glucose sensor detaches from skin"
+    probability: 0.02
+    mitigations: ["HS010"]  # Biocompatible adhesive
     
   - id: "FT0001-BE02"
     parent_id: "FT0001-IE03"
-    description: "Sensor hardware failure"
-    probability: 0.0005
-    mitigations: ["HS0001"]
-    mitigation_description: "Use high-reliability sensor components"
+    description: "Sensor reaches end of useful life"
+    probability: 0.01
+    mitigations: ["SS006"]  # Sensor lifecycle management
     
   - id: "FT0001-BE03"
     parent_id: "FT0001-IE03"
-    description: "Poor sensor placement by user"
+    description: "Electrochemical sensor malfunction"
     probability: 0.005
-    mitigations: ["Create clear user instructions", "Add setup wizard"]
-    mitigation_description: "User training and device setup guidance"
+    mitigations: ["HS001", "HS002"]  # Sensor and analog front-end
     
   - id: "FT0001-BE04"
     parent_id: "FT0001-IE04"
-    description: "Detection algorithm fails to identify apnea pattern"
-    probability: 0.002
-    mitigations: ["SS0012", "SS0013"]
-    mitigation_description: "Validated algorithm with clinical testing"
+    description: "Sensor drift outside acceptable range"
+    probability: 0.03
+    mitigations: ["SS002", "SS006"]  # Calibration algorithm and lifecycle
     
   - id: "FT0001-BE05"
     parent_id: "FT0001-IE04"
-    description: "Signal quality too poor for analysis"
-    probability: 0.003
-    mitigations: ["SS0003", "SS0011"]
-    mitigation_description: "Signal quality monitoring with artifact rejection"
+    description: "Temperature affects sensor accuracy"
+    probability: 0.02
+    mitigations: ["HS001"]  # Sensor with temperature compensation
     
   - id: "FT0001-BE06"
     parent_id: "FT0001-IE04"
-    description: "Software crash during event processing"
-    probability: 0.0001
-    mitigations: ["SS0070", "Add watchdog timer"]
-    mitigation_description: "Robust error handling and watchdog recovery"
+    description: "Signal noise masks true glucose level"
+    probability: 0.01
+    mitigations: ["SS001", "HS002"]  # Signal processing and analog front-end
     
   - id: "FT0001-BE07"
-    parent_id: "FT0001-IE05"
-    description: "Speaker component fails"
-    probability: 0.0008
-    mitigations: ["HS0005"]
-    mitigation_description: "Use high-reliability audio component"
+    parent_id: "FT0001-IE01"
+    description: "Detection algorithm fails to identify hypoglycemia"
+    probability: 0.001
+    mitigations: ["SS003"]  # Hypoglycemia detection system
     
   - id: "FT0001-BE08"
     parent_id: "FT0001-IE05"
-    description: "Audio amplifier fails"
-    probability: 0.0005
-    mitigations: ["HS0006"]
-    mitigation_description: "Redundant audio path with LED backup alarm"
+    description: "Software bug prevents alert generation"
+    probability: 0.001
+    mitigations: ["SS010"]  # Redundant alert system
     
   - id: "FT0001-BE09"
-    parent_id: "FT0001-IE06"
-    description: "User sets volume to zero or mute"
-    probability: 0.01
-    mitigations: ["Prevent zero volume for alarms", "Add visual alarm"]
-    mitigation_description: "Force minimum alarm volume and multi-modal alerts"
+    parent_id: "FT0001-IE05"
+    description: "Notification hardware fails (LED/vibration)"
+    probability: 0.005
+    mitigations: ["HS007", "HS008"]  # LED and vibration alert
     
   - id: "FT0001-BE10"
-    parent_id: "FT0001-IE06"
-    description: "User not in proximity to hear alarm"
-    probability: 0.02
-    mitigations: ["Add remote notification", "Implement mobile app alerts"]
-    mitigation_description: "Multi-channel notification system"
+    parent_id: "FT0001-IE05"
+    description: "Bluetooth disconnected, no mobile alert"
+    probability: 0.05
+    mitigations: ["SS005", "HS009", "SS010"]  # BLE communication and local alerts
     
   - id: "FT0001-BE11"
-    parent_id: "FT0001-IE01"
-    description: "Device powered off or battery dead"
-    probability: 0.004
-    mitigations: ["SS0040", "Implement low battery alert"]
-    mitigation_description: "Battery monitoring with advance warning"
+    parent_id: "FT0001-IE05"
+    description: "User disabled alerts or set volume too low"
+    probability: 0.1
+    mitigations: ["SS010"]  # Alert system with mandatory critical alerts
     
   - id: "FT0001-BE12"
-    parent_id: "FT0001-IE02"
-    description: "Alarm generation software bug"
-    probability: 0.0002
-    mitigations: ["SS0020", "Implement alarm self-test"]
-    mitigation_description: "Comprehensive software testing and runtime self-checks"
+    parent_id: "FT0001-IE05"
+    description: "Mobile phone battery dead or turned off"
+    probability: 0.08
+    mitigations: ["HS007", "HS008"]  # Local device alerts (LED/vibration)
+    
+  - id: "FT0001-BE13"
+    parent_id: "FT0001-TE"
+    description: "Device battery depleted, system shutdown"
+    probability: 0.01
+    mitigations: ["HS005", "HS006", "SS006"]  # Battery system and power management
 
