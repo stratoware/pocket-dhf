@@ -40,7 +40,8 @@ def get_data_manager():
         from flask import current_app
 
         data_file_path = current_app.config.get("DHF_DATA_FILE")
-        data_manager = DHFDataManager(data_file_path)
+        analyses_dir = current_app.config.get("DHF_ANALYSES_DIR")
+        data_manager = DHFDataManager(data_file_path, analyses_dir=analyses_dir)
     return data_manager
 
 

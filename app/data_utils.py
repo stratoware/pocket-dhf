@@ -17,14 +17,15 @@ logger = logging.getLogger(__name__)
 class DHFDataManager:
     """Manages loading and saving of DHF data from YAML files."""
 
-    def __init__(self, data_file_path: str = None):
-        """Initialize the data manager with a YAML file path."""
+    def __init__(self, data_file_path: str = None, analyses_dir: str = None):
+        """Initialize the data manager with a YAML file path and optional analyses directory."""
         if data_file_path is None:
             # Default to sample data file
             current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             data_file_path = os.path.join(current_dir, "sample-data", "dhf_data.yaml")
 
         self.data_file_path = data_file_path
+        self.analyses_dir = analyses_dir  # Custom analyses directory path
         self._data = None
         self._last_modified = None
 
@@ -599,21 +600,15 @@ class DHFDataManager:
     def get_analyses_directory(self) -> str:
         """Get the analyses directory path.
         
-        By default, uses internal sample data (sample-data/analyses).
-        To use external project data, set environment variable POCKET_DHF_USE_EXTERNAL=1
+        If analyses_dir was provided during initialization, use that.
+        Otherwise, defaults to internal sample data (sample-data/analyses).
         """
-        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # If a custom analyses directory was specified, use it
+        if self.analyses_dir:
+            return self.analyses_dir
         
-        # Check if explicitly configured to use external data
-        if os.getenv('POCKET_DHF_USE_EXTERNAL'):
-            # Check for parent repo analyses directory (sibling to pocket-dhf)
-            parent_analyses_dir = os.path.join(
-                os.path.dirname(current_dir), "analyses"
-            )
-            if os.path.exists(parent_analyses_dir) and os.path.isdir(parent_analyses_dir):
-                return parent_analyses_dir
-
         # Default to sample-data/analyses
+        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         return os.path.join(current_dir, "sample-data", "analyses")
 
     def get_analyses(self) -> List[Dict[str, Any]]:
