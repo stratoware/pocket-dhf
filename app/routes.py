@@ -393,6 +393,7 @@ def validation():
 
 
 @main.route("/api/report/<report_name>")
+@handle_api_errors
 def generate_report(report_name):
     """API endpoint to generate a specific report."""
     report_content = generate_report_content(report_name)
@@ -920,55 +921,48 @@ def generate_report_content(report_name):
     if not os.path.exists(template_path):
         return None
 
-    try:
-        # Read template
-        with open(template_path, "r", encoding="utf-8") as f:
-            template_content = f.read()
+    # Read template
+    with open(template_path, "r", encoding="utf-8") as f:
+        template_content = f.read()
 
-        # Get project metadata
-        data_manager = get_data_manager()
-        data = data_manager.load_data()
-        metadata = data.get("metadata", {})
+    # Get project metadata
+    data_manager = get_data_manager()
+    data = data_manager.load_data()
+    metadata = data.get("metadata", {})
 
-        # Replace template variables
-        template_vars = {
-            "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "project_name": metadata.get("project_name", "Unknown Project"),
-            "device_type": metadata.get("device_type", "Unknown Device"),
-            "version": metadata.get("version", "1.0"),
-            "next_review_date": (datetime.now() + timedelta(days=90)).strftime(
-                "%Y-%m-%d"
-            ),
-        }
+    # Replace template variables
+    template_vars = {
+        "generation_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "project_name": metadata.get("project_name", "Unknown Project"),
+        "device_type": metadata.get("device_type", "Unknown Device"),
+        "version": metadata.get("version", "1.0"),
+        "next_review_date": (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d"),
+    }
 
-        # Add risk-specific variables for risk management report
-        if report_name == "risk_management":
-            risks = data.get("risks", {})
-            total_risks = 0
-            for group in risks.values():
-                if "risks" in group:
-                    total_risks += len(group["risks"])
+    # Add risk-specific variables for risk management report
+    if report_name == "risk_management":
+        risks = data.get("risks", {})
+        total_risks = 0
+        for group in risks.values():
+            if "risks" in group:
+                total_risks += len(group["risks"])
 
-            template_vars.update(
-                {"total_risks": total_risks, "risk_categories": len(risks)}
-            )
+        template_vars.update(
+            {"total_risks": total_risks, "risk_categories": len(risks)}
+        )
 
-        # Replace template variables
-        for var, value in template_vars.items():
-            template_content = template_content.replace("{{" + var + "}}", str(value))
+    # Replace template variables
+    for var, value in template_vars.items():
+        template_content = template_content.replace("{{" + var + "}}", str(value))
 
-        # Process AUTO_CONTENT tags
-        template_content = process_auto_content(template_content, data)
+    # Process AUTO_CONTENT tags
+    template_content = process_auto_content(template_content, data)
 
-        return {
-            "title": template_vars["project_name"],
-            "content": template_content,
-            "generated_date": template_vars["generation_date"],
-        }
-
-    except Exception as e:
-        print(f"Error generating report {report_name}: {e}")
-        return None
+    return {
+        "title": template_vars["project_name"],
+        "content": template_content,
+        "generated_date": template_vars["generation_date"],
+    }
 
 
 def process_auto_content(content, data):
