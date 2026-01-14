@@ -122,6 +122,8 @@ Licensed under the MIT License. See LICENSE file in the project root.
 </div>
 
 <script>
+    // apiBase is defined globally in base.html
+    
     document.addEventListener('DOMContentLoaded', function () {
         const runTestsBtn = document.getElementById('run-tests-btn');
         const exportPdfBtn = document.getElementById('export-pdf-btn');
@@ -145,7 +147,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
             testStatusMessage.textContent = 'Running test suite...';
 
             // Make API call to run tests
-            fetch('/api/run-tests', {
+            fetch(`${apiBase}/run-tests`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -262,7 +264,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
             exportPdfBtn.disabled = true;
             exportPdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Generating PDF...';
 
-            fetch('/api/export-validation-pdf', {
+            fetch(`${apiBase}/export-validation-pdf`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

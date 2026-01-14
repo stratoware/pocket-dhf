@@ -632,6 +632,9 @@ Licensed under the MIT License. See LICENSE file in the project root.
     const softwareSpecs = {{ software_specifications | tojson }};
     const hardwareSpecs = {{ hardware_specifications | tojson }};
     const mitigationLinks = {{ mitigation_links | tojson }};
+    
+    // API base URL - use /dhf/api when integrated, /api when standalone
+    // apiBase is defined globally in base.html
 
     // Navigation history
     let navigationHistory = [];  // Array of {id, type} objects
@@ -1008,7 +1011,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
     }
 
     function loadItem(itemId, itemType = null) {
-        fetch(`/api/item/${itemId}`)
+        fetch(`${apiBase}/item/${itemId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -1139,7 +1142,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
         if (!displayElement) return;
 
         // Fetch traceability data to find which product requirements link to this user need
-        fetch('/api/traceability/user-needs-to-requirements')
+        fetch(`${apiBase}/traceability/user-needs-to-requirements`)
             .then(response => response.json())
             .then(data => {
                 // Find the entry for this user need
@@ -1545,7 +1548,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
     function updateMitigationEffect(linkId, newEffect) {
         // Update the mitigation link effect
-        fetch('/api/mitigation-link', {
+        fetch(`${apiBase}/mitigation-link`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -1615,7 +1618,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
         }
 
         // Save via API
-        fetch(`/api/item/${currentItemId}`, {
+        fetch(`${apiBase}/item/${currentItemId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -1738,7 +1741,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
         }
 
         // Save via API
-        fetch('/api/folder-name', {
+        fetch(`${apiBase}/folder-name`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -1931,7 +1934,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
     }
 
     function loadUserNeedsToRequirementsData() {
-        fetch('/api/traceability/user-needs-to-requirements')
+        fetch(`${apiBase}/traceability/user-needs-to-requirements`)
             .then(response => response.json())
             .then(data => {
                 const tbody = document.getElementById('user-needs-requirements-tbody');
@@ -1958,7 +1961,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
     }
 
     function loadRequirementsToSpecificationsData() {
-        fetch('/api/traceability/requirements-to-specifications')
+        fetch(`${apiBase}/traceability/requirements-to-specifications`)
             .then(response => response.json())
             .then(data => {
                 const tbody = document.getElementById('requirements-specifications-tbody');
@@ -1990,7 +1993,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
     }
 
     function loadRisksToMitigationsData() {
-        fetch('/api/traceability/risks-to-mitigations')
+        fetch(`${apiBase}/traceability/risks-to-mitigations`)
             .then(response => response.json())
             .then(data => {
                 const tbody = document.getElementById('risks-mitigations-tbody');

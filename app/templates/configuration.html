@@ -222,6 +222,8 @@ Licensed under the MIT License. See LICENSE file in the project root.
 <div id="status-message" class="alert d-none mt-3" role="alert"></div>
 
 <script>
+    // apiBase is defined globally in base.html
+    
     document.addEventListener('DOMContentLoaded', function () {
         // Add option handlers
         document.getElementById('add-severity-option').addEventListener('click', function () {
@@ -277,7 +279,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
             return;
         }
 
-        fetch('/api/configuration', {
+        fetch(`${apiBase}/configuration`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -309,7 +311,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
     }
 
     function removeOption(type, optionId) {
-        fetch('/api/configuration', {
+        fetch(`${apiBase}/configuration`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -396,7 +398,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
             return;
         }
 
-        fetch('/api/configuration', {
+        fetch(`${apiBase}/configuration`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

@@ -89,6 +89,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
+    // apiBase is defined globally in base.html
     let currentReportName = null;
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -131,7 +132,7 @@
         document.getElementById('report-panel').classList.add('d-none');
         document.getElementById('loading-panel').classList.remove('d-none');
 
-        fetch(`/api/report/${reportName}`)
+        fetch(`${apiBase}/report/${reportName}`)
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
