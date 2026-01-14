@@ -4,6 +4,7 @@
 """Main entry point for the Pocket DHF application."""
 
 import argparse
+import os
 
 from app import create_app
 
@@ -27,7 +28,10 @@ def main():
         "--host", type=str, default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
     )
     parser.add_argument(
-        "--port", type=int, default=8080, help="Port to bind to (default: 8080)"
+        "--port", 
+        type=int, 
+        default=int(os.environ.get("PORT", 8080)), 
+        help="Port to bind to (default: 8080, or PORT environment variable)"
     )
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
 

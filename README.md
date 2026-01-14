@@ -92,6 +92,16 @@ poetry run python main.py
 
 Then open http://localhost:8080 in your browser to explore the sample data!
 
+**Custom Port:** If port 8080 is already in use, you can specify a different port:
+
+```bash
+# Using --port argument
+poetry run python main.py --port 5000
+
+# Or using PORT environment variable
+PORT=5000 poetry run python main.py
+```
+
 ## Installation
 
 ### Recommended: Git Submodule in Your Device Repository
@@ -220,9 +230,17 @@ poetry run python main.py
 
 ### Custom Port
 
+If port 8080 is already in use, you can specify a different port:
+
 ```bash
+# Using --port argument
 poetry run python main.py --data-file ../dhf/device-dhf.yaml --port 5000
+
+# Or using PORT environment variable
+PORT=5000 poetry run python main.py --data-file ../dhf/device-dhf.yaml
 ```
+
+The PORT environment variable takes precedence over the default (8080) but can be overridden by the `--port` argument.
 
 ## Usage
 
