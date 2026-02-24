@@ -15,7 +15,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
             </h2>
             <p class="text-muted mb-4">
                 Manage dropdown options for Risk entity types. Each option has a unique ID (S1, S2, etc. for severity;
-                P1, P2, etc. for probability)
+                PH1, PH2, etc. for probability of harm)
                 that remains constant while the display names can be modified.
             </p>
 
@@ -106,12 +106,12 @@ Licensed under the MIT License. See LICENSE file in the project root.
                     <div class="card">
                         <div class="card-header bg-info text-white">
                             <h5 class="mb-0">
-                                <i class="fas fa-percentage me-2"></i>Risk Probability Options
+                                <i class="fas fa-percentage me-2"></i>Risk Probability of Harm Options
                             </h5>
                         </div>
                         <div class="card-body">
                             <p class="text-muted small mb-3">
-                                Configure probability levels for Risk entities. IDs (P1, P2, P3, etc.) are permanent
+                                Configure probability of harm levels for Risk entities. IDs (PH1, PH2, PH3, etc.) are permanent
                                 identifiers.
                             </p>
 
@@ -164,7 +164,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
                                         <div class="mb-2">
                                             <label class="form-label small">Display Name:</label>
                                             <input type="text" id="new-probability-name"
-                                                class="form-control form-control-sm" placeholder="e.g., Very High">
+                                                class="form-control form-control-sm" placeholder="e.g., Probable">
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label small">Description:</label>
@@ -196,11 +196,11 @@ Licensed under the MIT License. See LICENSE file in the project root.
                         <div class="card-body">
                             <ul class="mb-0">
                                 <li><strong>Unique IDs:</strong> Each option has a permanent ID (S1, S2, S3 for
-                                    severity; P1, P2, P3 for probability) that never changes.</li>
+                                    severity; PH1, PH2, PH3 for probability of harm) that never changes.</li>
                                 <li><strong>Display Names:</strong> The names shown to users can be modified without
                                     affecting existing data compatibility.</li>
                                 <li><strong>Adding Options:</strong> New options get the next available ID automatically
-                                    (e.g., S4, P4, etc.).</li>
+                                    (e.g., S4, PH4, etc.).</li>
                                 <li><strong>Removing Options:</strong> Options currently in use by existing risks cannot
                                     be removed (shown with "In Use" badge).</li>
                                 <li><strong>Descriptions:</strong> Optional descriptions help users understand when to

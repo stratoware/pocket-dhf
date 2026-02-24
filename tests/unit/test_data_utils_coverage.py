@@ -341,7 +341,6 @@ class TestDataUtilsCoverage:
             config = manager.get_configuration()
             # Returns default mappings when empty
             assert "severity_mapping" in config
-            assert "probability_occurrence_mapping" in config
             assert "probability_harm_mapping" in config
         finally:
             os.unlink(temp_path)
@@ -540,33 +539,6 @@ class TestDataUtilsCoverage:
         finally:
             os.unlink(temp_path)
 
-    def test_get_probability_occurrence_name(self):
-        """Test get_probability_occurrence_name method."""
-        from app.data_utils import DHFDataManager
-
-        data = {
-            "configuration": {
-                "probability_occurrence_mapping": {
-                    "PO1": {"name": "Low", "description": "Unlikely"},
-                    "PO2": {"name": "Medium", "description": "Possible"},
-                }
-            }
-        }
-
-        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
-            yaml.dump(data, f)
-            temp_path = f.name
-
-        try:
-            manager = DHFDataManager(temp_path)
-            assert manager.get_probability_occurrence_name("PO1") == "Low"
-            assert manager.get_probability_occurrence_name("PO2") == "Medium"
-            assert (
-                manager.get_probability_occurrence_name("PO3") == "PO3"
-            )  # Returns ID if not found
-        finally:
-            os.unlink(temp_path)
-
     def test_get_probability_harm_name(self):
         """Test get_probability_harm_name method."""
         from app.data_utils import DHFDataManager
@@ -609,11 +581,6 @@ class TestDataUtilsCoverage:
                     },
                     "S3": {"name": "High", "description": "High impact", "value": 3},
                 },
-                "probability_occurrence_mapping": {
-                    "PO1": {"name": "Low", "description": "Unlikely", "value": 1},
-                    "PO2": {"name": "Medium", "description": "Possible", "value": 2},
-                    "PO3": {"name": "High", "description": "Likely", "value": 3},
-                },
                 "probability_harm_mapping": {
                     "PH1": {
                         "name": "Low",
@@ -640,8 +607,8 @@ class TestDataUtilsCoverage:
 
         try:
             manager = DHFDataManager(temp_path)
-            score = manager.calculate_rbm_score("PO2", "PH2", "S2")
-            assert score == 8  # 2 * 2 * 2
+            score = manager.calculate_rbm_score("PH2", "S2")
+            assert score == 4  # 2 * 2
         finally:
             os.unlink(temp_path)
 
@@ -652,7 +619,6 @@ class TestDataUtilsCoverage:
         data = {
             "configuration": {
                 "severity_mapping": {"S1": {"name": "Low", "value": 1}},
-                "probability_occurrence_mapping": {"PO1": {"name": "Low", "value": 1}},
                 "probability_harm_mapping": {"PH1": {"name": "Low", "value": 1}},
             }
         }
@@ -663,12 +629,12 @@ class TestDataUtilsCoverage:
 
         try:
             manager = DHFDataManager(temp_path)
-            # Test with missing values
-            score = manager.calculate_rbm_score("PO1", "PH1", "S1")
-            assert score == 1  # 1 * 1 * 1
+            # Test with existing values
+            score = manager.calculate_rbm_score("PH1", "S1")
+            assert score == 1  # 1 * 1
 
-            # Test with unknown values
-            score = manager.calculate_rbm_score("PO2", "PH2", "S2")
-            assert score == 8  # 2 * 2 * 2
+            # Test with unknown values (defaults to numeric extraction)
+            score = manager.calculate_rbm_score("PH2", "S2")
+            assert score == 4  # 2 * 2
         finally:
             os.unlink(temp_path)

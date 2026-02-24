@@ -14,14 +14,9 @@ def main():
         description="Pocket DHF - Device History File Management"
     )
     parser.add_argument(
-        "--data-file",
+        "--data-dir",
         type=str,
-        help="Path to the YAML data file (default: sample-data/dhf_data.yaml)",
-    )
-    parser.add_argument(
-        "--reports-dir",
-        type=str,
-        help="Path to the reports directory (default: sample-data/report-templates)",
+        help="Path to the data directory containing dhf_data.yaml, analyses/, and report-templates/ (default: sample-data)",
     )
     parser.add_argument(
         "--host", type=str, default="0.0.0.0", help="Host to bind to (default: 0.0.0.0)"
@@ -33,23 +28,18 @@ def main():
 
     args = parser.parse_args()
 
-    # Create app with data file path and reports directory
-    app = create_app(data_file_path=args.data_file, reports_dir=args.reports_dir)
+    # Create app with data directory
+    app = create_app(data_dir=args.data_dir)
 
     # Override debug setting if specified
     if args.debug:
         app.config["DEBUG"] = True
 
     print("Starting Pocket DHF server...")
-    if args.data_file:
-        print(f"Using data file: {args.data_file}")
+    if args.data_dir:
+        print(f"Using data directory: {args.data_dir}")
     else:
-        print("Using default data file: sample-data/dhf_data.yaml")
-
-    if args.reports_dir:
-        print(f"Using reports directory: {args.reports_dir}")
-    else:
-        print("Using default reports directory: sample-data/report-templates")
+        print("Using default data directory: sample-data")
 
     app.run(debug=app.config["DEBUG"], host=args.host, port=args.port)
 

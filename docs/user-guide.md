@@ -34,9 +34,15 @@ Navigate to http://localhost:8080 to see the application.
    cp sample-data/dhf_data.yaml my-project.yaml
    ```
 
-2. Launch with your project file:
+2. Set up your project directory:
    ```bash
-   poetry run python main.py --data-file my-project.yaml
+   mkdir -p my-project/analyses my-project/report-templates
+   mv my-project.yaml my-project/dhf_data.yaml
+   ```
+
+3. Launch with your project directory:
+   ```bash
+   poetry run python main.py --data-dir my-project
    ```
 
 3. Edit the metadata section to reflect your device information
@@ -168,16 +174,15 @@ Pocket DHF supports ISO 14971 risk management.
    - **ID**: Risk identifier (R001, R002, etc.)
    - **Title**: Brief description of the hazard
    - **Description**: Detailed hazard scenario
-   - **Severity**: Select from configured levels (S1-S9)
-   - **Probability of Occurrence**: PO1-PO3
+   - **Severity**: Select from configured levels (S1-S4, configurable up to S9)
    - **Probability of Harm**: PH1-PH3
 
-### Risk-Benefit Matrix (RBM)
+### Risk Score (ISO 14971:2019)
 
-The RBM score is calculated automatically:
+The risk score is calculated automatically per ISO 14971:2019:
 
 ```
-RBM = Severity × Probability of Occurrence × Probability of Harm
+Risk Score = Severity × Probability of Harm
 ```
 
 ### Mitigation Strategies

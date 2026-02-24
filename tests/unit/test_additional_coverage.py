@@ -140,16 +140,12 @@ class TestAdditionalCoverage:
         name = data_manager.get_severity_name("S999")
         assert name == "S999"  # Returns ID if not found
 
-        # Test get_probability_occurrence_name with non-existent ID
-        name = data_manager.get_probability_occurrence_name("PO999")
-        assert name == "PO999"  # Returns ID if not found
-
         # Test get_probability_harm_name with non-existent ID
         name = data_manager.get_probability_harm_name("PH999")
         assert name == "PH999"  # Returns ID if not found
 
         # Test calculate_rbm_score with non-existent IDs
-        score = data_manager.calculate_rbm_score("PO999", "PH999", "S999")
+        score = data_manager.calculate_rbm_score("PH999", "S999")
         assert score > 0  # Should return some value
 
     def test_data_utils_folder_operations(self, data_manager):

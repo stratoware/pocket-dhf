@@ -98,22 +98,7 @@ Severity levels S1-S9 are configurable. Higher numbers = more severe.
 
 ### Probability Mappings
 
-**Probability of Occurrence** (how likely the hazardous situation occurs):
-
-```yaml
-  probability_occurrence_mapping:
-    PO1:
-      name: "Remote"
-      description: "<1% probability"
-    PO2:
-      name: "Occasional"
-      description: "1-10% probability"
-    PO3:
-      name: "Frequent"
-      description: ">10% probability"
-```
-
-**Probability of Harm** (if situation occurs, likelihood of harm):
+**Probability of Harm** (likelihood of harm occurring):
 
 ```yaml
   probability_harm_mapping:
@@ -128,15 +113,14 @@ Severity levels S1-S9 are configurable. Higher numbers = more severe.
       description: "Harm probable if hazard occurs"
 ```
 
-### Risk-Benefit Matrix Calculation
+### Risk Score Calculation (ISO 14971:2019)
 
 ```
-RBM Score = Severity × Probability of Occurrence × Probability of Harm
+Risk Score = Severity × Probability of Harm
 ```
 
 The numeric values used are:
-- Severity: S1=1, S2=2, ... S9=9
-- PO: PO1=1, PO2=2, PO3=3
+- Severity: S1=1, S2=2, S3=3, S4=4 (configurable up to S9)
 - PH: PH1=1, PH2=2, PH3=3
 
 ## User Needs
@@ -299,7 +283,6 @@ risks:
         title: "Incorrect Glucose Reading"
         description: "Sensor drift or failure could lead to incorrect glucose readings, causing inappropriate insulin dosing."
         severity: S4                 # From severity_mapping
-        probability_occurrence: PO2  # From probability_occurrence_mapping
         probability_harm: PH3        # From probability_harm_mapping
         linked_specs:               # Specifications that mitigate this risk
           - SW001
@@ -338,20 +321,19 @@ risks:
         title: string              # Brief hazard description
         description: string        # Detailed hazard scenario
         severity: <S#>             # S1-S9 from severity_mapping
-        probability_occurrence: <PO#>  # PO1-PO3
-        probability_harm: <PH#>    # PH1-PH3
+        probability_harm: <PH#>    # PH1-PH3 from probability_harm_mapping
         linked_specs: [<Spec_IDs>] # Mitigation measures
 ```
 
-### RBM Calculation
+### Risk Score Calculation
 
-The Risk-Benefit Matrix score is automatically calculated:
+The risk score is automatically calculated per ISO 14971:2019:
 
 ```
-RBM = severity_number × PO_number × PH_number
+Risk Score = severity_number × PH_number
 ```
 
-Example: S4 × PO2 × PH3 = 4 × 2 × 3 = 24
+Example: S4 × PH3 = 4 × 3 = 12
 
 ## Mitigation Links
 
@@ -423,10 +405,6 @@ configuration:
     S1: { name: "Low", description: "Minor" }
     S2: { name: "Medium", description: "Moderate" }
     S3: { name: "High", description: "Serious" }
-  probability_occurrence_mapping:
-    PO1: { name: "Low", description: "Unlikely" }
-    PO2: { name: "Medium", description: "Possible" }
-    PO3: { name: "High", description: "Probable" }
   probability_harm_mapping:
     PH1: { name: "Low", description: "Unlikely harm" }
     PH2: { name: "Medium", description: "Possible harm" }
@@ -458,7 +436,6 @@ risks:
         title: "Basic Risk"
         description: "Hazard scenario"
         severity: S2
-        probability_occurrence: PO2
         probability_harm: PH2
         linked_specs: []
 

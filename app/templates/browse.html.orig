@@ -13,6 +13,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
         <div id="sidebar" class="bg-light border-end d-flex flex-column" style="height: calc(100vh - 160px); width: 42%;">
             <!-- Fixed Header Section (doesn't scroll) -->
             <div class="tree-navigation-header p-3 border-bottom bg-light" style="flex-shrink: 0;">
+<<<<<<< HEAD
                 <div class="d-flex justify-content-between align-items-center gap-2">
                     <!-- Navigation Title -->
                     <h6 class="mb-0" style="white-space: nowrap;">
@@ -49,6 +50,31 @@ Licensed under the MIT License. See LICENSE file in the project root.
                             <i class="fas fa-compress-alt"></i>
                         </button>
                     </div>
+=======
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sitemap me-2"></i>DHF Navigation
+                    </h5>
+                    <!-- Navigation Controls - All in one row, icon-only with tooltips -->
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" id="nav-back-btn" disabled 
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Back">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="nav-forward-btn" disabled
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Navigate Forward">
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="expand-all-btn"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Expand All">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="collapse-all-btn"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Collapse All">
+                            <i class="fas fa-compress-alt"></i>
+                        </button>
+                    </div>
+>>>>>>> ff9404c (Feature: Add navigation history with back/forward controls)
                 </div>
             </div>
 
@@ -425,7 +451,18 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
                             <!-- Probability and Severity Row -->
                             <div class="row mb-3">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label for="edit-probability-occurrence" class="form-label">Probability of
+                                        Occurrence</label>
+                                    <select class="form-select" id="edit-probability-occurrence"
+                                        name="probability_occurrence">
+                                        {% for po_id, po_data in config.probability_occurrence_mapping.items() %}
+                                        <option value="{{ po_id }}">{{ po_data.name }} ({{ po_id.replace('PO', '') }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
                                     <label for="edit-probability-harm" class="form-label">Probability of Harm</label>
                                     <select class="form-select" id="edit-probability-harm" name="probability_harm">
                                         {% for ph_id, ph_data in config.probability_harm_mapping.items() %}
@@ -434,7 +471,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label for="edit-severity" class="form-label">Severity</label>
                                     <select class="form-select" id="edit-severity" name="severity">
                                         {% for severity_id, severity_data in config.severity_mapping.items() %}
@@ -445,20 +482,21 @@ Licensed under the MIT License. See LICENSE file in the project root.
                                 </div>
                             </div>
 
-                            <!-- Risk Score Display -->
+                            <!-- RBM Score Display -->
                             <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <label class="form-label">Risk Score</label>
+                                    <label class="form-label">RBM Score</label>
                                     <div class="alert alert-info">
                                         <div class="d-flex align-items-center mb-2">
                                             <i class="fas fa-calculator me-2"></i>
                                             <span class="fs-4 fw-bold" id="rbm-score-display">-</span>
                                         </div>
                                         <div class="small">
-                                            <strong>Calculation:</strong> <span id="rbm-calculation-display">- × - = -</span>
+                                            <strong>Calculation:</strong> <span id="rbm-calculation-display">- × - × - =
+                                                -</span>
                                         </div>
                                         <div class="small text-muted mt-1">
-                                            Severity × Probability of Harm (ISO 14971:2019)
+                                            Probability of Occurrence × Probability of Harm × Severity
                                         </div>
                                     </div>
                                 </div>
@@ -683,12 +721,15 @@ Licensed under the MIT License. See LICENSE file in the project root.
         document.getElementById('nav-back-btn').addEventListener('click', navigateBack);
         document.getElementById('nav-forward-btn').addEventListener('click', navigateForward);
 
+<<<<<<< HEAD
         // Keyboard shortcuts
         initializeKeyboardShortcuts();
 
         // Initialize search
         initializeTreeSearch();
 
+=======
+>>>>>>> ff9404c (Feature: Add navigation history with back/forward controls)
         // Initialize folder editing
         initializeFolderEditing();
 
@@ -773,6 +814,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
         });
     }
 
+<<<<<<< HEAD
     // Tree search functionality
     function initializeTreeSearch() {
         const searchInput = document.getElementById('tree-search');
@@ -920,6 +962,8 @@ Licensed under the MIT License. See LICENSE file in the project root.
         });
     }
 
+=======
+>>>>>>> ff9404c (Feature: Add navigation history with back/forward controls)
     // Navigation history functions
     function addToNavigationHistory(itemId, itemType) {
         // If we're not at the end of history, truncate forward history
@@ -1015,6 +1059,13 @@ Licensed under the MIT License. See LICENSE file in the project root.
                     // Reset the flag after handling navigation
                     isNavigating = false;
                 }
+<<<<<<< HEAD
+=======
+
+                // Show editor panel
+                document.getElementById('welcome-panel').classList.add('d-none');
+                document.getElementById('editor-panel').classList.remove('d-none');
+>>>>>>> ff9404c (Feature: Add navigation history with back/forward controls)
 
                 // Populate form
                 populateForm(data, itemType);
@@ -1286,6 +1337,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
             document.getElementById('edit-harm').value = data.harm || '';
             document.getElementById('edit-sequence-of-events').value = data.sequence_of_events || '';
             document.getElementById('edit-hazardous-situation').value = data.hazardous_situation || '';
+            document.getElementById('edit-probability-occurrence').value = data.probability_occurrence || 'PO1';
             document.getElementById('edit-probability-harm').value = data.probability_harm || 'PH1';
             document.getElementById('edit-severity').value = data.severity || 'S1';
             document.getElementById('edit-cannot-be-reduced').checked = data.cannot_be_reduced_further || false;
@@ -1301,6 +1353,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
             updateRAMScore();
 
             // Add event listeners for score calculations
+            document.getElementById('edit-probability-occurrence').addEventListener('change', updateRBMScore);
             document.getElementById('edit-probability-harm').addEventListener('change', updateRBMScore);
             document.getElementById('edit-severity').addEventListener('change', updateRBMScore);
         } else {
@@ -1333,14 +1386,16 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
     function updateRBMScore() {
         // Get current values from the form
+        const probabilityOccurrence = document.getElementById('edit-probability-occurrence').value;
         const probabilityHarm = document.getElementById('edit-probability-harm').value;
         const severity = document.getElementById('edit-severity').value;
 
-        // Calculate Risk Score: S × PH
+        // Calculate RBM score: PO × PH × S
+        const poValue = parseInt(probabilityOccurrence.replace('PO', '')) || 1;
         const phValue = parseInt(probabilityHarm.replace('PH', '')) || 1;
         const sValue = parseInt(severity.replace('S', '')) || 1;
 
-        const rbmScore = sValue * phValue;
+        const rbmScore = poValue * phValue * sValue;
 
         // Update the main score display
         const rbmDisplay = document.getElementById('rbm-score-display');
@@ -1348,7 +1403,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
 
         // Update the calculation display
         const rbmCalcDisplay = document.getElementById('rbm-calculation-display');
-        rbmCalcDisplay.textContent = `${sValue} × ${phValue} = ${rbmScore}`;
+        rbmCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${rbmScore}`;
 
         // Color code the score based on risk level
         rbmDisplay.className = 'fs-4 fw-bold';
@@ -1378,12 +1433,16 @@ Licensed under the MIT License. See LICENSE file in the project root.
         });
 
         // Calculate RAM score by applying effects to the base values
+        let poValue = parseInt(document.getElementById('edit-probability-occurrence').value.replace('PO', '')) || 1;
         let phValue = parseInt(document.getElementById('edit-probability-harm').value.replace('PH', '')) || 1;
         let sValue = parseInt(document.getElementById('edit-severity').value.replace('S', '')) || 1;
 
         // Apply effects
         effects.forEach(effect => {
-            if (effect.includes('Reduces probability of harm by')) {
+            if (effect.includes('Reduces probability of occurrence by')) {
+                const reduction = parseInt(effect.match(/\d+/)[0]);
+                poValue = Math.max(1, poValue - reduction);
+            } else if (effect.includes('Reduces probability of harm by')) {
                 const reduction = parseInt(effect.match(/\d+/)[0]);
                 phValue = Math.max(1, phValue - reduction);
             } else if (effect.includes('Reduces severity by')) {
@@ -1392,7 +1451,7 @@ Licensed under the MIT License. See LICENSE file in the project root.
             }
         });
 
-        const ramScore = sValue * phValue;
+        const ramScore = poValue * phValue * sValue;
 
         // Update the main score display
         const ramDisplay = document.getElementById('ram-score-display');
@@ -1401,9 +1460,9 @@ Licensed under the MIT License. See LICENSE file in the project root.
         // Update the calculation display
         const ramCalcDisplay = document.getElementById('ram-calculation-display');
         if (effects.length === 0) {
-            ramCalcDisplay.textContent = `${sValue} × ${phValue} = ${ramScore} (no effects applied)`;
+            ramCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${ramScore} (no effects applied)`;
         } else {
-            ramCalcDisplay.textContent = `${sValue} × ${phValue} = ${ramScore} (${effects.length} effect${effects.length > 1 ? 's' : ''} applied)`;
+            ramCalcDisplay.textContent = `${poValue} × ${phValue} × ${sValue} = ${ramScore} (${effects.length} effect${effects.length > 1 ? 's' : ''} applied)`;
         }
 
         // Color code the score based on risk level

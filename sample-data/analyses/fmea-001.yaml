@@ -1,0 +1,127 @@
+# Copyright (c) 2025 Stratoware LLC
+# Licensed under the MIT License. See LICENSE file in the project root.
+
+id: FM0001
+title: "Continuous Glucose Monitor - Sensor System FMEA"
+type: fmea
+description: "Failure Mode and Effects Analysis for the sensor subsystem of the continuous glucose monitoring device"
+created_date: "2025-01-15"
+last_modified: "2025-01-20"
+author: "System Engineer"
+status: "active"
+
+# FMEA Table Structure  
+# Columns: Process Step, Potential Failure Mode, Potential Effects, Severity,
+#          Potential Causes, Probability of Harm, Current Controls, Risk Score, Recommended Actions
+
+rows:
+  - id: "FM0001-01"
+    process_step: "Glucose Signal Acquisition"
+    failure_mode: "Sensor fails to detect glucose levels"
+    effects: "No glucose reading available, patient unable to monitor levels"
+    severity: 3
+    causes: "Sensor displacement, poor skin contact, sensor malfunction, end of sensor life"
+    probability_of_harm: 2
+    current_controls: ["HS001", "HS002", "SS001", "SS006"]  # Sensor hardware, processing, and lifecycle management
+    risk_score: 6
+    recommended_actions: ["Implement sensor contact quality monitoring", "Add sensor expiration warnings"]
+    
+  - id: "FM0001-02"
+    process_step: "Glucose Signal Acquisition"
+    failure_mode: "Intermittent signal loss"
+    effects: "Incomplete monitoring data, unreliable trend analysis"
+    severity: 2
+    causes: "Loose connection, EMI interference, low battery, moisture ingress"
+    probability_of_harm: 2
+    current_controls: ["HS002", "HS003", "SS001", "HS010"]  # Analog front-end, MCU, signal processing, adhesive
+    risk_score: 4
+    recommended_actions: ["Implement signal quality indicator", "Add EMI shielding", "Improve adhesive design"]
+    
+  - id: "FM0001-03"
+    process_step: "Glucose Measurement"
+    failure_mode: "Inaccurate glucose reading (high error)"
+    effects: "Patient makes incorrect treatment decisions, potential hypo/hyperglycemia"
+    severity: 4
+    causes: "Sensor drift, calibration error, temperature variation, interference from medications"
+    probability_of_harm: 2
+    current_controls: ["SS001", "SS002", "HS001"]  # Signal processing, calibration algorithm, sensor hardware
+    risk_score: 8
+    recommended_actions: ["Implement cross-check with finger stick", "Add temperature compensation", "Improve calibration algorithm"]
+    
+  - id: "FM0001-04"
+    process_step: "Signal Processing"
+    failure_mode: "Algorithm fails to detect rapid glucose change"
+    effects: "Delayed alert for hypoglycemia, missed critical event"
+    severity: 4
+    causes: "Algorithm sensitivity too low, excessive filtering, processing delay"
+    probability_of_harm: 1
+    current_controls: ["SS001", "SS003"]  # Signal processing and detection algorithms
+    risk_score: 4
+    recommended_actions: ["Validate algorithm against clinical data", "Implement predictive algorithms"]
+    
+  - id: "FM0001-05"
+    process_step: "Alert Generation"
+    failure_mode: "Hypoglycemia alert fails to activate"
+    effects: "Patient not notified of dangerous low glucose level"
+    severity: 4
+    causes: "Software bug, notification failure, phone disconnected, alert disabled"
+    probability_of_harm: 1
+    current_controls: ["SS010", "HS007", "HS008", "SS005"]  # Alert system, LED, vibration, BLE communication
+    risk_score: 4
+    recommended_actions: ["Implement redundant alert mechanisms", "Add alert self-test", "Require alert acknowledgment"]
+    
+  - id: "FM0001-06"
+    process_step: "Alert Generation"
+    failure_mode: "False hypoglycemia alert"
+    effects: "Patient anxiety, reduced trust in device, alert fatigue"
+    severity: 2
+    causes: "Algorithm sensitivity too high, sensor noise, rapid movement artifacts"
+    probability_of_harm: 3
+    current_controls: ["SS001", "SS003", "SS002"]  # Processing and detection algorithms, calibration
+    risk_score: 6
+    recommended_actions: ["Tune alert thresholds", "Implement motion artifact rejection", "Add alert confirmation delay"]
+    
+  - id: "FM0001-07"
+    process_step: "Data Storage"
+    failure_mode: "Glucose history data loss"
+    effects: "Loss of trend analysis, inability to review patterns"
+    severity: 2
+    causes: "Memory corruption, storage failure, software bug, device reset"
+    probability_of_harm: 1
+    current_controls: ["SS004", "HS004", "SS011"]  # Data storage software, flash memory, cloud redundancy
+    risk_score: 2
+    recommended_actions: ["Implement data backup to cloud", "Add error correction codes", "Enable automatic cloud sync"]
+    
+  - id: "FM0001-08"
+    process_step: "Power Management"
+    failure_mode: "Battery depletes faster than specified"
+    effects: "Device shutdown during monitoring, gaps in glucose data"
+    severity: 3
+    causes: "Power consumption higher than design, battery degradation, cold temperature"
+    probability_of_harm: 2
+    current_controls: ["HS005", "HS006", "SS006"]  # Battery system, power management, lifecycle tracking
+    risk_score: 6
+    recommended_actions: ["Implement low battery warning at 20%", "Optimize power consumption", "Add battery health monitoring"]
+    
+  - id: "FM0001-09"
+    process_step: "Wireless Communication"
+    failure_mode: "Bluetooth connection to phone drops"
+    effects: "Loss of remote monitoring, no mobile alerts, no data sync"
+    severity: 2
+    causes: "Range exceeded, interference, pairing failure, phone Bluetooth disabled"
+    probability_of_harm: 2
+    current_controls: ["SS005", "HS009", "SS011"]  # Communication software, BLE hardware, cloud redundancy
+    risk_score: 4
+    recommended_actions: ["Implement automatic reconnection", "Add connection status indicator", "Store alerts locally"]
+    
+  - id: "FM0001-10"
+    process_step: "Data Security"
+    failure_mode: "Unauthorized access to glucose data"
+    effects: "Privacy breach, HIPAA violation, patient data exposed"
+    severity: 3
+    causes: "Weak encryption, authentication bypass, software vulnerability, lost device"
+    probability_of_harm: 1
+    current_controls: ["SS007", "SS008", "SS009", "SS014"]  # Encryption, authentication, privacy protection, access control
+    risk_score: 3
+    recommended_actions: ["Implement device remote wipe", "Add biometric authentication", "Enable audit logging"]
+

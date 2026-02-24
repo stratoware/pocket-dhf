@@ -1,0 +1,23 @@
+# Project Context
+- Name: Pocket-DHF
+- Stack: Python Flask web application, package management using poetry.
+- Purpose: A yaml schema to represent entities typical in a medical device design history file such as requirements, risks, specifications.  A simple web application that can be used to view and edit those requirements.
+
+# Version control
+- ensure that all commits are gpg signed, do NOT disable gpg signing.
+
+# Project Structure
+- other than the standard files (README, CONTRIBUTING, etc), all documentation should be in the subfolder docs.
+- if a user guide or specifications are included in the project they can be located directly under the docs subfolder.
+- for more complex features, a design document can be written dedicated to that feature under docs/features
+
+# Editing the yaml data
+Unique identifiers
+- All entities have unique IDs, two letters followed by four numbers
+- IDs should be immutable once an entity is created, they should never be reused
+- When creating a new entity the ID should be incremented based on the highest known numeric ID of that entity type
+
+# Common mistakes
+- Do NOT try to launch the application outside of the poetry environment.
+- Do NOT try to run python using the command python, always use the command python3.
+- Always run the application on port 8080, if an instance is already running stop that instance first.

@@ -1,0 +1,128 @@
+# Copyright (c) 2025 Stratoware LLC
+# Licensed under the MIT License. See LICENSE file in the project root.
+
+id: FT0001
+title: "Continuous Glucose Monitor - Missed Hypoglycemic Event FTA"
+type: fta
+description: "Fault Tree Analysis for the top event: Patient experiences severe hypoglycemia that is not detected or reported by the CGM system"
+created_date: "2025-01-15"
+last_modified: "2025-01-20"
+author: "System Engineer"
+status: "active"
+
+# Fault Tree Structure
+# Top Event -> Intermediate Events -> Basic Events
+# Each node has: id, description, gate_type (AND/OR/BASIC), children, mitigations
+
+top_event:
+  id: "FT0001-TE"
+  description: "Severe hypoglycemic event not detected or reported"
+  gate_type: "OR"
+  severity: 10
+  linked_risks: []  # Can link to DHF risks if applicable
+  
+intermediate_events:
+  - id: "FT0001-IE01"
+    parent_id: "FT0001-TE"
+    description: "Hypoglycemia not detected by sensor system"
+    gate_type: "OR"
+    
+  - id: "FT0001-IE02"
+    parent_id: "FT0001-TE"
+    description: "Hypoglycemia detected but not reported to user"
+    gate_type: "OR"
+    
+  - id: "FT0001-IE03"
+    parent_id: "FT0001-IE01"
+    description: "Sensor hardware fails to measure glucose"
+    gate_type: "OR"
+    
+  - id: "FT0001-IE04"
+    parent_id: "FT0001-IE01"
+    description: "Sensor measurement is inaccurate"
+    gate_type: "OR"
+    
+  - id: "FT0001-IE05"
+    parent_id: "FT0001-IE02"
+    description: "Alert system fails"
+    gate_type: "OR"
+    
+basic_events:
+  - id: "FT0001-BE01"
+    parent_id: "FT0001-IE03"
+    description: "Glucose sensor detaches from skin"
+    probability: 0.02
+    mitigations: ["HS010"]  # Biocompatible adhesive
+    
+  - id: "FT0001-BE02"
+    parent_id: "FT0001-IE03"
+    description: "Sensor reaches end of useful life"
+    probability: 0.01
+    mitigations: ["SS006"]  # Sensor lifecycle management
+    
+  - id: "FT0001-BE03"
+    parent_id: "FT0001-IE03"
+    description: "Electrochemical sensor malfunction"
+    probability: 0.005
+    mitigations: ["HS001", "HS002"]  # Sensor and analog front-end
+    
+  - id: "FT0001-BE04"
+    parent_id: "FT0001-IE04"
+    description: "Sensor drift outside acceptable range"
+    probability: 0.03
+    mitigations: ["SS002", "SS006"]  # Calibration algorithm and lifecycle
+    
+  - id: "FT0001-BE05"
+    parent_id: "FT0001-IE04"
+    description: "Temperature affects sensor accuracy"
+    probability: 0.02
+    mitigations: ["HS001"]  # Sensor with temperature compensation
+    
+  - id: "FT0001-BE06"
+    parent_id: "FT0001-IE04"
+    description: "Signal noise masks true glucose level"
+    probability: 0.01
+    mitigations: ["SS001", "HS002"]  # Signal processing and analog front-end
+    
+  - id: "FT0001-BE07"
+    parent_id: "FT0001-IE01"
+    description: "Detection algorithm fails to identify hypoglycemia"
+    probability: 0.001
+    mitigations: ["SS003"]  # Hypoglycemia detection system
+    
+  - id: "FT0001-BE08"
+    parent_id: "FT0001-IE05"
+    description: "Software bug prevents alert generation"
+    probability: 0.001
+    mitigations: ["SS010"]  # Redundant alert system
+    
+  - id: "FT0001-BE09"
+    parent_id: "FT0001-IE05"
+    description: "Notification hardware fails (LED/vibration)"
+    probability: 0.005
+    mitigations: ["HS007", "HS008"]  # LED and vibration alert
+    
+  - id: "FT0001-BE10"
+    parent_id: "FT0001-IE05"
+    description: "Bluetooth disconnected, no mobile alert"
+    probability: 0.05
+    mitigations: ["SS005", "HS009", "SS010"]  # BLE communication and local alerts
+    
+  - id: "FT0001-BE11"
+    parent_id: "FT0001-IE05"
+    description: "User disabled alerts or set volume too low"
+    probability: 0.1
+    mitigations: ["SS010"]  # Alert system with mandatory critical alerts
+    
+  - id: "FT0001-BE12"
+    parent_id: "FT0001-IE05"
+    description: "Mobile phone battery dead or turned off"
+    probability: 0.08
+    mitigations: ["HS007", "HS008"]  # Local device alerts (LED/vibration)
+    
+  - id: "FT0001-BE13"
+    parent_id: "FT0001-TE"
+    description: "Device battery depleted, system shutdown"
+    probability: 0.01
+    mitigations: ["HS005", "HS006", "SS006"]  # Battery system and power management
+

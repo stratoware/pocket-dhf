@@ -3,6 +3,7 @@
 
 """Main routes for the Pocket DHF application."""
 
+import logging
 import os
 import re
 import subprocess
@@ -22,6 +23,9 @@ from flask import (
 
 from app.data_utils import DHFDataManager
 
+# Configure logging
+logger = logging.getLogger(__name__)
+
 main = Blueprint("main", __name__)
 data_manager = None  # Will be initialized in each route
 file_watcher = None  # Will be set by create_app
@@ -40,8 +44,32 @@ def get_data_manager():
         from flask import current_app
 
         data_file_path = current_app.config.get("DHF_DATA_FILE")
-        data_manager = DHFDataManager(data_file_path)
+        analyses_dir = current_app.config.get("DHF_ANALYSES_DIR")
+        data_manager = DHFDataManager(data_file_path, analyses_dir=analyses_dir)
     return data_manager
+
+
+def sanitize_error_response(
+    exception, generic_message="An error occurred", status_code=500
+):
+    """
+    Sanitize error responses by logging the actual error and returning a generic message.
+
+    Args:
+        exception: The exception that was raised
+        generic_message: A generic user-friendly error message
+        status_code: HTTP status code to return
+
+    Returns:
+        A tuple of (jsonify response, status code)
+    """
+    # Log the full error details for debugging
+    logger.error(
+        f"Error occurred: {type(exception).__name__}: {str(exception)}", exc_info=True
+    )
+
+    # Return a generic message to the client
+    return jsonify({"error": generic_message}), status_code
 
 
 @main.route("/")
@@ -193,6 +221,34 @@ def configuration():
         return redirect(url_for("main.index"))
 
 
+@main.route("/analyses")
+def analyses():
+    """Analyses page for managing FMEA and FTA documents."""
+    try:
+        # Get available analyses
+        data_manager = get_data_manager()
+        analyses_list = data_manager.get_analyses()
+        user_info = get_git_user_info()
+
+        # Get linkable items for multi-select controls
+        linkable_items = data_manager.get_linkable_items()
+
+        # Get configuration for severity/probability dropdowns
+        config = data_manager.get_configuration()
+
+        return render_template(
+            "analyses.html",
+            title="Analyses",
+            analyses=analyses_list,
+            linkable_items=linkable_items,
+            config=config,
+            user_info=user_info,
+        )
+    except Exception as e:
+        flash(f"Error loading analyses: {str(e)}", "error")
+        return redirect(url_for("main.index"))
+
+
 @main.route("/reports")
 def reports():
     """Reports page for generating and viewing DHF reports."""
@@ -331,6 +387,143 @@ def validation():
         return redirect(url_for("main.index"))
 
 
+@main.route("/api/analyses")
+def api_get_analyses():
+    """API endpoint to get list of all analyses."""
+    try:
+        data_manager = get_data_manager()
+        analyses_list = data_manager.get_analyses()
+        return jsonify(analyses_list)
+    except Exception as e:
+        return sanitize_error_response(e, "Failed to retrieve analyses")
+
+
+@main.route("/api/analyses/<analysis_id>")
+def api_get_analysis(analysis_id):
+    """API endpoint to get a specific analysis."""
+    try:
+        data_manager = get_data_manager()
+        analysis = data_manager.load_analysis(analysis_id)
+        if analysis:
+            return jsonify(analysis)
+        else:
+            return jsonify({"error": "Analysis not found"}), 404
+    except Exception as e:
+        return sanitize_error_response(e, "Failed to retrieve analysis")
+
+
+@main.route("/api/analyses/<analysis_id>", methods=["PUT"])
+def api_update_analysis(analysis_id):
+    """API endpoint to update an analysis."""
+    try:
+        data_manager = get_data_manager()
+        updated_data = request.get_json()
+
+        # Update last_modified date
+        from datetime import datetime
+
+        updated_data["last_modified"] = datetime.now().strftime("%Y-%m-%d")
+
+        if data_manager.save_analysis(analysis_id, updated_data):
+            return jsonify(
+                {"success": True, "message": "Analysis updated successfully"}
+            )
+        else:
+            return jsonify({"error": "Failed to update analysis"}), 500
+    except Exception as e:
+        return sanitize_error_response(e, "Failed to update analysis")
+
+
+@main.route("/api/analyses/<analysis_id>", methods=["DELETE"])
+def api_delete_analysis(analysis_id):
+    """API endpoint to delete an analysis."""
+    try:
+        data_manager = get_data_manager()
+        if data_manager.delete_analysis(analysis_id):
+            return jsonify(
+                {"success": True, "message": "Analysis deleted successfully"}
+            )
+        else:
+            return jsonify({"error": "Analysis not found"}), 404
+    except Exception as e:
+        return sanitize_error_response(e, "Failed to delete analysis")
+
+
+@main.route("/api/analyses", methods=["POST"])
+def api_create_analysis():
+    """API endpoint to create a new analysis."""
+    try:
+        data_manager = get_data_manager()
+        data = request.get_json()
+
+        analysis_type = data.get("type")
+        title = data.get("title")
+        description = data.get("description", "")
+
+        if not analysis_type or not title:
+            return jsonify({"error": "Type and title are required"}), 400
+
+        if analysis_type not in ["fmea", "fta"]:
+            return jsonify({"error": "Type must be 'fmea' or 'fta'"}), 400
+
+        new_analysis = data_manager.create_analysis(analysis_type, title, description)
+
+        if new_analysis:
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Analysis created successfully",
+                    "analysis": new_analysis,
+                }
+            )
+        else:
+            return jsonify({"error": "Failed to create analysis"}), 500
+    except Exception as e:
+        return sanitize_error_response(e, "Failed to create analysis")
+
+
+@main.route("/api/analyses/<analysis_id>/sync-preview", methods=["GET"])
+def api_sync_preview(analysis_id):
+    """API endpoint to preview DHF sync changes."""
+    try:
+        data_manager = get_data_manager()
+        changes = data_manager.sync_analysis_to_dhf(analysis_id)
+
+        if "error" in changes:
+            return jsonify(changes), 404
+
+        return jsonify(changes)
+    except Exception as e:
+        return sanitize_error_response(e, "Failed to preview sync changes")
+
+
+@main.route("/api/analyses/<analysis_id>/sync", methods=["POST"])
+def api_sync_analysis(analysis_id):
+    """API endpoint to sync analysis to DHF."""
+    try:
+        data_manager = get_data_manager()
+
+        # Get preview first
+        changes = data_manager.sync_analysis_to_dhf(analysis_id)
+
+        if "error" in changes:
+            return jsonify(changes), 404
+
+        # Apply changes
+        if data_manager.apply_dhf_sync(analysis_id, changes):
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Analysis synced to DHF successfully",
+                    "changes": changes,
+                }
+            )
+        else:
+            return jsonify({"error": "Failed to apply sync changes"}), 500
+    except Exception as e:
+        return sanitize_error_response(e, "Failed to sync analysis")
+
+
 @main.route("/api/report/<report_name>")
 def generate_report(report_name):
     """API endpoint to generate a specific report."""
@@ -341,7 +534,7 @@ def generate_report(report_name):
         else:
             return jsonify({"error": "Report not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to generate report")
 
 
 @main.route("/api/item/<item_id>")
@@ -378,7 +571,7 @@ def get_item(item_id):
         else:
             return jsonify({"error": "Item not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to retrieve item")
 
 
 @main.route("/api/item/<item_id>", methods=["PUT"])
@@ -392,7 +585,7 @@ def update_item(item_id):
         else:
             return jsonify({"error": "Item not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to update item")
 
 
 @main.route("/api/folder-name", methods=["PUT"])
@@ -415,7 +608,7 @@ def update_folder_name():
         else:
             return jsonify({"error": "Folder not found"}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to update folder name")
 
 
 @main.route("/api/mitigation-link", methods=["PUT"])
@@ -442,7 +635,7 @@ def update_mitigation_link():
             return jsonify({"error": "Mitigation link not found"}), 404
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to update mitigation link")
 
 
 @main.route("/api/configuration", methods=["PUT"])
@@ -506,7 +699,7 @@ def update_configuration():
             return jsonify({"error": "Failed to update configuration"}), 500
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return sanitize_error_response(e, "Failed to update configuration")
 
 
 @main.route("/api/run-tests", methods=["POST"])
@@ -614,7 +807,8 @@ def run_tests():
         )
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error occurred: {type(e).__name__}: {str(e)}", exc_info=True)
+        return jsonify({"success": False, "error": "Failed to run tests"}), 500
 
 
 @main.route("/api/export-validation-pdf", methods=["POST"])
@@ -790,7 +984,11 @@ def export_validation_pdf():
         )
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error occurred: {type(e).__name__}: {str(e)}", exc_info=True)
+        return (
+            jsonify({"success": False, "error": "Failed to export validation PDF"}),
+            500,
+        )
 
 
 @main.route("/health")
@@ -882,10 +1080,26 @@ def get_report_templates():
 
 def generate_report_content(report_name):
     """Generate report content by processing template and inserting DHF data."""
+    # Security: Validate report_name to prevent path traversal
+    # Only allow alphanumeric, underscore, and hyphen characters
+    import re
+
+    if not re.match(r"^[a-zA-Z0-9_\-]+$", report_name):
+        return None
+
     templates_dir = current_app.config.get(
         "DHF_REPORTS_DIR", "sample-data/report-templates"
     )
-    template_path = os.path.join(templates_dir, f"{report_name}.md")
+
+    # Use basename to strip any path components
+    safe_name = os.path.basename(report_name)
+    template_path = os.path.join(templates_dir, f"{safe_name}.md")
+
+    # Security: Verify the resolved path is within templates_dir
+    real_path = os.path.realpath(template_path)
+    real_dir = os.path.realpath(templates_dir)
+    if not real_path.startswith(real_dir + os.sep):
+        return None
 
     if not os.path.exists(template_path):
         return None
@@ -1724,18 +1938,16 @@ def generate_high_priority_risks(data):
     for group in risks.values():
         if "risks" in group:
             for risk_id, risk in group["risks"].items():
-                po = risk.get("probability_occurrence", "PO1")
                 ph = risk.get("probability_harm", "PH1")
                 severity = risk.get("severity", "S1")
 
-                # Calculate RBM score
-                po_value = int(po.replace("PO", "")) if po.startswith("PO") else 1
+                # Calculate RBM score (S × PH)
                 ph_value = int(ph.replace("PH", "")) if ph.startswith("PH") else 1
                 s_value = (
                     int(severity.replace("S", "")) if severity.startswith("S") else 1
                 )
 
-                rbm_score = po_value * ph_value * s_value
+                rbm_score = s_value * ph_value
 
                 if rbm_score >= 6:  # High priority threshold
                     high_priority.append(
@@ -1744,7 +1956,6 @@ def generate_high_priority_risks(data):
                             "title": risk.get("title", "Untitled"),
                             "rbm_score": rbm_score,
                             "severity": severity,
-                            "po": po,
                             "ph": ph,
                         }
                     )
@@ -1755,11 +1966,11 @@ def generate_high_priority_risks(data):
     if not high_priority:
         return "*No high-priority risks identified.*"
 
-    table = "| Risk ID | Title | RBM Score | Severity | PO | PH |\n"
-    table += "|---------|-------|-----------|----------|----|----|\n"
+    table = "| Risk ID | Title | Risk Score | Severity | PH |\n"
+    table += "|---------|-------|------------|----------|----|\n"
 
     for risk in high_priority:
-        table += f"| {risk['id']} | {risk['title']} | {risk['rbm_score']} | {risk['severity']} | {risk['po']} | {risk['ph']} |\n"
+        table += f"| {risk['id']} | {risk['title']} | {risk['rbm_score']} | {risk['severity']} | {risk['ph']} |\n"
 
     return table
 
@@ -1768,8 +1979,10 @@ def generate_detailed_risk_table(data):
     """Generate detailed risk register table."""
     risks = data.get("risks", {})
 
-    table = "| Risk ID | Hazard | Severity | PO | PH | RBM | Harm | Justification |\n"
-    table += "|---------|--------|----------|----|----|-----|------|---------------|\n"
+    table = "| Risk ID | Hazard | Severity | PH | Risk Score | Harm | Justification |\n"
+    table += (
+        "|---------|--------|----------|-------|------------|------|---------------|\n"
+    )
 
     for group in risks.values():
         if "risks" in group:
@@ -1785,19 +1998,17 @@ def generate_detailed_risk_table(data):
                 if len(justification) > 50:
                     justification = justification[:47] + "..."
 
-                po = risk.get("probability_occurrence", "PO1")
                 ph = risk.get("probability_harm", "PH1")
                 severity = risk.get("severity", "S1")
 
-                # Calculate RBM score
-                po_value = int(po.replace("PO", "")) if po.startswith("PO") else 1
+                # Calculate RBM score (S × PH)
                 ph_value = int(ph.replace("PH", "")) if ph.startswith("PH") else 1
                 s_value = (
                     int(severity.replace("S", "")) if severity.startswith("S") else 1
                 )
-                rbm_score = po_value * ph_value * s_value
+                rbm_score = s_value * ph_value
 
-                table += f"| {risk_id} | {title} | {severity} | {po} | {ph} | {rbm_score} | {harm} | {justification} |\n"
+                table += f"| {risk_id} | {title} | {severity} | {ph} | {rbm_score} | {harm} | {justification} |\n"
 
     return table
 
@@ -1874,12 +2085,10 @@ def generate_residual_risk_summary(data):
                     if link.get("risk_id") == risk_id
                 ]
 
-                # Calculate residual RBM score
-                po = risk.get("probability_occurrence", "PO1")
+                # Calculate residual RBM score (S × PH)
                 ph = risk.get("probability_harm", "PH1")
                 severity = risk.get("severity", "S1")
 
-                po_value = int(po.replace("PO", "")) if po.startswith("PO") else 1
                 ph_value = int(ph.replace("PH", "")) if ph.startswith("PH") else 1
                 s_value = (
                     int(severity.replace("S", "")) if severity.startswith("S") else 1
@@ -1888,35 +2097,31 @@ def generate_residual_risk_summary(data):
                 # Apply control effects
                 for mitigation in linked_mitigations:
                     effect = mitigation.get("effect", "No effect")
-                    if "Reduces probability of occurrence by" in effect:
-                        reduction = int(effect.split()[-1])
-                        po_value = max(1, po_value - reduction)
-                    elif "Reduces probability of harm by" in effect:
+                    if "Reduces probability of harm by" in effect:
                         reduction = int(effect.split()[-1])
                         ph_value = max(1, ph_value - reduction)
                     elif "Reduces severity by" in effect:
                         reduction = int(effect.split()[-1])
                         s_value = max(1, s_value - reduction)
 
-                residual_rbm = po_value * ph_value * s_value
+                residual_rbm = s_value * ph_value
 
                 residual_risks.append(
                     {
                         "id": risk_id,
                         "title": risk.get("title", "Untitled"),
-                        "original_rbm": int(po.replace("PO", ""))
-                        * int(ph.replace("PH", ""))
+                        "original_rbm": int(ph.replace("PH", ""))
                         * int(severity.replace("S", "")),
                         "residual_rbm": residual_rbm,
                         "controls": len(linked_mitigations),
                     }
                 )
 
-    # Sort by residual RBM score
+    # Sort by residual risk score
     residual_risks.sort(key=lambda x: x["residual_rbm"], reverse=True)
 
-    table = "| Risk ID | Title | Original RBM | Residual RBM | Controls | Status |\n"
-    table += "|---------|-------|--------------|--------------|----------|--------|\n"
+    table = "| Risk ID | Title | Original Risk Score | Residual Risk Score | Controls | Status |\n"
+    table += "|---------|-------|---------------------|---------------------|----------|--------|\n"
 
     for risk in residual_risks:
         status = "Acceptable" if risk["residual_rbm"] <= 6 else "Review Required"

@@ -207,12 +207,10 @@ class TestDHFDataManager:
         config = data_manager.get_configuration()
 
         assert "severity_mapping" in config
-        assert "probability_occurrence_mapping" in config
         assert "probability_harm_mapping" in config
         assert "severity_ids_in_use" in config
 
         assert "S1" in config["severity_mapping"]
-        assert "PO1" in config["probability_occurrence_mapping"]
         assert "PH1" in config["probability_harm_mapping"]
 
     def test_add_config_option(self, data_manager):
@@ -261,27 +259,22 @@ class TestDHFDataManager:
         name = data_manager.get_severity_name("S1")
         assert name == "Low"
 
-    def test_get_probability_occurrence_name(self, data_manager):
-        """Test getting probability occurrence name."""
-        name = data_manager.get_probability_occurrence_name("PO1")
-        assert name == "Low"
-
     def test_get_probability_harm_name(self, data_manager):
         """Test getting probability harm name."""
         name = data_manager.get_probability_harm_name("PH1")
         assert name == "Low"
 
     def test_calculate_rbm_score(self, data_manager):
-        """Test RBM score calculation."""
-        score = data_manager.calculate_rbm_score("PO2", "PH3", "S3")
-        assert score == 18  # 2 * 3 * 3 = 18
+        """Test risk score calculation."""
+        score = data_manager.calculate_rbm_score("PH3", "S3")
+        assert score == 9  # 3 * 3 = 9
 
     def test_calculate_rbm_score_edge_cases(self, data_manager):
-        """Test RBM score calculation with edge cases."""
+        """Test risk score calculation with edge cases."""
         # Test with single digit values
-        score = data_manager.calculate_rbm_score("PO1", "PH1", "S1")
-        assert score == 1  # 1 * 1 * 1 = 1
+        score = data_manager.calculate_rbm_score("PH1", "S1")
+        assert score == 1  # 1 * 1 = 1
 
         # Test with invalid IDs (should default to 1)
-        score = data_manager.calculate_rbm_score("INVALID", "PH2", "S2")
-        assert score == 4  # 1 * 2 * 2 = 4 (invalid defaults to 1)
+        score = data_manager.calculate_rbm_score("INVALID", "S2")
+        assert score == 2  # 1 * 2 = 2 (invalid defaults to 1)

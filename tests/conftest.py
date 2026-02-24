@@ -15,16 +15,34 @@ from app.data_utils import DHFDataManager
 @pytest.fixture
 def app(sample_dhf_data):
     """Create and configure a new app instance for each test."""
-    # Create a temporary file for testing
-    db_fd, db_path = tempfile.mkstemp()
+    # Create a temporary directory for testing
+    import shutil
 
-    # Write sample data to the temporary file
     import yaml
 
-    with open(db_path, "w") as f:
+    temp_dir = tempfile.mkdtemp()
+    dhf_data_path = os.path.join(temp_dir, "dhf_data.yaml")
+
+    # Write sample data to the temporary file
+    with open(dhf_data_path, "w") as f:
         yaml.dump(sample_dhf_data, f)
 
-    app = create_app(data_file_path=db_path)
+    # Create subdirectories
+    os.makedirs(os.path.join(temp_dir, "analyses"), exist_ok=True)
+    os.makedirs(os.path.join(temp_dir, "report-templates"), exist_ok=True)
+
+    # Copy report templates from sample-data for report generation tests
+    sample_templates_dir = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)), "sample-data", "report-templates"
+    )
+    if os.path.exists(sample_templates_dir):
+        for template_file in os.listdir(sample_templates_dir):
+            if template_file.endswith(".md"):
+                src = os.path.join(sample_templates_dir, template_file)
+                dst = os.path.join(temp_dir, "report-templates", template_file)
+                shutil.copy2(src, dst)
+
+    app = create_app(data_dir=temp_dir)
     app.config.update(
         {
             "TESTING": True,
@@ -33,14 +51,13 @@ def app(sample_dhf_data):
         }
     )
 
-    # Override the data file path for testing
-    app.config["DHF_DATA_FILE"] = db_path
+    # Paths are already set by create_app
+    # app.config["DHF_DATA_FILE"] is now set to temp_dir/dhf_data.yaml
 
     yield app
 
     # Clean up
-    os.close(db_fd)
-    os.unlink(db_path)
+    shutil.rmtree(temp_dir)
 
 
 @pytest.fixture
@@ -90,7 +107,6 @@ def sample_dhf_data():
                         "harm": "Incorrect treatment decisions",
                         "sequence_of_events": "Sensor malfunction leads to false reading",
                         "hazardous_situation": "Patient receives incorrect insulin dose",
-                        "probability_occurrence": "PO2",
                         "probability_harm": "PH3",
                         "severity": "S3",
                         "cannot_be_reduced_further": False,
@@ -155,11 +171,6 @@ def sample_dhf_data():
                 "S1": {"name": "Low", "description": "Minor impact"},
                 "S2": {"name": "Medium", "description": "Moderate impact"},
                 "S3": {"name": "High", "description": "Significant impact"},
-            },
-            "probability_occurrence_mapping": {
-                "PO1": {"name": "Low", "description": "Unlikely to occur"},
-                "PO2": {"name": "Medium", "description": "May occur occasionally"},
-                "PO3": {"name": "High", "description": "Likely to occur frequently"},
             },
             "probability_harm_mapping": {
                 "PH1": {"name": "Low", "description": "Unlikely to cause harm"},
